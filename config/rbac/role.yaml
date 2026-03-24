@@ -1,0 +1,38 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - governance.platform.io
+  resources:
+  - azurepolicyassignments
+  - azurepolicydefinitions
+  - azurepolicyexemptions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - governance.platform.io
+  resources:
+  - azurepolicyassignments/finalizers
+  - azurepolicydefinitions/finalizers
+  - azurepolicyexemptions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - governance.platform.io
+  resources:
+  - azurepolicyassignments/status
+  - azurepolicydefinitions/status
+  - azurepolicyexemptions/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -1,0 +1,19 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyAssignment
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: require-tags-on-rgs-2
+spec:
+  displayName: "Require Cost Center tag on Resource Groups"
+  description: "Enforces that all resource groups have a CostCenter tag."
+  policyDefinitionId: "/providers/Microsoft.Authorization/policyDefinitions/1e30110a-5ceb-460c-a204-c1c3969c6d62"
+  scope: "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2/resourceGroups/az-104-demo"
+  enforcementMode: Default
+  parameters:
+    tagName: "CostCenter"
+    tagValue: "Finance"
+  metadata:
+    assignedBy: "platform-team"
+    category: "Tags"

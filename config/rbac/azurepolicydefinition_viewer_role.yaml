@@ -1,0 +1,23 @@
+# permissions for end users to view azurepolicydefinitions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: azurepolicydefinition-viewer-role
+rules:
+- apiGroups:
+  - governance.platform.io
+  resources:
+  - azurepolicydefinitions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - governance.platform.io
+  resources:
+  - azurepolicydefinitions/status
+  verbs:
+  - get

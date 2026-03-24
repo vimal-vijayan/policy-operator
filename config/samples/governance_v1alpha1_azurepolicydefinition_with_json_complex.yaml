@@ -1,0 +1,73 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyDefinition
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: allowed-sku-and-locations
+spec:
+  displayName: "Restrict VM SKUs and Allowed Locations"
+  description: "Denies virtual machine deployments that use a disallowed SKU or are deployed to a non-approved Azure region."
+  policyType: Custom
+  mode: Indexed
+  metadata:
+    category: "Compute"
+    version: "1.0.0"
+  version: "1.0.0"
+  parameters:
+    allowedSkus:
+      type: Array
+      metadata:
+        displayName: "Allowed VM SKUs"
+        description: "List of permitted virtual machine SKU sizes (e.g. Standard_D2s_v3)."
+      defaultValue:
+        - "Standard_D2s_v3"
+        - "Standard_D4s_v3"
+    allowedLocations:
+      type: Array
+      metadata:
+        displayName: "Allowed Locations"
+        description: "List of Azure regions where virtual machines may be deployed."
+      defaultValue:
+        - "westeurope"
+        - "northeurope"
+    effectType:
+      type: String
+      metadata:
+        displayName: "Policy Effect"
+        description: "The effect to apply when the policy conditions are met."
+      allowedValues:
+        - "Deny"
+        - "Audit"
+      defaultValue: "Deny"
+  policyRuleJson: |
+    {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Compute/virtualMachines"
+          },
+          {
+            "anyOf": [
+              {
+                "not": {
+                  "field": "Microsoft.Compute/virtualMachines/sku.name",
+                  "in": "[parameters('allowedSkus')]"
+                }
+              },
+              {
+                "not": {
+                  "field": "location",
+                  "in": "[parameters('allowedLocations')]"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effectType')]"
+      }
+    }
+  subscriptionId: "4beecc09-f7ae-4469-a36e-dc5106856da2"

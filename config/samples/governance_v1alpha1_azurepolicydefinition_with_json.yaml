@@ -1,0 +1,33 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyDefinition
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: require-tag-on-resources
+spec:
+  displayName: "Require a tag on resources created by vimal"
+  description: "Enforces the existence of a required tag on all resources."
+  policyType: Custom
+  mode: Indexed
+  metadata:
+    category: "Tags"
+    version: "1.0.0"
+  version: "1.0.0"
+  parameters:
+    tagName:
+      type: String
+      metadata:
+        displayName: "Tag Name"
+        description: "Name of the tag that must exist on the resource."
+  policyRuleJson: |
+    {
+      "if": {
+        "field": "[concat('tags[', parameters('tagName'), ']')]",
+        "exists": "false"
+      },
+      "then": {
+        "effect": "deny"
+      }
+    }
+  subscriptionId: "4beecc09-f7ae-4469-a36e-dc5106856da2"

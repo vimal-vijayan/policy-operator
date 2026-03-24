@@ -1,0 +1,53 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyDefinition
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: enforce-storage-security-baseline
+spec:
+  displayName: "Enforce Storage Account Security Baseline"
+  description: "Denies storage accounts that do not meet the security baseline: HTTPS-only traffic, minimum TLS 1.2, no public blob access, and restricted to approved locations."
+  policyType: Custom
+  mode: Indexed
+  metadata:
+    category: "Storage"
+  version: "1.0.0"
+  parameters:
+    allowedLocations:
+      type: Array
+      metadata:
+        displayName: "Allowed Locations"
+        description: "List of Azure regions where storage accounts may be deployed."
+      defaultValue:
+        - "westeurope"
+        - "northeurope"
+    effectType:
+      type: String
+      metadata:
+        displayName: "Policy Effect"
+        description: "The effect to apply when the policy conditions are met."
+      allowedValues:
+        - "Deny"
+        - "Audit"
+      defaultValue: "Deny"
+  policyRule:
+    if:
+      allOf:
+        - field: "type"
+          equals: "Microsoft.Storage/storageAccounts"
+        - anyOf:
+            - field: "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly"
+              notEquals: true
+            - field: "Microsoft.Storage/storageAccounts/minimumTlsVersion"
+              notIn:
+                - "TLS1_2"
+                - "TLS1_3"
+            - field: "Microsoft.Storage/storageAccounts/allowBlobPublicAccess"
+              equals: true
+            - not:
+                field: "location"
+                in: "[parameters('allowedLocations')]"
+    then:
+      effect: "[parameters('effectType')]"
+  subscriptionId: "4beecc09-f7ae-4469-a36e-dc5106856da2"
