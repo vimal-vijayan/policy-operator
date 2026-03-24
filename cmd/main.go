@@ -40,6 +40,7 @@ import (
 	armclient "github.com/vimal-vijayan/azure-policy-operator/internal/client"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/controller"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policyassignment"
+	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policybundle"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policydefinition"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policyexemption"
 	// +kubebuilder:scaffold:imports
@@ -189,6 +190,17 @@ func main() {
 		Service: exemptionSvc,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "AzurePolicyExemption")
+		os.Exit(1)
+	}
+
+	initiativeSvc := policybundle.NewService(armClient)
+
+	if err = (&controller.AzurePolicyInitiativeReconciler{
+		Client:  mgr.GetClient(),
+		Scheme:  mgr.GetScheme(),
+		Service: initiativeSvc,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "AzurePolicyInitiative")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

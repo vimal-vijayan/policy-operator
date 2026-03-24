@@ -11,4 +11,7 @@ type API interface {
 	CreateOrUpdate(ctx context.Context, policySetDefinitionName string, parameters armpolicy.SetDefinition, options *armpolicy.SetDefinitionsClientCreateOrUpdateOptions) (armpolicy.SetDefinitionsClientCreateOrUpdateResponse, error)
 	Delete(ctx context.Context, policySetDefinitionName string, options *armpolicy.SetDefinitionsClientDeleteOptions) (armpolicy.SetDefinitionsClientDeleteResponse, error)
 	Get(ctx context.Context, policySetDefinitionName string, options *armpolicy.SetDefinitionsClientGetOptions) (armpolicy.SetDefinitionsClientGetResponse, error)
+	CreateOrUpdateAtManagementGroup(ctx context.Context, policySetDefinitionName string, managementGroupID string, parameters armpolicy.SetDefinition, options *armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupOptions) (armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse, error)
+	DeleteAtManagementGroup(ctx context.Context, policySetDefinitionName string, managementGroupID string, options *armpolicy.SetDefinitionsClientDeleteAtManagementGroupOptions) (armpolicy.SetDefinitionsClientDeleteAtManagementGroupResponse, error)
+	GetAtManagementGroup(ctx context.Context, policySetDefinitionName string, managementGroupID string, options *armpolicy.SetDefinitionsClientGetAtManagementGroupOptions) (armpolicy.SetDefinitionsClientGetAtManagementGroupResponse, error)
 }
