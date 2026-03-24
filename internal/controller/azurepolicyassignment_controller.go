@@ -18,15 +18,19 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policyassignment"
@@ -44,6 +48,7 @@ type AzurePolicyAssignmentReconciler struct {
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyassignments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyassignments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyassignments/finalizers,verbs=update
+// +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicydefinitions,verbs=get;list;watch
 
 func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
@@ -85,8 +90,25 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		return ctrl.Result{}, nil
 	}
 
+	// Resolve policyDefinitionId — either directly from spec or via policyDefinitionRef
+	policyDefinitionID := assignment.Spec.PolicyDefinitionID
+	if assignment.Spec.PolicyDefinitionRef != "" {
+		policyDef := &governancev1alpha1.AzurePolicyDefinition{}
+		if err := r.Get(ctx, types.NamespacedName{Name: assignment.Spec.PolicyDefinitionRef, Namespace: req.Namespace}, policyDef); err != nil {
+			r.setCondition(assignment, "Ready", metav1.ConditionFalse, "RefNotFound", fmt.Sprintf("AzurePolicyDefinition %q not found: %v", assignment.Spec.PolicyDefinitionRef, err))
+			_ = r.Status().Update(ctx, assignment)
+			return ctrl.Result{}, err
+		}
+		if policyDef.Status.PolicyDefinitionID == "" {
+			r.setCondition(assignment, "Ready", metav1.ConditionFalse, "RefNotReady", fmt.Sprintf("AzurePolicyDefinition %q has no policyDefinitionId in status yet", assignment.Spec.PolicyDefinitionRef))
+			_ = r.Status().Update(ctx, assignment)
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+		}
+		policyDefinitionID = policyDef.Status.PolicyDefinitionID
+	}
+
 	// Create or update the Azure Policy Assignment
-	assignmentID, err := r.Service.CreateOrUpdate(ctx, assignment)
+	assignmentID, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy assignment")
 		r.setCondition(assignment, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
@@ -119,5 +141,27 @@ func (r *AzurePolicyAssignmentReconciler) setCondition(assignment *governancev1a
 func (r *AzurePolicyAssignmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&governancev1alpha1.AzurePolicyAssignment{}).
+		Watches(
+			&governancev1alpha1.AzurePolicyDefinition{},
+			handler.EnqueueRequestsFromMapFunc(r.assignmentsReferencingDefinition),
+		).
 		Complete(r)
+}
+
+// assignmentsReferencingDefinition maps an AzurePolicyDefinition event to all
+// AzurePolicyAssignments that reference it via policyDefinitionRef.
+func (r *AzurePolicyAssignmentReconciler) assignmentsReferencingDefinition(ctx context.Context, obj client.Object) []reconcile.Request {
+	list := &governancev1alpha1.AzurePolicyAssignmentList{}
+	if err := r.List(ctx, list, client.InNamespace(obj.GetNamespace())); err != nil {
+		return nil
+	}
+	var requests []reconcile.Request
+	for _, a := range list.Items {
+		if a.Spec.PolicyDefinitionRef == obj.GetName() {
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{Name: a.Name, Namespace: a.Namespace},
+			})
+		}
+	}
+	return requests
 }

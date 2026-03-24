@@ -8,14 +8,13 @@ metadata:
 spec:
   displayName: "Require Cost Center tag on Resource Groups"
   description: "Enforces that all resource groups have a CostCenter tag."
-  policyDefinitionId: "/providers/Microsoft.Authorization/policyDefinitions/1e30110a-5ceb-460c-a204-c1c3969c6d62"
+  policyDefinitionRef: require-tag-on-resources
   scope: "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2"
   enforcementMode: Default
   notScopes:
     - "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2/resourceGroups/az-104-demo"
   parameters:
     tagName: "CostCenter"
-    tagValue: "Finance"
   metadata:
     assignedBy: "platform-team"
     category: "Tags"

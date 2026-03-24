@@ -102,8 +102,15 @@ spec:
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               policyDefinitionId:
-                description: PolicyDefinitionID is the Azure resource ID of the policy
-                  definition or initiative to assign.
+                description: |-
+                  PolicyDefinitionID is the Azure resource ID of the policy definition or initiative to assign.
+                  Mutually exclusive with policyDefinitionRef.
+                type: string
+              policyDefinitionRef:
+                description: |-
+                  PolicyDefinitionRef is the name of an AzurePolicyDefinition CR in the same namespace.
+                  The operator resolves this reference and uses the policyDefinitionId from its status.
+                  Mutually exclusive with policyDefinitionId.
                 type: string
               scope:
                 description: |-
@@ -113,9 +120,14 @@ spec:
                 type: string
             required:
             - displayName
-            - policyDefinitionId
             - scope
             type: object
+            x-kubernetes-validations:
+            - message: Exactly one of policyDefinitionRef or policyDefinitionId must
+                be specified.
+              rule: (has(self.policyDefinitionRef) && self.policyDefinitionRef !=
+                "") != (has(self.policyDefinitionId) && self.policyDefinitionId !=
+                "")
           status:
             description: AzurePolicyAssignmentStatus defines the observed state of
               AzurePolicyAssignment

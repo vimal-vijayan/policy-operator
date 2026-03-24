@@ -23,7 +23,7 @@ func NewService(factory *client.ARMClient) *Service {
 	}
 }
 
-func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment) (string, error) {
+func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, error) {
 	logger := log.FromContext(ctx)
 
 	// Use stable name from existing assignment ID, or generate a new UUID
@@ -40,7 +40,7 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 	params := armpolicy.Assignment{
 		Properties: &armpolicy.AssignmentProperties{
 			DisplayName:        to.Ptr(spec.DisplayName),
-			PolicyDefinitionID: to.Ptr(spec.PolicyDefinitionID),
+			PolicyDefinitionID: to.Ptr(policyDefinitionID),
 		},
 	}
 

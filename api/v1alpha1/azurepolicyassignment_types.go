@@ -22,6 +22,7 @@ import (
 )
 
 // AzurePolicyAssignmentSpec defines the desired state of AzurePolicyAssignment
+// +kubebuilder:validation:XValidation:rule="(has(self.policyDefinitionRef) && self.policyDefinitionRef != \"\") != (has(self.policyDefinitionId) && self.policyDefinitionId != \"\")",message="Exactly one of policyDefinitionRef or policyDefinitionId must be specified."
 type AzurePolicyAssignmentSpec struct {
 	// DisplayName is the display name of the policy assignment.
 	// +kubebuilder:validation:Required
@@ -31,9 +32,16 @@ type AzurePolicyAssignmentSpec struct {
 	// +optional
 	Description string `json:"description,omitempty"`
 
+	// PolicyDefinitionRef is the name of an AzurePolicyDefinition CR in the same namespace.
+	// The operator resolves this reference and uses the policyDefinitionId from its status.
+	// Mutually exclusive with policyDefinitionId.
+	// +optional
+	PolicyDefinitionRef string `json:"policyDefinitionRef,omitempty"`
+
 	// PolicyDefinitionID is the Azure resource ID of the policy definition or initiative to assign.
-	// +kubebuilder:validation:Required
-	PolicyDefinitionID string `json:"policyDefinitionId"`
+	// Mutually exclusive with policyDefinitionRef.
+	// +optional
+	PolicyDefinitionID string `json:"policyDefinitionId,omitempty"`
 
 	// Scope is the Azure resource scope at which the assignment applies.
 	// Examples: /subscriptions/{subId}, /subscriptions/{subId}/resourceGroups/{rg},
