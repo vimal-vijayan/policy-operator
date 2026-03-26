@@ -24,6 +24,13 @@ spec:
       value: ["eastus", "westus"]
   metadata:
     category: Governance
+  identity:
+    type: "SystemAssigned"
+    location: "westeurope"
+    permissions:
+      - role: "Contributor" -- OPTIONAL --
+        roleDefinitionId: "/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/{roleDefinitionId}" -- OPTIONAL --
+        scope: "/subscriptions/{subscriptionId}"
   exemptions:
   - displayName: "Example Exemption"
     description: "This is an example exemption for the policy assignment."
@@ -48,7 +55,9 @@ spec:
 - an assignment policy exemption should be added to the CRD as an optional attribute, allowing users to specify any exemptions that should be applied to the policy assignment. The operator should handle the logic for creating, updating, and deleting these exemptions in Azure as part of the overall management of the policy assignment. This feature provides users with greater flexibility in how they apply policies and manage exceptions within their Azure environment.
 - the operator should add a exemptionId to the status of the CRD for each exemption created in Azure, allowing for better tracking and management of exemptions associated with the policy assignment. This information can be used to update or delete exemptions as needed when changes are made to the policy assignment or when the CRD is deleted.
 - the operator is already managing the exemption CRD using the /internal/services/policyexemption/ service, reuse the functions in that service to manage the exemptions for the policy assignment, ensuring that the logic for handling exemptions is centralized and consistent across the operator.
-
+- for the identity configuration, the permissions field is optional and should only be included if the user wants to specify custom permissions for the managed identity. If permissions are not provided ignore
+- for the identity configuration, if the permissions field is included, the operator should validate the role if the role is provided (use the go sdk to get the role definition id), if the roleDefinitionId is provided, no validation is needed as the user is providing the full role definition id, either role or roleDefinitionId should be provided if permissions are included, if neither is provided, the operator should return an error indicating that at least one of these fields must be specified when permissions are included. This validation ensures that the operator has the necessary information to correctly configure the permissions for the managed identity associated with the policy assignment.
+- api doc: https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2#example-RoleAssignmentsClient.Create-CreateRoleAssignmentForResource
 
 ### API
 - path: internal/assignments/

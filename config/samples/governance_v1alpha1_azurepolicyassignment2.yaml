@@ -16,6 +16,11 @@ spec:
   identity:
     type: "SystemAssigned"
     location: "westeurope"
+    permissions:
+      - role: "Contributor"
+        scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+      - roleDefinitionId: "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7" # Reader
+        scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
   metadata:
     assignedBy: "platform-team"
     category: "Compute"

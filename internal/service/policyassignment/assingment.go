@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy"
 	"github.com/google/uuid"
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
@@ -121,7 +122,11 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 	}
 
 	assignmentID := *resp.Assignment.ID
-	miPrinicpalID := *resp.Assignment.Identity.PrincipalID
+
+	miPrincipalID := ""
+	if resp.Assignment.Identity != nil && resp.Assignment.Identity.PrincipalID != nil {
+		miPrincipalID = *resp.Assignment.Identity.PrincipalID
+	}
 
 	assignedLocation := ""
 	if resp.Assignment.Location != nil {
@@ -130,10 +135,87 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 
 	exemptionStatuses, err := s.reconcileExemptions(ctx, assignment, assignmentID)
 	if err != nil {
-		return assignmentID, assignedLocation, miPrinicpalID, nil, err
+		return assignmentID, assignedLocation, miPrincipalID, nil, err
 	}
 
-	return assignmentID, assignedLocation, miPrinicpalID, exemptionStatuses, nil
+	if err := s.reconcileRoleAssignments(ctx, assignment, assignmentID, miPrincipalID); err != nil {
+		return assignmentID, assignedLocation, miPrincipalID, exemptionStatuses, err
+	}
+
+	return assignmentID, assignedLocation, miPrincipalID, exemptionStatuses, nil
+}
+
+// reconcileRoleAssignments creates role assignments for the managed identity based on spec permissions.
+// It is a no-op if the identity is nil, has no permissions, or no principal ID was returned.
+func (s *Service) reconcileRoleAssignments(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, assignmentID, principalID string) error {
+	logger := log.FromContext(ctx)
+
+	spec := assignment.Spec
+	if spec.Identity == nil || len(spec.Identity.Permissions) == 0 || principalID == "" {
+		return nil
+	}
+
+	// Deterministic namespace UUID for generating stable role assignment names.
+	raNamespace := uuid.MustParse("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+
+	for _, perm := range spec.Identity.Permissions {
+		roleDefinitionID := perm.RoleDefinitionID
+
+		if roleDefinitionID == "" {
+			if perm.Role == "" {
+				return fmt.Errorf("identity permission at scope %q: either role or roleDefinitionId must be specified", perm.Scope)
+			}
+			resolved, err := s.resolveRoleDefinitionID(ctx, perm.Scope, perm.Role)
+			if err != nil {
+				return fmt.Errorf("resolving role %q at scope %q: %w", perm.Role, perm.Scope, err)
+			}
+			roleDefinitionID = resolved
+		}
+
+		// Stable name: deterministic UUID derived from assignment ID + scope + role definition ID.
+		raName := uuid.NewSHA1(raNamespace, []byte(assignmentID+perm.Scope+roleDefinitionID)).String()
+
+		logger.Info("Creating role assignment for managed identity",
+			"principalId", principalID,
+			"roleDefinitionId", roleDefinitionID,
+			"scope", perm.Scope,
+			"roleAssignmentName", raName,
+		)
+
+		if _, err := s.factory.RoleAssignments.Create(ctx, perm.Scope, raName, armauthorization.RoleAssignmentCreateParameters{
+			Properties: &armauthorization.RoleAssignmentProperties{
+				PrincipalID:      to.Ptr(principalID),
+				RoleDefinitionID: to.Ptr(roleDefinitionID),
+				PrincipalType:    to.Ptr(armauthorization.PrincipalTypeServicePrincipal),
+			},
+		}, nil); err != nil {
+			return fmt.Errorf("creating role assignment at scope %q: %w", perm.Scope, err)
+		}
+	}
+
+	return nil
+}
+
+// resolveRoleDefinitionID looks up the Azure role definition ID for a given role name at the provided scope.
+func (s *Service) resolveRoleDefinitionID(ctx context.Context, scope, roleName string) (string, error) {
+	filter := fmt.Sprintf("roleName eq '%s'", roleName)
+	pager := s.factory.RoleDefinitions.NewListPager(scope, &armauthorization.RoleDefinitionsClientListOptions{
+		Filter: to.Ptr(filter),
+	})
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return "", err
+		}
+		for _, rd := range page.Value {
+			if rd.ID != nil {
+				return *rd.ID, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("role %q not found at scope %q", roleName, scope)
 }
 
 // reconcileExemptions creates/updates exemptions present in the spec and deletes ones removed from it.
@@ -194,14 +276,34 @@ func (s *Service) reconcileExemptions(ctx context.Context, assignment *governanc
 	return results, nil
 }
 
-func (s *Service) Delete(ctx context.Context, scope string, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus) error {
+func (s *Service) Delete(ctx context.Context, scope string, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error {
 	logger := log.FromContext(ctx)
 
-	// Delete all inline exemptions before removing the assignment
+	// Delete all inline exemptions before removing the assignment.
 	for _, e := range exemptions {
 		logger.Info("Deleting inline exemption", "displayName", e.DisplayName, "exemptionId", e.ExemptionID)
 		if err := s.exemptionService.Delete(ctx, e.Scope, e.ExemptionID); err != nil {
 			return fmt.Errorf("deleting exemption %q: %w", e.DisplayName, err)
+		}
+	}
+
+	// Delete role assignments created for the managed identity, re-deriving names from spec.
+	if identity != nil && len(identity.Permissions) > 0 {
+		raNamespace := uuid.MustParse("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+		for _, perm := range identity.Permissions {
+			roleDefinitionID := perm.RoleDefinitionID
+			if roleDefinitionID == "" {
+				resolved, err := s.resolveRoleDefinitionID(ctx, perm.Scope, perm.Role)
+				if err != nil {
+					return fmt.Errorf("resolving role %q at scope %q for deletion: %w", perm.Role, perm.Scope, err)
+				}
+				roleDefinitionID = resolved
+			}
+			raName := uuid.NewSHA1(raNamespace, []byte(assignmentID+perm.Scope+roleDefinitionID)).String()
+			logger.Info("Deleting role assignment", "scope", perm.Scope, "roleAssignmentName", raName)
+			if _, err := s.factory.RoleAssignments.Delete(ctx, perm.Scope, raName, nil); err != nil {
+				return fmt.Errorf("deleting role assignment at scope %q: %w", perm.Scope, err)
+			}
 		}
 	}
 

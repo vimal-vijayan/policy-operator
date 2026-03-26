@@ -106,6 +106,26 @@ type AssignmentExemptionSpec struct {
 	ExpiresOn string `json:"expiresOn,omitempty"`
 }
 
+// IdentityPermission defines a role assignment to grant to the managed identity.
+// Either Role or RoleDefinitionID must be specified.
+// +kubebuilder:validation:XValidation:rule="(has(self.role) && self.role != \"\") || (has(self.roleDefinitionId) && self.roleDefinitionId != \"\")",message="Either role or roleDefinitionId must be specified in a permission entry."
+type IdentityPermission struct {
+	// Role is the built-in Azure role name (e.g. "Contributor", "Reader").
+	// The operator will resolve this to a roleDefinitionId via the Azure API.
+	// Mutually exclusive with RoleDefinitionID.
+	// +optional
+	Role string `json:"role,omitempty"`
+
+	// RoleDefinitionID is the full Azure resource ID of the role definition.
+	// Mutually exclusive with Role.
+	// +optional
+	RoleDefinitionID string `json:"roleDefinitionId,omitempty"`
+
+	// Scope is the Azure resource scope at which the role assignment is created.
+	// +kubebuilder:validation:Required
+	Scope string `json:"scope"`
+}
+
 // AssignmentIdentity defines the managed identity for a policy assignment.
 type AssignmentIdentity struct {
 	// Type is the identity type.
@@ -123,6 +143,10 @@ type AssignmentIdentity struct {
 	// +kubebuilder:validation:Enum=eastus;westus;westus2;eastus2;northeurope;westeurope;southeastasia;eastasia;australiaeast;australiasoutheast;brazilsouth;canadacentral;canadaeast;centralindia;southindia;westindia;japaneast;japanwest;koreacentral;koreasouth;southafricanorth;uaenorth;uksouth;ukwest;centralus;southcentralus;northcentralus;westcentralus
 	// +kubebuilder:default=westeurope
 	Location string `json:"location,omitempty"`
+
+	// Permissions is an optional list of role assignments to create for the managed identity.
+	// +optional
+	Permissions []IdentityPermission `json:"permissions,omitempty"`
 }
 
 // AssignmentExemptionStatus tracks an inline exemption created in Azure for a policy assignment.

@@ -64,7 +64,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 			logger.Info("Running finalizer cleanup", "name", assignment.Name)
 
 			if assignment.Status.AssignmentID != "" {
-				if err := r.Service.Delete(ctx, assignment.Spec.Scope, assignment.Status.AssignmentID, assignment.Status.Exemptions); err != nil {
+				if err := r.Service.Delete(ctx, assignment.Spec.Scope, assignment.Status.AssignmentID, assignment.Status.Exemptions, assignment.Spec.Identity); err != nil {
 					r.setCondition(assignment, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
 						logger.Error(statusErr, "failed to update status")
@@ -107,7 +107,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		policyDefinitionID = policyDef.Status.PolicyDefinitionID
 	}
 
-	// Create or update the Azure Policy Assignment (and its inline exemptions)
+	// Create or update the Azure Policy Assignment (and its inline exemptions and role assignments)
 	assignmentID, assignedLocation, miPrincipalID, exemptionStatuses, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy assignment")

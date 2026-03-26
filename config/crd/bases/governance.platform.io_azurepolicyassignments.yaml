@@ -138,6 +138,38 @@ spec:
                     - northcentralus
                     - westcentralus
                     type: string
+                  permissions:
+                    description: Permissions is an optional list of role assignments
+                      to create for the managed identity.
+                    items:
+                      description: |-
+                        IdentityPermission defines a role assignment to grant to the managed identity.
+                        Either Role or RoleDefinitionID must be specified.
+                      properties:
+                        role:
+                          description: |-
+                            Role is the built-in Azure role name (e.g. "Contributor", "Reader").
+                            The operator will resolve this to a roleDefinitionId via the Azure API.
+                            Mutually exclusive with RoleDefinitionID.
+                          type: string
+                        roleDefinitionId:
+                          description: |-
+                            RoleDefinitionID is the full Azure resource ID of the role definition.
+                            Mutually exclusive with Role.
+                          type: string
+                        scope:
+                          description: Scope is the Azure resource scope at which
+                            the role assignment is created.
+                          type: string
+                      required:
+                      - scope
+                      type: object
+                      x-kubernetes-validations:
+                      - message: Either role or roleDefinitionId must be specified
+                          in a permission entry.
+                        rule: (has(self.role) && self.role != "") || (has(self.roleDefinitionId)
+                          && self.roleDefinitionId != "")
+                    type: array
                   type:
                     default: None
                     description: Type is the identity type.

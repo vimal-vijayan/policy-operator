@@ -3,6 +3,7 @@ package client
 
 import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/assignments"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/exemptions"
@@ -34,11 +35,24 @@ func New(subscriptionID string) (*ARMClient, error) {
 		return nil, err
 	}
 
+	roleAssignmentsClient, err := armauthorization.NewRoleAssignmentsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	roleDefinitionsClient, err := armauthorization.NewRoleDefinitionsClient(cred, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ARMClient{
-		credential:  cred,
-		Definitions: definitionsClient,
-		Initiatives: initiativesClient,
-		Assignments: assignments.NewClient(assignmentsClient),
-		Exemptions:  exemptions.NewClient(exemptionsClient),
+		credential:      cred,
+		SubscriptionID:  subscriptionID,
+		Definitions:     definitionsClient,
+		Initiatives:     initiativesClient,
+		Assignments:     assignments.NewClient(assignmentsClient),
+		Exemptions:      exemptions.NewClient(exemptionsClient),
+		RoleAssignments: roleAssignmentsClient,
+		RoleDefinitions: roleDefinitionsClient,
 	}, nil
 }
