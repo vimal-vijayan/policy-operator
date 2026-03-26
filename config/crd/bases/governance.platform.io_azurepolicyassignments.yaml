@@ -159,6 +159,10 @@ spec:
                   a raw JSON object.
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              nonComplianceMessage:
+                description: NonComplianceMessage is the message to display when the
+                  policy assignment is not compliant.
+                type: string
               notScopes:
                 description: NotScopes is a list of resource scopes excluded from
                   the assignment.

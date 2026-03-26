@@ -19,6 +19,7 @@ spec:
   metadata:
     assignedBy: "platform-team"
     category: "Compute"
+  nonComplianceMessage: "This policy assignment is not compliant."
   exemptions:
     - displayName: "Exempt backstage dev Resource Group"
       description: "Resource group for backstage dev environment is exempt from the policy requirement."

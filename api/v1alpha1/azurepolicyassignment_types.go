@@ -73,6 +73,10 @@ type AzurePolicyAssignmentSpec struct {
 	// +optional
 	Identity *AssignmentIdentity `json:"identity,omitempty"`
 
+	// NonComplianceMessage is the message to display when the policy assignment is not compliant.
+	// +optional
+	NonComplianceMessage string `json:"nonComplianceMessage,omitempty"`
+
 	// Exemptions is an optional list of inline exemptions to create for this assignment.
 	// +optional
 	Exemptions []AssignmentExemptionSpec `json:"exemptions,omitempty"`

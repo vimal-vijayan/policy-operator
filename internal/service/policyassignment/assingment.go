@@ -64,6 +64,14 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 		params.Properties.EnforcementMode = to.Ptr(armpolicy.EnforcementMode(spec.EnforcementMode))
 	}
 
+	if spec.NonComplianceMessage != "" {
+		params.Properties.NonComplianceMessages = []*armpolicy.NonComplianceMessage{
+			{
+				Message: to.Ptr(spec.NonComplianceMessage),
+			},
+		}
+	}
+
 	if spec.Parameters != nil {
 		var paramValues map[string]*armpolicy.ParameterValuesValue
 		if err := json.Unmarshal(spec.Parameters.Raw, &paramValues); err == nil {
@@ -87,7 +95,7 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 		}
 	}
 
-	if spec.Identity != nil {
+	if spec.Identity != nil && spec.Identity.Type != "None" {
 		logger.Info("Configuring managed identity for policy assignment", "type", spec.Identity.Type, "location", spec.Identity.Location, "userAssignedIdentityId", spec.Identity.UserAssignedIdentityID)
 		params.Identity = &armpolicy.Identity{
 			Type: to.Ptr(armpolicy.ResourceIdentityType(spec.Identity.Type)),
