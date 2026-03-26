@@ -18,3 +18,9 @@ spec:
   metadata:
     assignedBy: "platform-team"
     category: "Tags"
+  exemptions:
+    - displayName: "Exempt Dev Resource Groups"
+      description: "Resource groups in the dev environment are exempt from the CostCenter tag requirement."
+      exemptionCategory: Waiver
+      expiresOn: "2025-12-31T23:59:59Z"
+      scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/az-104-dev-rg"

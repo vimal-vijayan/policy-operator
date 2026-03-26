@@ -72,6 +72,34 @@ type AzurePolicyAssignmentSpec struct {
 	// Required for policies with deployIfNotExists or modify effects.
 	// +optional
 	Identity *AssignmentIdentity `json:"identity,omitempty"`
+
+	// Exemptions is an optional list of inline exemptions to create for this assignment.
+	// +optional
+	Exemptions []AssignmentExemptionSpec `json:"exemptions,omitempty"`
+}
+
+// AssignmentExemptionSpec defines an inline exemption scoped to a policy assignment.
+type AssignmentExemptionSpec struct {
+	// DisplayName is the display name of the exemption.
+	// +kubebuilder:validation:Required
+	DisplayName string `json:"displayName"`
+
+	// Description is a human-readable description of the exemption.
+	// +optional
+	Description string `json:"description,omitempty"`
+
+	// Scope is the Azure resource scope at which the exemption applies.
+	// +kubebuilder:validation:Required
+	Scope string `json:"scope"`
+
+	// ExemptionCategory is the category of the exemption.
+	// +kubebuilder:validation:Enum=Waiver;Mitigated
+	// +kubebuilder:default=Waiver
+	ExemptionCategory string `json:"exemptionCategory,omitempty"`
+
+	// ExpiresOn is the expiration date and time (UTC ISO 8601) of the exemption.
+	// +optional
+	ExpiresOn string `json:"expiresOn,omitempty"`
 }
 
 // AssignmentIdentity defines the managed identity for a policy assignment.
@@ -87,11 +115,27 @@ type AssignmentIdentity struct {
 	UserAssignedIdentityID string `json:"userAssignedIdentityId,omitempty"`
 }
 
+// AssignmentExemptionStatus tracks an inline exemption created in Azure for a policy assignment.
+type AssignmentExemptionStatus struct {
+	// DisplayName matches the exemption spec entry.
+	DisplayName string `json:"displayName"`
+
+	// ExemptionID is the Azure resource ID of the created exemption.
+	ExemptionID string `json:"exemptionId"`
+
+	// Scope is the Azure resource scope of the exemption, stored for deletion.
+	Scope string `json:"scope"`
+}
+
 // AzurePolicyAssignmentStatus defines the observed state of AzurePolicyAssignment
 type AzurePolicyAssignmentStatus struct {
 	// AssignmentID is the Azure resource ID of the created policy assignment.
 	// +optional
 	AssignmentID string `json:"assignmentId,omitempty"`
+
+	// Exemptions tracks the Azure resource IDs of inline exemptions created for this assignment.
+	// +optional
+	Exemptions []AssignmentExemptionStatus `json:"exemptions,omitempty"`
 
 	// Conditions represent the latest available observations of the resource state.
 	// +optional

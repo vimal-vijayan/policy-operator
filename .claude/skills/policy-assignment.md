@@ -17,6 +17,8 @@ spec:
   policyDefinitionRef: example-policy-definition
   policyDefinitionId: "/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}"
   scope: "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}"
+  notScopes:
+    - "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/{vmName}"
   parameters:
     allowedLocations:
       value: ["eastus", "westus"]
@@ -43,7 +45,7 @@ spec:
 - DeletePolicyAssignment: Remove an Azure Policy Assignment, ensuring that it is deleted from both the Kubernetes CRD and the Azure API.
 - policyDefinitionRef in the CRD should be used to reference the AzurePolicyDefinition CRD, allowing for a clear link between the policy assignment and its corresponding policy definition. The operator should resolve this reference to retrieve the necessary information about the policy definition and use the policyDefinitionId from the status of the AzurePolicyDefinition CRD when creating or updating the policy assignment in Azure. This design choice promotes a clear separation of concerns and allows for better management of policy definitions and their assignments within the Kubernetes environment.
 - either policyDefinitionRef or policyDefinitionId should be required in the CRD, but not both. This allows for flexibility in how users define their policy assignments while ensuring that the operator can correctly resolve the policy definition information when interacting with the Azure API. If policyDefinitionRef is provided, the operator should resolve it to get the policyDefinitionId from the status of the referenced AzurePolicyDefinition CRD. If policyDefinitionId is provided directly, the operator can use it without needing to resolve a reference. This design choice simplifies the user experience while maintaining the necessary functionality for managing policy assignments effectively.
-- an assignment policy exemption should be added to the CRD, allowing users to specify any exemptions that should be applied to the policy assignment. The operator should handle the logic for creating, updating, and deleting these exemptions in Azure as part of the overall management of the policy assignment. This feature provides users with greater flexibility in how they apply policies and manage exceptions within their Azure environment.
+- an assignment policy exemption should be added to the CRD as an optional attribute, allowing users to specify any exemptions that should be applied to the policy assignment. The operator should handle the logic for creating, updating, and deleting these exemptions in Azure as part of the overall management of the policy assignment. This feature provides users with greater flexibility in how they apply policies and manage exceptions within their Azure environment.
 - the operator should add a exemptionId to the status of the CRD for each exemption created in Azure, allowing for better tracking and management of exemptions associated with the policy assignment. This information can be used to update or delete exemptions as needed when changes are made to the policy assignment or when the CRD is deleted.
 - the operator is already managing the exemption CRD using the /internal/services/policyexemption/ service, reuse the functions in that service to manage the exemptions for the policy assignment, ensuring that the logic for handling exemptions is centralized and consistent across the operator.
 

@@ -171,7 +171,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	assignmentSvc := policyassignment.NewService(armClient)
+	exemptionSvc := policyexemption.NewService(armClient)
+
+	assignmentSvc := policyassignment.NewService(armClient, exemptionSvc)
 
 	if err = (&controller.AzurePolicyAssignmentReconciler{
 		Client:  mgr.GetClient(),
@@ -181,8 +183,6 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "AzurePolicyAssignment")
 		os.Exit(1)
 	}
-
-	exemptionSvc := policyexemption.NewService(armClient)
 
 	if err = (&controller.AzurePolicyExemptionReconciler{
 		Client:  mgr.GetClient(),

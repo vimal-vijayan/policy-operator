@@ -34,7 +34,6 @@ import (
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policyassignment"
-	// "github.com/vimal-vijayan/azure-policy-operator/internal/service/policyexemption"
 )
 
 const azurePolicyAssignmentFinalizer = "governance.platform.io/azurepolicyassignment-finalizer"
@@ -65,7 +64,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 			logger.Info("Running finalizer cleanup", "name", assignment.Name)
 
 			if assignment.Status.AssignmentID != "" {
-				if err := r.Service.Delete(ctx, assignment.Spec.Scope, assignment.Status.AssignmentID); err != nil {
+				if err := r.Service.Delete(ctx, assignment.Spec.Scope, assignment.Status.AssignmentID, assignment.Status.Exemptions); err != nil {
 					r.setCondition(assignment, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
 						logger.Error(statusErr, "failed to update status")
@@ -108,8 +107,8 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		policyDefinitionID = policyDef.Status.PolicyDefinitionID
 	}
 
-	// Create or update the Azure Policy Assignment
-	assignmentID, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
+	// Create or update the Azure Policy Assignment (and its inline exemptions)
+	assignmentID, exemptionStatuses, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy assignment")
 		r.setCondition(assignment, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
@@ -120,6 +119,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	assignment.Status.AssignmentID = assignmentID
+	assignment.Status.Exemptions = exemptionStatuses
 	r.setCondition(assignment, "Ready", metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
 	if err := r.Status().Update(ctx, assignment); err != nil {
 		return ctrl.Result{}, err

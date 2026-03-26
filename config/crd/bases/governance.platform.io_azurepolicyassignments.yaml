@@ -64,6 +64,40 @@ spec:
                 - Default
                 - DoNotEnforce
                 type: string
+              exemptions:
+                description: Exemptions is an optional list of inline exemptions to
+                  create for this assignment.
+                items:
+                  description: AssignmentExemptionSpec defines an inline exemption
+                    scoped to a policy assignment.
+                  properties:
+                    description:
+                      description: Description is a human-readable description of
+                        the exemption.
+                      type: string
+                    displayName:
+                      description: DisplayName is the display name of the exemption.
+                      type: string
+                    exemptionCategory:
+                      default: Waiver
+                      description: ExemptionCategory is the category of the exemption.
+                      enum:
+                      - Waiver
+                      - Mitigated
+                      type: string
+                    expiresOn:
+                      description: ExpiresOn is the expiration date and time (UTC
+                        ISO 8601) of the exemption.
+                      type: string
+                    scope:
+                      description: Scope is the Azure resource scope at which the
+                        exemption applies.
+                      type: string
+                  required:
+                  - displayName
+                  - scope
+                  type: object
+                type: array
               identity:
                 description: |-
                   Identity configures the managed identity associated with the assignment.
@@ -192,6 +226,30 @@ spec:
                   - reason
                   - status
                   - type
+                  type: object
+                type: array
+              exemptions:
+                description: Exemptions tracks the Azure resource IDs of inline exemptions
+                  created for this assignment.
+                items:
+                  description: AssignmentExemptionStatus tracks an inline exemption
+                    created in Azure for a policy assignment.
+                  properties:
+                    displayName:
+                      description: DisplayName matches the exemption spec entry.
+                      type: string
+                    exemptionId:
+                      description: ExemptionID is the Azure resource ID of the created
+                        exemption.
+                      type: string
+                    scope:
+                      description: Scope is the Azure resource scope of the exemption,
+                        stored for deletion.
+                      type: string
+                  required:
+                  - displayName
+                  - exemptionId
+                  - scope
                   type: object
                 type: array
             type: object
