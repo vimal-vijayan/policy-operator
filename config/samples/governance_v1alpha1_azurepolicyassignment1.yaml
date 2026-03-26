@@ -9,10 +9,10 @@ spec:
   displayName: "Require Cost Center tag on Resource Groups"
   description: "Enforces that all resource groups have a CostCenter tag."
   policyDefinitionRef: require-tag-on-resources
-  scope: "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2"
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
   enforcementMode: Default
-  notScopes:
-    - "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2/resourceGroups/az-104-demo"
+  # notScopes:
+  #   - "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2/resourceGroups/az-104-demo"
   parameters:
     tagName: "CostCenter"
   metadata:

@@ -34,6 +34,7 @@ import (
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policyassignment"
+	// "github.com/vimal-vijayan/azure-policy-operator/internal/service/policyexemption"
 )
 
 const azurePolicyAssignmentFinalizer = "governance.platform.io/azurepolicyassignment-finalizer"
