@@ -113,6 +113,12 @@ type AssignmentIdentity struct {
 	// Required when Type is UserAssigned.
 	// +optional
 	UserAssignedIdentityID string `json:"userAssignedIdentityId,omitempty"`
+
+	// Required for SystemAssigned or UserAssigned identity types. The Azure region where the managed identity is created. This is needed to ensure the identity is created in the same region as the policy assignment, as required by Azure for policy assignments with deployIfNotExists or modify effects. If not specified, it defaults to "westeurope".
+	// Location is the Azure region where the managed identity is created.
+	// +kubebuilder:validation:Enum=eastus;westus;westus2;eastus2;northeurope;westeurope;southeastasia;eastasia;australiaeast;australiasoutheast;brazilsouth;canadacentral;canadaeast;centralindia;southindia;westindia;japaneast;japanwest;koreacentral;koreasouth;southafricanorth;uaenorth;uksouth;ukwest;centralus;southcentralus;northcentralus;westcentralus
+	// +kubebuilder:default=westeurope
+	Location string `json:"location,omitempty"`
 }
 
 // AssignmentExemptionStatus tracks an inline exemption created in Azure for a policy assignment.
@@ -132,6 +138,15 @@ type AzurePolicyAssignmentStatus struct {
 	// AssignmentID is the Azure resource ID of the created policy assignment.
 	// +optional
 	AssignmentID string `json:"assignmentId,omitempty"`
+
+	// AssignedLocation is the Azure location set on the policy assignment (required when using managed identity).
+	// Persisted so it can be preserved on updates even if identity is removed from the spec.
+	// +optional
+	AssignedLocation string `json:"assignedLocation,omitempty"`
+
+	// MIPrincipalID is the principal ID of the managed identity associated with the assignment, if any.
+	// +optional
+	MIPrincipalID string `json:"miPrincipalId,omitempty"`
 
 	// Exemptions tracks the Azure resource IDs of inline exemptions created for this assignment.
 	// +optional

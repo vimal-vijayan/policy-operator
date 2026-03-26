@@ -27,7 +27,7 @@ func NewService(factory *client.ARMClient, exemptionService *policyexemption.Ser
 	}
 }
 
-func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, []governancev1alpha1.AssignmentExemptionStatus, error) {
+func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error) {
 	logger := log.FromContext(ctx)
 
 	// Use stable name from existing assignment ID, or generate a new UUID
@@ -88,31 +88,44 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 	}
 
 	if spec.Identity != nil {
+		logger.Info("Configuring managed identity for policy assignment", "type", spec.Identity.Type, "location", spec.Identity.Location, "userAssignedIdentityId", spec.Identity.UserAssignedIdentityID)
 		params.Identity = &armpolicy.Identity{
 			Type: to.Ptr(armpolicy.ResourceIdentityType(spec.Identity.Type)),
+		}
+		if spec.Identity.Location != "" {
+			params.Location = to.Ptr(spec.Identity.Location)
 		}
 		if spec.Identity.Type == "UserAssigned" && spec.Identity.UserAssignedIdentityID != "" {
 			params.Identity.UserAssignedIdentities = map[string]*armpolicy.UserAssignedIdentitiesValue{
 				spec.Identity.UserAssignedIdentityID: {},
 			}
 		}
+	} else if assignment.Status.AssignedLocation != "" {
+		// Preserve the existing location on updates — Azure rejects changing it to empty.
+		params.Location = to.Ptr(assignment.Status.AssignedLocation)
 	}
 
 	logger.Info("Creating or updating Azure Policy Assignment", "name", assignmentName, "scope", spec.Scope)
 
 	resp, err := s.factory.Assignments.Create(ctx, spec.Scope, assignmentName, params, nil)
 	if err != nil {
-		return "", nil, err
+		return "", "", "", nil, err
 	}
 
 	assignmentID := *resp.Assignment.ID
+	miPrinicpalID := *resp.Assignment.Identity.PrincipalID
+
+	assignedLocation := ""
+	if resp.Assignment.Location != nil {
+		assignedLocation = *resp.Assignment.Location
+	}
 
 	exemptionStatuses, err := s.reconcileExemptions(ctx, assignment, assignmentID)
 	if err != nil {
-		return assignmentID, nil, err
+		return assignmentID, assignedLocation, miPrinicpalID, nil, err
 	}
 
-	return assignmentID, exemptionStatuses, nil
+	return assignmentID, assignedLocation, miPrinicpalID, exemptionStatuses, nil
 }
 
 // reconcileExemptions creates/updates exemptions present in the spec and deletes ones removed from it.

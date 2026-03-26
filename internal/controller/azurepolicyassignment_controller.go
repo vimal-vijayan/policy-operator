@@ -108,7 +108,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	// Create or update the Azure Policy Assignment (and its inline exemptions)
-	assignmentID, exemptionStatuses, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
+	assignmentID, assignedLocation, miPrincipalID, exemptionStatuses, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy assignment")
 		r.setCondition(assignment, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
@@ -119,6 +119,12 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	assignment.Status.AssignmentID = assignmentID
+	if assignedLocation != "" {
+		assignment.Status.AssignedLocation = assignedLocation
+	}
+	if miPrincipalID != "" {
+		assignment.Status.MIPrincipalID = miPrincipalID
+	}
 	assignment.Status.Exemptions = exemptionStatuses
 	r.setCondition(assignment, "Ready", metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
 	if err := r.Status().Update(ctx, assignment); err != nil {
