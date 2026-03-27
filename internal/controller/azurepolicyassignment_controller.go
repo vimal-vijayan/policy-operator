@@ -143,8 +143,12 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		}
 		return ctrl.Result{}, err
 	}
-	if !wasAssigned && assignment.Status.AssignmentID != "" && r.Recorder != nil {
-		r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentCreated", "Created policy assignment %q", assignment.Status.AssignmentID)
+	if r.Recorder != nil && assignment.Status.AssignmentID != "" {
+		if !wasAssigned {
+			r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentCreated", "Created policy assignment %q", assignment.Status.AssignmentID)
+		} else {
+			r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentUpdated", "Updated policy assignment %q", assignment.Status.AssignmentID)
+		}
 	}
 
 	r.setCondition(assignment, "Ready", metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
