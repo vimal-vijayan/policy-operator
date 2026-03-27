@@ -245,7 +245,7 @@ func (s *Service) reconcileExemptions(ctx context.Context, assignment *governanc
 	}
 
 	desired := make(map[string]bool)
-	var results []governancev1alpha1.AssignmentExemptionStatus
+	results := make([]governancev1alpha1.AssignmentExemptionStatus, 0)
 
 	for _, exemptionSpec := range assignment.Spec.Exemptions {
 		desired[exemptionSpec.DisplayName] = true
