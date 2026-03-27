@@ -77,9 +77,41 @@ type AzurePolicyAssignmentSpec struct {
 	// +optional
 	NonComplianceMessages *AssignmentNonComplianceMessages `json:"nonComplianceMessages,omitempty"`
 
+	// ResourceSelectors is the resource selector list to filter policies by resource properties.
+	// +optional
+	ResourceSelectors []ResourceSelectorSpec `json:"resourceSelectors,omitempty"`
+
 	// Exemptions is an optional list of inline exemptions to create for this assignment.
 	// +optional
 	Exemptions []AssignmentExemptionSpec `json:"exemptions,omitempty"`
+}
+
+// SelectorSpec defines a single selector expression for resource filtering.
+type SelectorSpec struct {
+	// Property is the selector kind used to filter resources.
+	// +kubebuilder:validation:Enum=resourceType;resourceLocation;resourceWithoutLocation;policyDefinitionReferenceId
+	// +kubebuilder:validation:Required
+	Property string `json:"property"`
+
+	// Operator is the filter operator.
+	// +kubebuilder:validation:Enum=In;notIn
+	// +kubebuilder:validation:Required
+	Operator string `json:"operator"`
+
+	// Values is the list of values to filter on.
+	// +kubebuilder:validation:Required
+	Values []string `json:"values"`
+}
+
+// ResourceSelectorSpec defines a named resource selector with one or more selector expressions.
+type ResourceSelectorSpec struct {
+	// Name is the name of the resource selector.
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// Selectors is the list of selector expressions.
+	// +optional
+	Selectors []SelectorSpec `json:"selectors,omitempty"`
 }
 
 // AssignmentExemptionSpec defines an inline exemption scoped to a policy assignment.

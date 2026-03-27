@@ -112,6 +112,34 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 		}
 	}
 
+	if len(spec.ResourceSelectors) > 0 {
+		resourceSelectors := make([]*armpolicy.ResourceSelector, len(spec.ResourceSelectors))
+		for i, rs := range spec.ResourceSelectors {
+			selectors := make([]*armpolicy.Selector, len(rs.Selectors))
+			for j, sel := range rs.Selectors {
+				s := &armpolicy.Selector{
+					Kind: to.Ptr(armpolicy.SelectorKind(sel.Property)),
+				}
+				vals := make([]*string, len(sel.Values))
+				for k, v := range sel.Values {
+					vals[k] = to.Ptr(v)
+				}
+				switch sel.Operator {
+				case "In":
+					s.In = vals
+				case "notIn":
+					s.NotIn = vals
+				}
+				selectors[j] = s
+			}
+			resourceSelectors[i] = &armpolicy.ResourceSelector{
+				Name:      to.Ptr(rs.Name),
+				Selectors: selectors,
+			}
+		}
+		params.Properties.ResourceSelectors = resourceSelectors
+	}
+
 	if spec.Identity != nil && spec.Identity.Type != "None" {
 		logger.Info("Configuring managed identity for policy assignment", "type", spec.Identity.Type, "location", spec.Identity.Location, "userAssignedIdentityId", spec.Identity.UserAssignedIdentityID)
 		params.Identity = &armpolicy.Identity{

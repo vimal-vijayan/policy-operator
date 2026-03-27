@@ -24,6 +24,22 @@ spec:
   metadata:
     assignedBy: "platform-team"
     category: "Compute"
+  resourceSelectors:
+    - name: "VirtualMachinesWithoutDisasterRecovery"
+      selectors:
+        - property: "resourceType"
+          operator: "In"
+          values:
+            - "Microsoft.Compute/virtualMachines"
+        # - property: "resourceLocation"
+        #   operator: "notIn"
+        #   values:
+        #     - "westeurope"
+        #     - "northeurope"
+        - property: "resourceWithoutLocation"
+          operator: "notIn"
+          values: 
+            - "subscriptionLevelResources"
   nonComplianceMessages: 
     default: "This policy assignment is not compliant."
     perPolicy:

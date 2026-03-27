@@ -242,6 +242,52 @@ spec:
                   The operator resolves this reference and uses the policyDefinitionId from its status.
                   Mutually exclusive with policyDefinitionId.
                 type: string
+              resourceSelectors:
+                description: ResourceSelectors is the resource selector list to filter
+                  policies by resource properties.
+                items:
+                  description: ResourceSelectorSpec defines a named resource selector
+                    with one or more selector expressions.
+                  properties:
+                    name:
+                      description: Name is the name of the resource selector.
+                      type: string
+                    selectors:
+                      description: Selectors is the list of selector expressions.
+                      items:
+                        description: SelectorSpec defines a single selector expression
+                          for resource filtering.
+                        properties:
+                          operator:
+                            description: Operator is the filter operator.
+                            enum:
+                            - In
+                            - notIn
+                            type: string
+                          property:
+                            description: Property is the selector kind used to filter
+                              resources.
+                            enum:
+                            - resourceType
+                            - resourceLocation
+                            - resourceWithoutLocation
+                            - policyDefinitionReferenceId
+                            type: string
+                          values:
+                            description: Values is the list of values to filter on.
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - operator
+                        - property
+                        - values
+                        type: object
+                      type: array
+                  required:
+                  - name
+                  type: object
+                type: array
               scope:
                 description: |-
                   Scope is the Azure resource scope at which the assignment applies.
