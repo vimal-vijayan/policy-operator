@@ -89,7 +89,7 @@ type AzurePolicyAssignmentSpec struct {
 // SelectorSpec defines a single selector expression for resource filtering.
 type SelectorSpec struct {
 	// Property is the selector kind used to filter resources.
-	// +kubebuilder:validation:Enum=resourceType;resourceLocation;resourceWithoutLocation;policyDefinitionReferenceId
+	// +kubebuilder:validation:Enum=resourceType;resourceLocation;resourceWithoutLocation;userPrincipalId;groupPrincipalId
 	// +kubebuilder:validation:Required
 	Property string `json:"property"`
 

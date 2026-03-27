@@ -107,7 +107,8 @@ spec:
                             - resourceType
                             - resourceLocation
                             - resourceWithoutLocation
-                            - policyDefinitionReferenceId
+                            - userPrincipalId
+                            - groupPrincipalId
                             type: string
                           values:
                             description: Values is the list of values to filter on.
