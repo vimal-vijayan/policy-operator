@@ -31,11 +31,13 @@ spec:
           operator: "In"
           values:
             - "Microsoft.Compute/virtualMachines"
-        # - property: "resourceLocation"
-        #   operator: "notIn"
-        #   values:
-        #     - "westeurope"
-        #     - "northeurope"
+        - property: "resourceLocation"
+          operator: "notIn"
+          values:
+            - "westeurope"
+            - "northeurope"
+    - name: "SubscriptionLevelResources"
+      selectors:
         - property: "resourceWithoutLocation"
           operator: "notIn"
           values: 
