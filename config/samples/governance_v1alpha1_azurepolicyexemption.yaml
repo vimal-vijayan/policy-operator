@@ -6,13 +6,22 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: exempt-legacy-vms-from-disk-encryption
 spec:
-  displayName: "Exempt Legacy VMs from Disk Encryption Policy"
+  displayName: "Policy operator: Exempt legacy VMs from disk encryption requirement"
   description: "Legacy virtual machines in the az-104-demo resource group are exempt from the disk encryption requirement pending migration to managed disks."
-  policyAssignmentId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyAssignments/fecace86-4a7c-45fc-a336-3ce0d991a480"
+  policyAssignmentId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/microsoft.authorization/policyassignments/0f11027c-7c20-48e9-88d3-be1b15fa203a"
   scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
   exemptionCategory: Waiver
   expiresOn: "2026-12-31T23:59:59Z"
-  # resourceSelector:
-  #   property: resourceType
-  #   operator: Equals
-  #   value: "Microsoft.Compute/virtualMachines"
+  resourceSelectors:
+    - name: "LegacyVMs"
+      selectors:
+        - property: "resourceType"
+          operator: "In"
+          values:
+            - "Microsoft.Compute/virtualMachines"
+        - property: "resourceLocation"
+          operator: "notIn"
+          values:
+            - "westeurope"
+            - "northeurope"
+    

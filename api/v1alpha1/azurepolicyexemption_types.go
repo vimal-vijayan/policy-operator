@@ -47,24 +47,9 @@ type AzurePolicyExemptionSpec struct {
 	// +optional
 	ExpiresOn string `json:"expiresOn,omitempty"`
 
-	// ResourceSelector selects resources within the scope to apply the exemption to.
+	// ResourceSelectors selects resources within the scope to apply the exemption to.
 	// +optional
-	ResourceSelector *ExemptionResourceSelector `json:"resourceSelector,omitempty"`
-}
-
-// ExemptionResourceSelector defines a resource property filter for the exemption.
-type ExemptionResourceSelector struct {
-	// Property is the resource property to filter on (e.g. "resourceType").
-	// +kubebuilder:validation:Required
-	Property string `json:"property"`
-
-	// Operator is the comparison operator.
-	// +kubebuilder:validation:Enum=Equals;NotEquals;In;NotIn
-	Operator string `json:"operator"`
-
-	// Value is the value to compare against.
-	// +kubebuilder:validation:Required
-	Value string `json:"value"`
+	ResourceSelectors []ResourceSelectorSpec `json:"resourceSelectors,omitempty"`
 }
 
 // AzurePolicyExemptionStatus defines the observed state of AzurePolicyExemption
