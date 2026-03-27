@@ -21,10 +21,12 @@ import (
 	"fmt"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -41,8 +43,9 @@ const azurePolicyAssignmentFinalizer = "governance.platform.io/azurepolicyassign
 // AzurePolicyAssignmentReconciler reconciles a AzurePolicyAssignment object
 type AzurePolicyAssignmentReconciler struct {
 	client.Client
-	Scheme  *runtime.Scheme
-	Service *policyassignment.Service
+	Scheme   *runtime.Scheme
+	Service  *policyassignment.Service
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyassignments,verbs=get;list;watch;create;update;patch;delete
@@ -65,11 +68,17 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 
 			if assignment.Status.AssignmentID != "" {
 				if err := r.Service.Delete(ctx, assignment.Spec.Scope, assignment.Status.AssignmentID, assignment.Status.Exemptions, assignment.Spec.Identity); err != nil {
+					if r.Recorder != nil {
+						r.Recorder.Eventf(assignment, corev1.EventTypeWarning, "PolicyAssignmentDeleteFailed", "Failed deleting policy assignment %q: %v", assignment.Status.AssignmentID, err)
+					}
 					r.setCondition(assignment, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
 						logger.Error(statusErr, "failed to update status")
 					}
 					return ctrl.Result{}, err
+				}
+				if r.Recorder != nil {
+					r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentDeleted", "Deleted policy assignment %q", assignment.Status.AssignmentID)
 				}
 			}
 
@@ -108,6 +117,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	// Create or update the Azure Policy Assignment (and its inline exemptions and role assignments)
+	wasAssigned := assignment.Status.AssignmentID != ""
 	assignmentID, assignedLocation, miPrincipalID, exemptionStatuses, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
 	if assignmentID != "" {
 		assignment.Status.AssignmentID = assignmentID
@@ -124,11 +134,17 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 
 	if err != nil {
 		logger.Error(err, "failed to create/update policy assignment")
+		if r.Recorder != nil {
+			r.Recorder.Eventf(assignment, corev1.EventTypeWarning, "PolicyAssignmentReconcileFailed", "Failed creating/updating policy assignment: %v", err)
+		}
 		r.setCondition(assignment, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
 			logger.Error(statusErr, "failed to update status")
 		}
 		return ctrl.Result{}, err
+	}
+	if !wasAssigned && assignment.Status.AssignmentID != "" && r.Recorder != nil {
+		r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentCreated", "Created policy assignment %q", assignment.Status.AssignmentID)
 	}
 
 	r.setCondition(assignment, "Ready", metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
@@ -151,6 +167,8 @@ func (r *AzurePolicyAssignmentReconciler) setCondition(assignment *governancev1a
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *AzurePolicyAssignmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Recorder = mgr.GetEventRecorderFor("azurepolicyassignment-controller")
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&governancev1alpha1.AzurePolicyAssignment{}).
 		Watches(
