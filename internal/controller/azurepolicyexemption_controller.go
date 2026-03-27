@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"time"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -126,7 +127,7 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{RequeueAfter: 30 * time.Minute}, nil
 }
 
 func (r *AzurePolicyExemptionReconciler) setCondition(exemption *governancev1alpha1.AzurePolicyExemption, condType string, status metav1.ConditionStatus, reason, message string) {
