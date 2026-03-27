@@ -191,10 +191,35 @@ spec:
                   a raw JSON object.
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
-              nonComplianceMessage:
-                description: NonComplianceMessage is the message to display when the
-                  policy assignment is not compliant.
-                type: string
+              nonComplianceMessages:
+                description: NonComplianceMessages is the messages to display when
+                  the policy assignment is not compliant.
+                properties:
+                  default:
+                    description: Default is the fallback non-compliance message used
+                      when no per-policy message matches.
+                    type: string
+                  perPolicy:
+                    description: PerPolicy defines non-compliance messages for specific
+                      policy references in an initiative.
+                    items:
+                      description: AssignmentNonComplianceMessagePerPolicy defines
+                        a non-compliance message for a specific policy within an initiative.
+                      properties:
+                        message:
+                          description: Message is the non-compliance message for the
+                            referenced policy.
+                          type: string
+                        policyReferenceId:
+                          description: PolicyReferenceID is the policy definition
+                            reference ID from the initiative.
+                          type: string
+                      required:
+                      - message
+                      - policyReferenceId
+                      type: object
+                    type: array
+                type: object
               notScopes:
                 description: NotScopes is a list of resource scopes excluded from
                   the assignment.

@@ -73,9 +73,9 @@ type AzurePolicyAssignmentSpec struct {
 	// +optional
 	Identity *AssignmentIdentity `json:"identity,omitempty"`
 
-	// NonComplianceMessage is the message to display when the policy assignment is not compliant.
+	// NonComplianceMessages is the messages to display when the policy assignment is not compliant.
 	// +optional
-	NonComplianceMessage string `json:"nonComplianceMessage,omitempty"`
+	NonComplianceMessages *AssignmentNonComplianceMessages `json:"nonComplianceMessages,omitempty"`
 
 	// Exemptions is an optional list of inline exemptions to create for this assignment.
 	// +optional
@@ -147,6 +147,28 @@ type AssignmentIdentity struct {
 	// Permissions is an optional list of role assignments to create for the managed identity.
 	// +optional
 	Permissions []IdentityPermission `json:"permissions,omitempty"`
+}
+
+// AssignmentNonComplianceMessagePerPolicy defines a non-compliance message for a specific policy within an initiative.
+type AssignmentNonComplianceMessagePerPolicy struct {
+	// PolicyReferenceID is the policy definition reference ID from the initiative.
+	// +kubebuilder:validation:Required
+	PolicyReferenceID string `json:"policyReferenceId"`
+
+	// Message is the non-compliance message for the referenced policy.
+	// +kubebuilder:validation:Required
+	Message string `json:"message"`
+}
+
+// AssignmentNonComplianceMessages defines custom non-compliance messages for the assignment.
+type AssignmentNonComplianceMessages struct {
+	// Default is the fallback non-compliance message used when no per-policy message matches.
+	// +optional
+	Default string `json:"default,omitempty"`
+
+	// PerPolicy defines non-compliance messages for specific policy references in an initiative.
+	// +optional
+	PerPolicy []AssignmentNonComplianceMessagePerPolicy `json:"perPolicy,omitempty"`
 }
 
 // AssignmentExemptionStatus tracks an inline exemption created in Azure for a policy assignment.

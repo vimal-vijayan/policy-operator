@@ -17,6 +17,11 @@ spec:
   policyDefinitionRef: example-policy-definition
   policyDefinitionId: "/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}"
   scope: "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}"
+  nonComplianceMessages:
+    default: "This policy assignment is not compliant."
+    perPolicy:
+      - policyReferenceId: "NotAllowM365_Deny"
+        message: "Specific non-compliance message for this policy definition."
   notScopes:
     - "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/{vmName}"
   parameters:

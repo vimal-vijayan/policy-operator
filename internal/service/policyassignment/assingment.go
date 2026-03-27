@@ -65,11 +65,27 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 		params.Properties.EnforcementMode = to.Ptr(armpolicy.EnforcementMode(spec.EnforcementMode))
 	}
 
-	if spec.NonComplianceMessage != "" {
-		params.Properties.NonComplianceMessages = []*armpolicy.NonComplianceMessage{
-			{
-				Message: to.Ptr(spec.NonComplianceMessage),
-			},
+	if spec.NonComplianceMessages != nil {
+		messages := make([]*armpolicy.NonComplianceMessage, 0, 1+len(spec.NonComplianceMessages.PerPolicy))
+
+		if spec.NonComplianceMessages.Default != "" {
+			messages = append(messages, &armpolicy.NonComplianceMessage{
+				Message: to.Ptr(spec.NonComplianceMessages.Default),
+			})
+		}
+
+		for _, perPolicy := range spec.NonComplianceMessages.PerPolicy {
+			if perPolicy.Message == "" {
+				continue
+			}
+			messages = append(messages, &armpolicy.NonComplianceMessage{
+				Message:                     to.Ptr(perPolicy.Message),
+				PolicyDefinitionReferenceID: to.Ptr(perPolicy.PolicyReferenceID),
+			})
+		}
+
+		if len(messages) > 0 {
+			params.Properties.NonComplianceMessages = messages
 		}
 	}
 
