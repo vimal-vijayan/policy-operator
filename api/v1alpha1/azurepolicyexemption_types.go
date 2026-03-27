@@ -31,8 +31,14 @@ type AzurePolicyExemptionSpec struct {
 	Description string `json:"description,omitempty"`
 
 	// PolicyAssignmentID is the Azure resource ID of the policy assignment being exempted.
-	// +kubebuilder:validation:Required
-	PolicyAssignmentID string `json:"policyAssignmentId"`
+	// +optional
+	PolicyAssignmentID string `json:"policyAssignmentId,omitempty"`
+
+	// PolicyAssignmentRef is a reference to the AzurePolicyAssignment custom resource being exempted. Either PolicyAssignmentID or PolicyAssignmentRef must be specified.
+	// the operator will use the reference to look up the policy assignment and populate the PolicyAssignmentID if not already set.
+	// mutually exclusive with PolicyAssignmentID
+	// +optional
+	PolicyAssignmentRef string `json:"policyAssignmentRef,omitempty"`
 
 	// Scope is the Azure resource scope at which the exemption applies.
 	// +kubebuilder:validation:Required

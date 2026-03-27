@@ -18,10 +18,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -82,6 +84,29 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{}, nil
+	}
+
+	// Resolve policyAssignmentRef to policyAssignmentId if not already set
+	if exemption.Spec.PolicyAssignmentRef != "" && exemption.Spec.PolicyAssignmentID == "" {
+		assignment := &governancev1alpha1.AzurePolicyAssignment{}
+		if err := r.Get(ctx, types.NamespacedName{Name: exemption.Spec.PolicyAssignmentRef, Namespace: exemption.Namespace}, assignment); err != nil {
+			logger.Error(err, "failed to resolve policyAssignmentRef", "ref", exemption.Spec.PolicyAssignmentRef)
+			r.setCondition(exemption, "Ready", metav1.ConditionFalse, "RefResolutionFailed", fmt.Sprintf("policyAssignmentRef %q not found: %v", exemption.Spec.PolicyAssignmentRef, err))
+			if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
+				logger.Error(statusErr, "failed to update status")
+			}
+			return ctrl.Result{}, err
+		}
+		if assignment.Status.AssignmentID == "" {
+			msg := fmt.Sprintf("policyAssignmentRef %q has not yet been reconciled (AssignmentID is empty)", exemption.Spec.PolicyAssignmentRef)
+			logger.Info(msg)
+			r.setCondition(exemption, "Ready", metav1.ConditionFalse, "RefNotReady", msg)
+			if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
+				logger.Error(statusErr, "failed to update status")
+			}
+			return ctrl.Result{Requeue: true}, nil
+		}
+		exemption.Spec.PolicyAssignmentID = assignment.Status.AssignmentID
 	}
 
 	// Create or update the Azure Policy Exemption
