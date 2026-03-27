@@ -66,7 +66,7 @@ func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctr
 				if err := r.Service.Delete(ctx, initiative); err != nil {
 					r.setCondition(initiative, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
-						logger.Error(statusErr, "failed to update status")
+						logger.Error(statusErr, FailedStatusError)
 					}
 					return ctrl.Result{}, err
 				}
@@ -104,7 +104,7 @@ func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctr
 		logger.Error(err, "failed to create/update policy initiative")
 		r.setCondition(initiative, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
-			logger.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, FailedStatusError)
 		}
 		return ctrl.Result{}, err
 	}
@@ -113,10 +113,11 @@ func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctr
 	initiative.Status.AppliedVersion = initiative.Spec.Version
 	r.setCondition(initiative, "Ready", metav1.ConditionTrue, "Reconciled", "Policy initiative successfully reconciled")
 	if err := r.Status().Update(ctx, initiative); err != nil {
+		logger.Error(err, FailedStatusError)
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{RequeueAfter: 30 * time.Minute}, nil
+	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
 }
 
 // resolvePolicyDefinitionIDs resolves all policyDefinitionRef entries to Azure resource IDs.

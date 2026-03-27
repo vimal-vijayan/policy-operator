@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"time"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,7 +59,7 @@ func (r *AzurePolicyDefinitionReconciler) Reconcile(ctx context.Context, req ctr
 		return ctrl.Result{}, r.Update(ctx, policyDef)
 	}
 
-	return ctrl.Result{RequeueAfter: 30 * time.Minute}, r.reconcileDefinition(ctx, policyDef)
+	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, r.reconcileDefinition(ctx, policyDef)
 }
 
 func (r *AzurePolicyDefinitionReconciler) handleDeletion(ctx context.Context, policyDef *governancev1alpha1.AzurePolicyDefinition) error {
@@ -76,7 +75,7 @@ func (r *AzurePolicyDefinitionReconciler) handleDeletion(ctx context.Context, po
 		if err := r.Service.Delete(ctx, policyDef); err != nil {
 			r.setCondition(policyDef, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
 			if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
-				logger.Error(statusErr, "failed to update status")
+				logger.Error(statusErr, FailedStatusError)
 			}
 			return err
 		}
@@ -94,7 +93,7 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 		logger.Error(err, "failed to create/update policy definition")
 		r.setCondition(policyDef, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
-			logger.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, FailedStatusError)
 		}
 		return err
 	}

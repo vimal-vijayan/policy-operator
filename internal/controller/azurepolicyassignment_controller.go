@@ -19,7 +19,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -73,7 +72,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 					}
 					r.setCondition(assignment, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
-						logger.Error(statusErr, "failed to update status")
+						logger.Error(statusErr, FailedStatusError)
 					}
 					return ctrl.Result{}, err
 				}
@@ -111,7 +110,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		if policyDef.Status.PolicyDefinitionID == "" {
 			r.setCondition(assignment, "Ready", metav1.ConditionFalse, "RefNotReady", fmt.Sprintf("AzurePolicyDefinition %q has no policyDefinitionId in status yet", assignment.Spec.PolicyDefinitionRef))
 			_ = r.Status().Update(ctx, assignment)
-			return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
 		}
 		policyDefinitionID = policyDef.Status.PolicyDefinitionID
 	}
@@ -139,7 +138,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		}
 		r.setCondition(assignment, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
-			logger.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, FailedStatusError)
 		}
 		return ctrl.Result{}, err
 	}
@@ -153,10 +152,11 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 
 	r.setCondition(assignment, "Ready", metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
 	if err := r.Status().Update(ctx, assignment); err != nil {
+		logger.Error(err, FailedStatusError)
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{RequeueAfter: 1 * time.Minute}, nil
+	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
 }
 
 func (r *AzurePolicyAssignmentReconciler) setCondition(assignment *governancev1alpha1.AzurePolicyAssignment, condType string, status metav1.ConditionStatus, reason, message string) {
