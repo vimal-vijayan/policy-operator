@@ -6,7 +6,7 @@ weight: 50
 
 > **Note:** The architecture and Argo CD deployment model described on this page is a reference design. Actual implementation will vary based on your organisation's specific requirements, tooling, and platform constraints. Treat this as a starting point, not a prescriptive standard.
 
-GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Policy Operator, every Azure Policy definition, assignment, exemption, and remediation becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.
+GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Azure Policy Operator, every Azure Policy definition, assignment, exemption, and remediation becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.
 
 ## Why GitOps for Azure governance?
 
@@ -230,7 +230,7 @@ argocd app list -l category=policy
 
 ## Secrets and credential management
 
-The Policy Operator needs an Azure identity (Service Principal or Workload Identity) to call the ARM API. Keep credentials out of Git:
+The Azure Policy Operator needs an Azure identity (Service Principal or Workload Identity) to call the ARM API. Keep credentials out of Git:
 
 ### Option A — Kubernetes Secret (pre-created)
 
@@ -364,7 +364,7 @@ metadata:
   name: azure-policy
   namespace: argocd
 spec:
-  description: "Azure Policy GitOps managed by Policy Operator"
+  description: "Azure Policy GitOps managed by Azure Policy Operator"
 
   sourceRepos:
     - https://github.com/your-org/your-repo.git

@@ -1,12 +1,12 @@
 ---
 title: "Getting Started"
-description: "Install and configure the Policy Operator in your Kubernetes cluster."
+description: "Install and configure the Azure Policy Operator in your Kubernetes cluster."
 weight: 2
 ---
 
 ## Prerequisites
 
-Before installing the Policy Operator, ensure you have:
+Before installing the Azure Policy Operator, ensure you have:
 
 - A Kubernetes cluster (v1.24+)
 - `kubectl` configured against your cluster

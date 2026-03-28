@@ -50,13 +50,13 @@
 
       <div class="doc-footer">
         <nav class="doc-nav" aria-label="Page navigation">
-          {{ with .PrevInSection }}
+          {{ with .NextInSection }}
             <a class="doc-nav-card prev" href="{{ .RelPermalink }}">
               <span class="doc-nav-label">← Previous</span>
               <span class="doc-nav-title">{{ .Title }}</span>
             </a>
           {{ end }}
-          {{ with .NextInSection }}
+          {{ with .PrevInSection }}
             <a class="doc-nav-card next" href="{{ .RelPermalink }}">
               <span class="doc-nav-label">Next →</span>
               <span class="doc-nav-title">{{ .Title }}</span>

@@ -10,6 +10,7 @@
 {{ $kind     := .Get "kind"     | default "" }}
 {{ $version  := .Get "version"  | default "" }}
 {{ $examples := .Get "examples" | default "0" }}
+{{ $hasstatus := .Get "status"  | default "false" }}
 
 <div class="api-schema">
 
@@ -31,6 +32,15 @@
       type="button"
     >Examples ({{ $examples }})</button>
     {{ end }}
+    {{ if eq $hasstatus "true" }}
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="status"
+      type="button"
+    >Status</button>
+    {{ end }}
   </div>
 
   {{/* API Documentation panel */}}
@@ -43,6 +53,12 @@
   {{/* Examples panel — populated by JS from adjacent api-examples shortcode */}}
   {{ if gt (int $examples) 0 }}
   <div class="api-schema__panel" data-schema-panel="examples" role="tabpanel" hidden>
+  </div>
+  {{ end }}
+
+  {{/* Status panel — populated by JS from adjacent api-status shortcode */}}
+  {{ if eq $hasstatus "true" }}
+  <div class="api-schema__panel" data-schema-panel="status" role="tabpanel" hidden>
   </div>
   {{ end }}
 

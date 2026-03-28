@@ -96,22 +96,38 @@ initCopyButtons();
 
     // ── Move adjacent api-examples-src content into examples panel ──
     var exPanel = schema.querySelector('[data-schema-panel="examples"]');
-    if (!exPanel) return;
-
-    // Search the next few siblings for the source node
-    var sibling = schema.nextElementSibling;
-    while (sibling) {
-      var src = sibling.querySelector('.api-examples-src');
-      if (!src) src = sibling.classList.contains('api-examples-src') ? sibling : null;
-      if (src) {
-        exPanel.innerHTML = src.innerHTML;
-        initCopyButtons(exPanel);
-        sibling.remove();
-        break;
+    if (exPanel) {
+      var sibling = schema.nextElementSibling;
+      while (sibling) {
+        var src = sibling.querySelector('.api-examples-src');
+        if (!src) src = sibling.classList.contains('api-examples-src') ? sibling : null;
+        if (src) {
+          exPanel.innerHTML = src.innerHTML;
+          initCopyButtons(exPanel);
+          sibling.remove();
+          break;
+        }
+        if (!sibling.classList.contains('api-examples-src')) break;
+        sibling = sibling.nextElementSibling;
       }
-      // Stop searching after a non-schema element that isn't just whitespace
-      if (!sibling.classList.contains('api-examples-src')) break;
-      sibling = sibling.nextElementSibling;
+    }
+
+    // ── Move adjacent api-status-src content into status panel ──
+    var stPanel = schema.querySelector('[data-schema-panel="status"]');
+    if (stPanel) {
+      var stSibling = schema.nextElementSibling;
+      while (stSibling) {
+        var stSrc = stSibling.querySelector('.api-status-src');
+        if (!stSrc) stSrc = stSibling.classList.contains('api-status-src') ? stSibling : null;
+        if (stSrc) {
+          stPanel.innerHTML = stSrc.innerHTML;
+          initCopyButtons(stPanel);
+          stSibling.remove();
+          break;
+        }
+        if (!stSibling.classList.contains('api-status-src') && !stSibling.classList.contains('api-examples-src')) break;
+        stSibling = stSibling.nextElementSibling;
+      }
     }
   });
 })();

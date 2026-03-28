@@ -1,11 +1,11 @@
-name = "Policy Operator Theme"
+name = "Azure Policy Operator Theme"
 license = "MIT"
 licenselink = "https://opensource.org/licenses/MIT"
-description = "Documentation theme for the Azure Policy Operator, inspired by BeautifulHugo."
+description = "Documentation theme for the Azure Azure Policy Operator, inspired by BeautifulHugo."
 homepage = "https://github.com/example/policy-operator"
 tags = ["documentation", "kubernetes", "azure", "policy"]
 features = ["responsive", "sidebar", "toc", "syntax-highlighting"]
 min_version = "0.100.0"
 
 [author]
-  name = "Policy Operator Team"
+  name = "Azure Policy Operator Team"

@@ -6,7 +6,7 @@ weight: 10
 
 The `AzurePolicyDefinition` custom resource maps directly to an [Azure Policy Definition](https://learn.microsoft.com/en-us/azure/governance/policy/overview). The operator reconciles each resource by creating or updating the corresponding definition in Azure.
 
-{{< api-schema kind="AzurePolicyDefinition" version="v1alpha1" examples="4" >}}
+{{< api-schema kind="AzurePolicyDefinition" version="v1alpha1" examples="4" status="true" >}}
 
 {{< api-field name="apiVersion" type="String" desc="API version for this resource. Must be policy.azure.com/v1alpha1." >}}
 ```yaml
@@ -164,33 +164,6 @@ spec:
 
 {{< /api-field >}}
 
-{{< api-field name="status" type="Object" children="true" desc="Observed state of the AzurePolicyDefinition. Populated by the operator after a successful reconcile." >}}
-  {{< api-field name="policyDefinitionId" type="String" desc="Full Azure resource ID of the created or updated policy definition." >}}
-```yaml
-status:
-  policyDefinitionId: >-
-    /subscriptions/00000000-0000-0000-0000-000000000000
-    /providers/Microsoft.Authorization/policyDefinitions/require-https-storage
-```
-  {{< /api-field >}}
-  {{< api-field name="appliedVersion" type="String" desc="The spec.version value last successfully written to Azure Policy metadata." >}}
-```yaml
-status:
-  appliedVersion: "1.0.0"
-```
-  {{< /api-field >}}
-  {{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state (e.g. Ready)." >}}
-```yaml
-status:
-  conditions:
-    - type: Ready
-      status: "True"
-      reason: ReconcileSucceeded
-      lastTransitionTime: "2024-01-15T10:30:00Z"
-```
-  {{< /api-field >}}
-{{< /api-field >}}
-
 {{< /api-schema >}}
 
 {{< api-examples >}}
@@ -299,3 +272,42 @@ spec:
 ```
 
 {{< /api-examples >}}
+
+{{< api-status >}}
+
+{{< api-field name="policyDefinitionId" type="String" desc="Full Azure resource ID of the created or updated policy definition, populated after the first successful reconcile." >}}
+```yaml
+status:
+  policyDefinitionId: >-
+    /subscriptions/00000000-0000-0000-0000-000000000000
+    /providers/Microsoft.Authorization/policyDefinitions/require-https-storage
+```
+{{< /api-field >}}
+
+{{< api-field name="appliedVersion" type="String" desc="The spec.version value last successfully written to Azure Policy metadata. Mirrors spec.version after each successful reconcile." >}}
+```yaml
+status:
+  appliedVersion: "1.0.0"
+```
+{{< /api-field >}}
+
+{{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state." >}}
+
+| Type | Status | Reason | Meaning |
+|---|---|---|---|
+| `Ready` | `True` | `ReconcileSucceeded` | Definition is in sync with Azure |
+| `Ready` | `False` | `ReconcileFailed` | Last reconcile failed; see message |
+| `Ready` | `False` | `AzureAPIError` | ARM API returned an error |
+
+```yaml
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: ReconcileSucceeded
+      message: "Policy definition successfully reconciled"
+      lastTransitionTime: "2024-01-15T10:30:00Z"
+```
+{{< /api-field >}}
+
+{{< /api-status >}}

@@ -6,7 +6,7 @@ weight: 30
 
 The `AzurePolicyAssignment` custom resource maps to an [Azure Policy Assignment](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/assignment-structure). An assignment binds a policy definition or initiative to a scope (subscription, resource group, or management group) and optionally configures parameters, managed identity, resource selectors, and inline exemptions. The operator reconciles each resource by creating or updating the corresponding assignment in Azure.
 
-{{< api-schema kind="AzurePolicyAssignment" version="v1alpha1" examples="4" >}}
+{{< api-schema kind="AzurePolicyAssignment" version="v1alpha1" examples="4" status="true" >}}
 
 {{< api-field name="apiVersion" type="String" desc="API version for this resource. Must be policy.azure.com/v1alpha1." >}}
 ```yaml
@@ -312,66 +312,6 @@ spec:
 
 {{< /api-field >}}
 
-{{< api-field name="status" type="Object" children="true" desc="Observed state of the AzurePolicyAssignment. Populated by the operator after a successful reconcile." >}}
-  {{< api-field name="assignmentId" type="String" desc="Full Azure resource ID of the created or updated policy assignment." >}}
-```yaml
-status:
-  assignmentId: >-
-    /subscriptions/00000000-0000-0000-0000-000000000000
-    /providers/Microsoft.Authorization/policyAssignments/assign-security-baseline
-```
-  {{< /api-field >}}
-  {{< api-field name="assignedLocation" type="String" desc="Azure location set on the policy assignment. Populated when a managed identity is used and persisted for updates." >}}
-```yaml
-status:
-  assignedLocation: "australiaeast"
-```
-  {{< /api-field >}}
-  {{< api-field name="miPrincipalId" type="String" desc="Principal ID of the managed identity associated with this assignment. Present when spec.identity.type is SystemAssigned or UserAssigned." >}}
-```yaml
-status:
-  miPrincipalId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-```
-  {{< /api-field >}}
-  {{< api-field name="exemptions" type="Array" children="true" desc="Tracks Azure resource IDs of inline exemptions created for this assignment." >}}
-    {{< api-field name="displayName" type="String" desc="Display name matching the exemption spec entry." >}}
-```yaml
-status:
-  exemptions:
-    - displayName: "Exempt legacy storage account"
-```
-    {{< /api-field >}}
-    {{< api-field name="exemptionId" type="String" desc="Full Azure resource ID of the created exemption." >}}
-```yaml
-status:
-  exemptions:
-    - exemptionId: >-
-        /subscriptions/00000000-0000-0000-0000-000000000000
-        /providers/Microsoft.Authorization/policyExemptions/legacy-store-waiver
-```
-    {{< /api-field >}}
-    {{< api-field name="scope" type="String" desc="Azure resource scope of the exemption. Stored by the operator for deletion during cleanup." >}}
-```yaml
-status:
-  exemptions:
-    - scope: >-
-        /subscriptions/00000000-0000-0000-0000-000000000000
-        /resourceGroups/legacy-rg
-```
-    {{< /api-field >}}
-  {{< /api-field >}}
-  {{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state (e.g. Ready)." >}}
-```yaml
-status:
-  conditions:
-    - type: Ready
-      status: "True"
-      reason: ReconcileSucceeded
-      lastTransitionTime: "2024-01-15T10:30:00Z"
-```
-  {{< /api-field >}}
-{{< /api-field >}}
-
 {{< /api-schema >}}
 
 {{< api-examples >}}
@@ -480,3 +420,77 @@ spec:
 ```
 
 {{< /api-examples >}}
+
+{{< api-status >}}
+
+{{< api-field name="assignmentId" type="String" desc="Full Azure resource ID of the created or updated policy assignment, populated after the first successful reconcile." >}}
+```yaml
+status:
+  assignmentId: >-
+    /subscriptions/00000000-0000-0000-0000-000000000000
+    /providers/Microsoft.Authorization/policyAssignments/assign-security-baseline
+```
+{{< /api-field >}}
+
+{{< api-field name="assignedLocation" type="String" desc="Azure location set on the policy assignment. Populated when a managed identity is used and persisted for updates." >}}
+```yaml
+status:
+  assignedLocation: "australiaeast"
+```
+{{< /api-field >}}
+
+{{< api-field name="miPrincipalId" type="String" desc="Principal ID of the managed identity associated with this assignment. Present when spec.identity.type is SystemAssigned or UserAssigned." >}}
+```yaml
+status:
+  miPrincipalId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+{{< /api-field >}}
+
+{{< api-field name="exemptions" type="Array" children="true" desc="Tracks Azure resource IDs of inline exemptions created for this assignment." >}}
+  {{< api-field name="displayName" type="String" desc="Display name matching the exemption spec entry." >}}
+```yaml
+status:
+  exemptions:
+    - displayName: "Exempt legacy storage account"
+```
+  {{< /api-field >}}
+  {{< api-field name="exemptionId" type="String" desc="Full Azure resource ID of the created exemption." >}}
+```yaml
+status:
+  exemptions:
+    - exemptionId: >-
+        /subscriptions/00000000-0000-0000-0000-000000000000
+        /providers/Microsoft.Authorization/policyExemptions/legacy-store-waiver
+```
+  {{< /api-field >}}
+  {{< api-field name="scope" type="String" desc="Azure resource scope of the exemption. Stored by the operator for deletion during cleanup." >}}
+```yaml
+status:
+  exemptions:
+    - scope: >-
+        /subscriptions/00000000-0000-0000-0000-000000000000
+        /resourceGroups/legacy-rg
+```
+  {{< /api-field >}}
+{{< /api-field >}}
+
+{{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state." >}}
+
+| Type | Status | Reason | Meaning |
+|---|---|---|---|
+| `Ready` | `True` | `ReconcileSucceeded` | Assignment is in sync with Azure |
+| `Ready` | `False` | `ReconcileFailed` | Last reconcile failed; see message |
+| `Ready` | `False` | `AzureAPIError` | ARM API returned an error |
+
+```yaml
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: ReconcileSucceeded
+      message: "Policy assignment successfully reconciled"
+      lastTransitionTime: "2024-01-15T10:30:00Z"
+```
+{{< /api-field >}}
+
+{{< /api-status >}}

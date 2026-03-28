@@ -46,11 +46,14 @@ Used when creating or modifying the logic for managing Hugo static sites. This i
       - Leaf fields expand to show description, allowed enum values, default, and mutual-exclusion notes
       - Field rows: purple square +/- toggle | blue underlined field name | spacer | [required pill] [type badge]
     - Shortcodes used (all in policy-operator/themes/policy-operator-theme/layouts/shortcodes/):
-      - `api-schema` : outer tabbed wrapper; params: kind, version, examples (count)
+      - `api-schema` : outer tabbed wrapper; params: kind, version, examples (count), status ("true" to show Status tab)
       - `api-field`  : single field row; params: name, type, required, desc, children, default, mutual, enum
                        - set children="true" for Object/Array fields whose .Inner contains nested api-field shortcodes
                        - omit children for leaf fields; .Inner is markdown description/examples
       - `api-examples` : holds example YAML content; JS moves it into the Examples tab automatically
+      - `api-status`   : holds status field rows (api-field shortcodes); JS moves it into the Status tab automatically
+                         - place after {{< /api-examples >}} (or after {{< /api-schema >}} if no examples)
+                         - source node class: `.api-status-src` (hidden via CSS, same pattern as `.api-examples-src`)
     - CSS: .api-schema, .api-field, .api-field__children blocks in
            policy-operator/themes/policy-operator-theme/static/css/style.css (section 17)
     - Inline field examples: each api-field in the API Documentation tab can include a YAML

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-<title>Policy Definitions · Policy Operator</title>
+<title>Policy Definitions · Azure Policy Operator</title>
 
 <meta name="description" content="Define and manage Azure Policy definitions as Kubernetes custom resources using AzurePolicyDefinition.">
 
@@ -32,8 +32,8 @@
   <div class="container navbar-inner">
 
     <a class="navbar-brand" href="/">
-      <img src="/img/logo.svg" alt="Policy Operator logo" class="navbar-logo">
-      <span>Policy Operator</span>
+      <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="navbar-logo">
+      <span>Azure Policy Operator</span>
     </a>
 
     <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -151,7 +151,7 @@
             <a href="/">Home</a>
             
               <span class="breadcrumb-sep" aria-hidden="true">/</span>
-              <a href="/">Policy Operator</a>
+              <a href="/">Azure Policy Operator</a>
             
               <span class="breadcrumb-sep" aria-hidden="true">/</span>
               <a href="/docs/">Documentation</a>
@@ -182,6 +182,7 @@
 
 
 
+
 <div class="api-schema">
 
   
@@ -201,6 +202,15 @@
       data-schema-tab="examples"
       type="button"
     >Examples (4)</button>
+    
+    
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="status"
+      type="button"
+    >Status</button>
     
   </div>
 
@@ -224,7 +234,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-apiversion-1774729118563284000"
+    aria-controls="apif-apiversion-1774736144327041000"
     data-api-toggle
     type="button"
   >
@@ -243,7 +253,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-apiversion-1774729118563284000" hidden>
+  <div class="api-field__body" id="apif-apiversion-1774736144327041000" hidden>
     
       
       <div class="api-field__content">
@@ -274,7 +284,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-kind-1774729118564092000"
+    aria-controls="apif-kind-1774736144328934000"
     data-api-toggle
     type="button"
   >
@@ -293,7 +303,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-kind-1774729118564092000" hidden>
+  <div class="api-field__body" id="apif-kind-1774736144328934000" hidden>
     
       
       <div class="api-field__content">
@@ -324,7 +334,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-metadata-1774729118566557000"
+    aria-controls="apif-metadata-1774736144330145000"
     data-api-toggle
     type="button"
   >
@@ -343,7 +353,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-metadata-1774729118566557000" hidden>
+  <div class="api-field__body" id="apif-metadata-1774736144330145000" hidden>
     
       
       <p class="api-field__desc">Standard Kubernetes object metadata.</p>
@@ -366,7 +376,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-name-1774729118564394000"
+    aria-controls="apif-name-1774736144329076000"
     data-api-toggle
     type="button"
   >
@@ -387,7 +397,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-name-1774729118564394000" hidden>
+  <div class="api-field__body" id="apif-name-1774736144329076000" hidden>
     
       
       <div class="api-field__content">
@@ -418,7 +428,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-namespace-1774729118565246000"
+    aria-controls="apif-namespace-1774736144329206000"
     data-api-toggle
     type="button"
   >
@@ -437,7 +447,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-namespace-1774729118565246000" hidden>
+  <div class="api-field__body" id="apif-namespace-1774736144329206000" hidden>
     
       
       <div class="api-field__content">
@@ -468,7 +478,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-labels-1774729118565560000"
+    aria-controls="apif-labels-1774736144329329000"
     data-api-toggle
     type="button"
   >
@@ -487,7 +497,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-labels-1774729118565560000" hidden>
+  <div class="api-field__body" id="apif-labels-1774736144329329000" hidden>
     
       
       <div class="api-field__content">
@@ -520,7 +530,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-annotations-1774729118566199000"
+    aria-controls="apif-annotations-1774736144329610000"
     data-api-toggle
     type="button"
   >
@@ -539,7 +549,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-annotations-1774729118566199000" hidden>
+  <div class="api-field__body" id="apif-annotations-1774736144329610000" hidden>
     
       
       <div class="api-field__content">
@@ -578,7 +588,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-spec-1774729118568811000"
+    aria-controls="apif-spec-1774736144339961000"
     data-api-toggle
     type="button"
   >
@@ -599,7 +609,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-spec-1774729118568811000" hidden>
+  <div class="api-field__body" id="apif-spec-1774736144339961000" hidden>
     
       
       <p class="api-field__desc">Desired state of the AzurePolicyDefinition.</p>
@@ -623,7 +633,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-displayname-1774729118566679000"
+    aria-controls="apif-displayname-1774736144330323000"
     data-api-toggle
     type="button"
   >
@@ -644,7 +654,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-displayname-1774729118566679000" hidden>
+  <div class="api-field__body" id="apif-displayname-1774736144330323000" hidden>
     
       
       <div class="api-field__content">
@@ -676,7 +686,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-description-1774729118567082000"
+    aria-controls="apif-description-1774736144330890000"
     data-api-toggle
     type="button"
   >
@@ -695,7 +705,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-description-1774729118567082000" hidden>
+  <div class="api-field__body" id="apif-description-1774736144330890000" hidden>
     
       
       <div class="api-field__content">
@@ -727,7 +737,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-policytype-1774729118567349000"
+    aria-controls="apif-policytype-1774736144331029000"
     data-api-toggle
     type="button"
   >
@@ -746,7 +756,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-policytype-1774729118567349000" hidden>
+  <div class="api-field__body" id="apif-policytype-1774736144331029000" hidden>
     
       
       <div class="api-field__content">
@@ -782,7 +792,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-mode-1774729118567460000"
+    aria-controls="apif-mode-1774736144331186000"
     data-api-toggle
     type="button"
   >
@@ -803,7 +813,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-mode-1774729118567460000" hidden>
+  <div class="api-field__body" id="apif-mode-1774736144331186000" hidden>
     
       
       <div class="api-field__content">
@@ -840,7 +850,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-version-1774729118567579000"
+    aria-controls="apif-version-1774736144332835000"
     data-api-toggle
     type="button"
   >
@@ -859,7 +869,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-version-1774729118567579000" hidden>
+  <div class="api-field__body" id="apif-version-1774736144332835000" hidden>
     
       
       <div class="api-field__content">
@@ -891,7 +901,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-metadata-1774729118567685000"
+    aria-controls="apif-metadata-1774736144333087000"
     data-api-toggle
     type="button"
   >
@@ -910,7 +920,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-metadata-1774729118567685000" hidden>
+  <div class="api-field__body" id="apif-metadata-1774736144333087000" hidden>
     
       
       <div class="api-field__content">
@@ -944,7 +954,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-parameters-1774729118567801000"
+    aria-controls="apif-parameters-1774736144334491000"
     data-api-toggle
     type="button"
   >
@@ -963,7 +973,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-parameters-1774729118567801000" hidden>
+  <div class="api-field__body" id="apif-parameters-1774736144334491000" hidden>
     
       
       <div class="api-field__content">
@@ -1000,7 +1010,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-policyrule-1774729118568237000"
+    aria-controls="apif-policyrule-1774736144335936000"
     data-api-toggle
     type="button"
   >
@@ -1021,7 +1031,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-policyrule-1774729118568237000" hidden>
+  <div class="api-field__body" id="apif-policyrule-1774736144335936000" hidden>
     
       
       <p class="api-field__desc">The policy logic as an inline object. Exactly one of policyRule or policyRuleJson must be specified.</p>
@@ -1044,7 +1054,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-if-1774729118567965000"
+    aria-controls="apif-if-1774736144334948000"
     data-api-toggle
     type="button"
   >
@@ -1065,7 +1075,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-if-1774729118567965000" hidden>
+  <div class="api-field__body" id="apif-if-1774736144334948000" hidden>
     
       
       <div class="api-field__content">
@@ -1102,7 +1112,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-then-1774729118568103000"
+    aria-controls="apif-then-1774736144335626000"
     data-api-toggle
     type="button"
   >
@@ -1123,7 +1133,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-then-1774729118568103000" hidden>
+  <div class="api-field__body" id="apif-then-1774736144335626000" hidden>
     
       
       <div class="api-field__content">
@@ -1163,7 +1173,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-policyrulejson-1774729118568279000"
+    aria-controls="apif-policyrulejson-1774736144335975000"
     data-api-toggle
     type="button"
   >
@@ -1184,7 +1194,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-policyrulejson-1774729118568279000" hidden>
+  <div class="api-field__body" id="apif-policyrulejson-1774736144335975000" hidden>
     
       
       <div class="api-field__content">
@@ -1225,7 +1235,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-subscriptionid-1774729118568425000"
+    aria-controls="apif-subscriptionid-1774736144337151000"
     data-api-toggle
     type="button"
   >
@@ -1244,7 +1254,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-subscriptionid-1774729118568425000" hidden>
+  <div class="api-field__body" id="apif-subscriptionid-1774736144337151000" hidden>
     
       
       <div class="api-field__content">
@@ -1276,7 +1286,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-managementgroupid-1774729118568607000"
+    aria-controls="apif-managementgroupid-1774736144339579000"
     data-api-toggle
     type="button"
   >
@@ -1295,7 +1305,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-managementgroupid-1774729118568607000" hidden>
+  <div class="api-field__body" id="apif-managementgroupid-1774736144339579000" hidden>
     
       
       <div class="api-field__content">
@@ -1320,217 +1330,18 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-<div class="api-field api-field--object">
-  <button
-    class="api-field__header"
-    aria-expanded="false"
-    aria-controls="apif-status-1774729118569601000"
-    data-api-toggle
-    type="button"
-  >
-    <span class="api-field__toggle" aria-hidden="true">
-      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </span>
-
-    <span class="api-field__name">status</span>
-
-    <span class="api-field__spacer" aria-hidden="true"></span>
-
-    <span class="api-field__right">
-      
-      <span class="api-field__type">Object</span>
-    </span>
-  </button>
-
-  <div class="api-field__body" id="apif-status-1774729118569601000" hidden>
-    
-      
-      <p class="api-field__desc">Observed state of the AzurePolicyDefinition. Populated by the operator after a successful reconcile.</p>
-      
-      
-      <div class="api-field__children">
-        
-  
-
-
-
-
-
-
-
-
-
-
-<div class="api-field">
-  <button
-    class="api-field__header"
-    aria-expanded="false"
-    aria-controls="apif-policydefinitionid-1774729118568932000"
-    data-api-toggle
-    type="button"
-  >
-    <span class="api-field__toggle" aria-hidden="true">
-      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </span>
-
-    <span class="api-field__name">policyDefinitionId</span>
-
-    <span class="api-field__spacer" aria-hidden="true"></span>
-
-    <span class="api-field__right">
-      
-      <span class="api-field__type">String</span>
-    </span>
-  </button>
-
-  <div class="api-field__body" id="apif-policydefinitionid-1774729118568932000" hidden>
-    
-      
-      <div class="api-field__content">
-        <p class="api-field__desc">Full Azure resource ID of the created or updated policy definition.</p>
-        
-        
-        
-        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitionId</span>: &gt;-<span style="color:#f1fa8c">
-</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    /subscriptions/00000000-0000-0000-0000-000000000000
-</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    /providers/Microsoft.Authorization/policyDefinitions/require-https-storage</span>
-</span></span></code></pre></div>
-      </div>
-    
-  </div>
-</div>
-
-  
-
-
-
-
-
-
-
-
-
-
-<div class="api-field">
-  <button
-    class="api-field__header"
-    aria-expanded="false"
-    aria-controls="apif-appliedversion-1774729118569187000"
-    data-api-toggle
-    type="button"
-  >
-    <span class="api-field__toggle" aria-hidden="true">
-      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </span>
-
-    <span class="api-field__name">appliedVersion</span>
-
-    <span class="api-field__spacer" aria-hidden="true"></span>
-
-    <span class="api-field__right">
-      
-      <span class="api-field__type">String</span>
-    </span>
-  </button>
-
-  <div class="api-field__body" id="apif-appliedversion-1774729118569187000" hidden>
-    
-      
-      <div class="api-field__content">
-        <p class="api-field__desc">The spec.version value last successfully written to Azure Policy metadata.</p>
-        
-        
-        
-        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">appliedVersion</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
-</span></span></code></pre></div>
-      </div>
-    
-  </div>
-</div>
-
-  
-
-
-
-
-
-
-
-
-
-
-<div class="api-field">
-  <button
-    class="api-field__header"
-    aria-expanded="false"
-    aria-controls="apif-conditions-1774729118569427000"
-    data-api-toggle
-    type="button"
-  >
-    <span class="api-field__toggle" aria-hidden="true">
-      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </span>
-
-    <span class="api-field__name">conditions</span>
-
-    <span class="api-field__spacer" aria-hidden="true"></span>
-
-    <span class="api-field__right">
-      
-      <span class="api-field__type">Array</span>
-    </span>
-  </button>
-
-  <div class="api-field__body" id="apif-conditions-1774729118569427000" hidden>
-    
-      
-      <div class="api-field__content">
-        <p class="api-field__desc">Standard Kubernetes conditions reflecting the current reconcile state (e.g. Ready).</p>
-        
-        
-        
-        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">conditions</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">type</span>: Ready
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">status</span>: <span style="color:#f1fa8c">&#34;True&#34;</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">reason</span>: ReconcileSucceeded
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">lastTransitionTime</span>: <span style="color:#f1fa8c">&#34;2024-01-15T10:30:00Z&#34;</span>
-</span></span></code></pre></div>
-      </div>
-    
-  </div>
-</div>
-
-
-      </div>
-    
-  </div>
-</div>
-
-
-
     </div>
   </div>
 
   
   
   <div class="api-schema__panel" data-schema-panel="examples" role="tabpanel" hidden>
+  </div>
+  
+
+  
+  
+  <div class="api-schema__panel" data-schema-panel="status" role="tabpanel" hidden>
   </div>
   
 
@@ -1629,20 +1440,219 @@
 </div>
 
 
+<div class="api-status-src">
+  <div class="api-field-tree">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-policydefinitionid-1774736144342078000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">policyDefinitionId</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-policydefinitionid-1774736144342078000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Full Azure resource ID of the created or updated policy definition, populated after the first successful reconcile.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitionId</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    /subscriptions/00000000-0000-0000-0000-000000000000
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    /providers/Microsoft.Authorization/policyDefinitions/require-https-storage</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-appliedversion-1774736144342261000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">appliedVersion</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-appliedversion-1774736144342261000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">The spec.version value last successfully written to Azure Policy metadata. Mirrors spec.version after each successful reconcile.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">appliedVersion</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-conditions-1774736144342833000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">conditions</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Array</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-conditions-1774736144342833000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Standard Kubernetes conditions reflecting the current reconcile state.</p>
+        
+        
+        
+        <table>
+  <thead>
+      <tr>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Reason</th>
+          <th>Meaning</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>Ready</code></td>
+          <td><code>True</code></td>
+          <td><code>ReconcileSucceeded</code></td>
+          <td>Definition is in sync with Azure</td>
+      </tr>
+      <tr>
+          <td><code>Ready</code></td>
+          <td><code>False</code></td>
+          <td><code>ReconcileFailed</code></td>
+          <td>Last reconcile failed; see message</td>
+      </tr>
+      <tr>
+          <td><code>Ready</code></td>
+          <td><code>False</code></td>
+          <td><code>AzureAPIError</code></td>
+          <td>ARM API returned an error</td>
+      </tr>
+  </tbody>
+</table>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">conditions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">type</span>: Ready
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">status</span>: <span style="color:#f1fa8c">&#34;True&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">reason</span>: ReconcileSucceeded
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">message</span>: <span style="color:#f1fa8c">&#34;Policy definition successfully reconciled&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">lastTransitionTime</span>: <span style="color:#f1fa8c">&#34;2024-01-15T10:30:00Z&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+
+  </div>
+</div>
+
+
       </div>
 
       <div class="doc-footer">
         <nav class="doc-nav" aria-label="Page navigation">
           
-            <a class="doc-nav-card prev" href="/docs/policy-initiatives/">
+            <a class="doc-nav-card prev" href="/docs/api-reference/">
               <span class="doc-nav-label">← Previous</span>
-              <span class="doc-nav-title">Policy Initiatives</span>
+              <span class="doc-nav-title">API Reference</span>
             </a>
           
           
-            <a class="doc-nav-card next" href="/docs/api-reference/">
+            <a class="doc-nav-card next" href="/docs/policy-initiatives/">
               <span class="doc-nav-label">Next →</span>
-              <span class="doc-nav-title">API Reference</span>
+              <span class="doc-nav-title">Policy Initiatives</span>
             </a>
           
         </nav>
@@ -1674,8 +1684,8 @@
       
       <div>
         <div class="footer-brand">
-          <img src="/img/logo.svg" alt="Policy Operator logo" class="footer-logo">
-          Policy Operator
+          <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="footer-logo">
+          Azure Policy Operator
         </div>
         <p class="footer-desc">
           Manage Azure Policy resources declaratively through Kubernetes custom resources.
@@ -1706,7 +1716,7 @@
     </div>
 
     <div class="footer-bottom">
-      <span>© 2026 Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
+      <span>© 2026 Azure Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
       <a href="https://github.com/example/policy-operator" target="_blank" rel="noopener" style="color:inherit">View on GitHub →</a>
     </div>
   </div>

@@ -997,8 +997,9 @@ footer {
 .api-field__content pre { margin-top: 0.75rem; margin-bottom: 0; }
 .api-field__content table { font-size: 0.875rem; }
 
-/* Examples source node — hidden, JS moves content */
+/* Examples / Status source nodes — hidden, JS moves content into panels */
 .api-examples-src { display: none; }
+.api-status-src   { display: none; }
 
 /* 19. Utilities */
 .sr-only { position: absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

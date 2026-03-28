@@ -6,7 +6,7 @@ weight: 20
 
 The `AzurePolicyInitiative` custom resource maps to an [Azure Policy Set Definition](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/initiative-definition-structure). An initiative groups one or more policy definitions so they can be assigned and tracked together. The operator reconciles each resource by creating or updating the corresponding policy set definition in Azure.
 
-{{< api-schema kind="AzurePolicyInitiative" version="v1alpha1" examples="4" >}}
+{{< api-schema kind="AzurePolicyInitiative" version="v1alpha1" examples="4" status="true" >}}
 
 {{< api-field name="apiVersion" type="String" desc="API version for this resource. Must be policy.azure.com/v1alpha1." >}}
 ```yaml
@@ -171,33 +171,6 @@ spec:
 
 {{< /api-field >}}
 
-{{< api-field name="status" type="Object" children="true" desc="Observed state of the AzurePolicyInitiative. Populated by the operator after a successful reconcile." >}}
-  {{< api-field name="initiativeId" type="String" desc="Full Azure resource ID of the created or updated policy set definition." >}}
-```yaml
-status:
-  initiativeId: >-
-    /subscriptions/00000000-0000-0000-0000-000000000000
-    /providers/Microsoft.Authorization/policySetDefinitions/security-baseline-initiative
-```
-  {{< /api-field >}}
-  {{< api-field name="appliedVersion" type="String" desc="The spec.version value last successfully written to Azure Policy metadata." >}}
-```yaml
-status:
-  appliedVersion: "1.0.0"
-```
-  {{< /api-field >}}
-  {{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state (e.g. Ready)." >}}
-```yaml
-status:
-  conditions:
-    - type: Ready
-      status: "True"
-      reason: ReconcileSucceeded
-      lastTransitionTime: "2024-01-15T10:30:00Z"
-```
-  {{< /api-field >}}
-{{< /api-field >}}
-
 {{< /api-schema >}}
 
 {{< api-examples >}}
@@ -305,3 +278,42 @@ spec:
 ```
 
 {{< /api-examples >}}
+
+{{< api-status >}}
+
+{{< api-field name="initiativeId" type="String" desc="Full Azure resource ID of the created or updated policy set definition, populated after the first successful reconcile." >}}
+```yaml
+status:
+  initiativeId: >-
+    /subscriptions/00000000-0000-0000-0000-000000000000
+    /providers/Microsoft.Authorization/policySetDefinitions/security-baseline-initiative
+```
+{{< /api-field >}}
+
+{{< api-field name="appliedVersion" type="String" desc="The spec.version value last successfully written to Azure Policy metadata. Mirrors spec.version after each successful reconcile." >}}
+```yaml
+status:
+  appliedVersion: "1.0.0"
+```
+{{< /api-field >}}
+
+{{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state." >}}
+
+| Type | Status | Reason | Meaning |
+|---|---|---|---|
+| `Ready` | `True` | `ReconcileSucceeded` | Initiative is in sync with Azure |
+| `Ready` | `False` | `ReconcileFailed` | Last reconcile failed; see message |
+| `Ready` | `False` | `AzureAPIError` | ARM API returned an error |
+
+```yaml
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: ReconcileSucceeded
+      message: "Policy initiative successfully reconciled"
+      lastTransitionTime: "2024-01-15T10:30:00Z"
+```
+{{< /api-field >}}
+
+{{< /api-status >}}

@@ -1,6 +1,6 @@
 baseURL       = 'https://policy-operator.io/'
 languageCode  = 'en-us'
-title         = 'Policy Operator'
+title         = 'Azure Policy Operator'
 theme         = 'policy-operator-theme'
 
 # Enable auto-generated table of contents
@@ -21,7 +21,7 @@ theme         = 'policy-operator-theme'
 # ── Site params ──────────────────────────────────────────────────────────────
 [params]
   description = "Manage Azure Policy resources declaratively through Kubernetes custom resources."
-  heroTitle   = "Policy Operator"
+  heroTitle   = "Azure Policy Operator"
   githubURL   = "https://github.com/example/policy-operator"
 
   [params.heroGetStarted]

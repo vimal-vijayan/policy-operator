@@ -1,6 +1,6 @@
 ---
 title: "API Reference"
-description: "Full specification for all Policy Operator Custom Resource Definitions."
+description: "Full specification for all Azure Policy Operator Custom Resource Definitions."
 weight: 3
 ---
 

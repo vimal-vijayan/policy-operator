@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-<title>GitOps with Argo CD · Policy Operator</title>
+<title>GitOps with Argo CD · Azure Policy Operator</title>
 
 <meta name="description" content="Deploy and lifecycle-manage Azure Policy manifests through pull requests, code review, and Argo CD sync loops.">
 
@@ -32,8 +32,8 @@
   <div class="container navbar-inner">
 
     <a class="navbar-brand" href="/">
-      <img src="/img/logo.svg" alt="Policy Operator logo" class="navbar-logo">
-      <span>Policy Operator</span>
+      <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="navbar-logo">
+      <span>Azure Policy Operator</span>
     </a>
 
     <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -151,7 +151,7 @@
             <a href="/">Home</a>
             
               <span class="breadcrumb-sep" aria-hidden="true">/</span>
-              <a href="/">Policy Operator</a>
+              <a href="/">Azure Policy Operator</a>
             
               <span class="breadcrumb-sep" aria-hidden="true">/</span>
               <a href="/docs/">Documentation</a>
@@ -179,7 +179,7 @@
         <blockquote>
 <p><strong>Note:</strong> The architecture and Argo CD deployment model described on this page is a reference design. Actual implementation will vary based on your organisation&rsquo;s specific requirements, tooling, and platform constraints. Treat this as a starting point, not a prescriptive standard.</p>
 </blockquote>
-<p>GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Policy Operator, every Azure Policy definition, assignment, exemption, and remediation becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.</p>
+<p>GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Azure Policy Operator, every Azure Policy definition, assignment, exemption, and remediation becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.</p>
 <h2 id="why-gitops-for-azure-governance">Why GitOps for Azure governance?</h2>
 <table>
   <thead>
@@ -361,7 +361,7 @@
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>argocd app list -l <span style="color:#8be9fd;font-style:italic">category</span><span style="color:#ff79c6">=</span>policy
 </span></span></code></pre></div><hr>
 <h2 id="secrets-and-credential-management">Secrets and credential management</h2>
-<p>The Policy Operator needs an Azure identity (Service Principal or Workload Identity) to call the ARM API. Keep credentials out of Git:</p>
+<p>The Azure Policy Operator needs an Azure identity (Service Principal or Workload Identity) to call the ARM API. Keep credentials out of Git:</p>
 <h3 id="option-a--kubernetes-secret-pre-created">Option A — Kubernetes Secret (pre-created)</h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl create secret generic azure-policy-credentials <span style="color:#f1fa8c">\
 </span></span></span><span style="display:flex;"><span>  --namespace policy-operator-system <span style="color:#f1fa8c">\
@@ -458,7 +458,7 @@
 </span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: azure-policy
 </span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: argocd
 </span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Azure Policy GitOps managed by Policy Operator&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Azure Policy GitOps managed by Azure Policy Operator&#34;</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">sourceRepos</span>:
 </span></span><span style="display:flex;"><span>    - https://github.com/your-org/your-repo.git
@@ -492,11 +492,11 @@
       <div class="doc-footer">
         <nav class="doc-nav" aria-label="Page navigation">
           
-          
-            <a class="doc-nav-card next" href="/docs/policy-exemptions/">
-              <span class="doc-nav-label">Next →</span>
+            <a class="doc-nav-card prev" href="/docs/policy-exemptions/">
+              <span class="doc-nav-label">← Previous</span>
               <span class="doc-nav-title">Policy Exemptions</span>
             </a>
+          
           
         </nav>
       </div>
@@ -561,8 +561,8 @@
       
       <div>
         <div class="footer-brand">
-          <img src="/img/logo.svg" alt="Policy Operator logo" class="footer-logo">
-          Policy Operator
+          <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="footer-logo">
+          Azure Policy Operator
         </div>
         <p class="footer-desc">
           Manage Azure Policy resources declaratively through Kubernetes custom resources.
@@ -593,7 +593,7 @@
     </div>
 
     <div class="footer-bottom">
-      <span>© 2026 Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
+      <span>© 2026 Azure Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
       <a href="https://github.com/example/policy-operator" target="_blank" rel="noopener" style="color:inherit">View on GitHub →</a>
     </div>
   </div>

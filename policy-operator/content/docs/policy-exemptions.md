@@ -6,7 +6,7 @@ weight: 40
 
 The `AzurePolicyExemption` custom resource maps to an [Azure Policy Exemption](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/exemption-structure). An exemption excludes a resource scope from evaluation under a specific policy assignment — without removing the assignment itself. Common uses include temporary waivers for legacy resources and mitigated exceptions where an alternative control satisfies the policy intent. The operator reconciles each resource by creating or updating the corresponding exemption in Azure.
 
-{{< api-schema kind="AzurePolicyExemption" version="v1alpha1" examples="4" >}}
+{{< api-schema kind="AzurePolicyExemption" version="v1alpha1" examples="4" status="true" >}}
 
 {{< api-field name="apiVersion" type="String" desc="API version for this resource. Must be policy.azure.com/v1alpha1." >}}
 ```yaml
@@ -157,28 +157,6 @@ spec:
 
 {{< /api-field >}}
 
-{{< api-field name="status" type="Object" children="true" desc="Observed state of the AzurePolicyExemption. Populated by the operator after a successful reconcile." >}}
-  {{< api-field name="exemptionId" type="String" desc="Full Azure resource ID of the created or updated policy exemption." >}}
-```yaml
-status:
-  exemptionId: >-
-    /subscriptions/00000000-0000-0000-0000-000000000000
-    /resourceGroups/legacy-rg/providers/Microsoft.Authorization
-    /policyExemptions/exempt-legacy-storage
-```
-  {{< /api-field >}}
-  {{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state (e.g. Ready)." >}}
-```yaml
-status:
-  conditions:
-    - type: Ready
-      status: "True"
-      reason: ReconcileSucceeded
-      lastTransitionTime: "2024-01-15T10:30:00Z"
-```
-  {{< /api-field >}}
-{{< /api-field >}}
-
 {{< /api-schema >}}
 
 {{< api-examples >}}
@@ -263,3 +241,36 @@ spec:
 ```
 
 {{< /api-examples >}}
+
+{{< api-status >}}
+
+{{< api-field name="exemptionId" type="String" desc="Full Azure resource ID of the created or updated policy exemption, populated after the first successful reconcile." >}}
+```yaml
+status:
+  exemptionId: >-
+    /subscriptions/00000000-0000-0000-0000-000000000000
+    /resourceGroups/legacy-rg/providers/Microsoft.Authorization
+    /policyExemptions/exempt-legacy-storage
+```
+{{< /api-field >}}
+
+{{< api-field name="conditions" type="Array" desc="Standard Kubernetes conditions reflecting the current reconcile state." >}}
+
+| Type | Status | Reason | Meaning |
+|---|---|---|---|
+| `Ready` | `True` | `ReconcileSucceeded` | Exemption is in sync with Azure |
+| `Ready` | `False` | `ReconcileFailed` | Last reconcile failed; see message |
+| `Ready` | `False` | `AzureAPIError` | ARM API returned an error |
+
+```yaml
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: ReconcileSucceeded
+      message: "Policy exemption successfully reconciled"
+      lastTransitionTime: "2024-01-15T10:30:00Z"
+```
+{{< /api-field >}}
+
+{{< /api-status >}}

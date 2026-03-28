@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-<title>Introduction · Policy Operator</title>
+<title>Introduction · Azure Policy Operator</title>
 
-<meta name="description" content="Why Policy Operator? The GitOps way to manage Azure governance.">
+<meta name="description" content="Why Azure Policy Operator? The GitOps way to manage Azure governance.">
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,8 +32,8 @@
   <div class="container navbar-inner">
 
     <a class="navbar-brand" href="/">
-      <img src="/img/logo.svg" alt="Policy Operator logo" class="navbar-logo">
-      <span>Policy Operator</span>
+      <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="navbar-logo">
+      <span>Azure Policy Operator</span>
     </a>
 
     <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -151,7 +151,7 @@
             <a href="/">Home</a>
             
               <span class="breadcrumb-sep" aria-hidden="true">/</span>
-              <a href="/">Policy Operator</a>
+              <a href="/">Azure Policy Operator</a>
             
               <span class="breadcrumb-sep" aria-hidden="true">/</span>
               <a href="/docs/">Documentation</a>
@@ -164,7 +164,7 @@
         <h1 class="doc-title">Introduction</h1>
 
         
-          <p class="doc-subtitle">Why Policy Operator? The GitOps way to manage Azure governance.</p>
+          <p class="doc-subtitle">Why Azure Policy Operator? The GitOps way to manage Azure governance.</p>
         
 
         <div class="doc-meta">
@@ -176,43 +176,43 @@
       </header>
 
       <div class="doc-body">
-        <h2 id="what-is-policy-operator">What is Policy Operator?</h2>
-<p>Policy Operator is a Kubernetes-native controller that brings Azure Policy management into the GitOps world. It extends the Kubernetes API with custom resources — giving platform and security teams a declarative, version-controlled way to define, assign, and exempt Azure governance policies without ever leaving the tools they already know.</p>
+        <h2 id="what-is-azure-policy-operator">What is Azure Policy Operator?</h2>
+<p>Azure Policy Operator is a Kubernetes-native controller that brings Azure Policy management into the GitOps world. It extends the Kubernetes API with custom resources — giving platform and security teams a declarative, version-controlled way to define, assign, and exempt Azure governance policies without ever leaving the tools they already know.</p>
 <p>Instead of clicking through the Azure Portal or running imperative scripts, you write a YAML manifest, open a pull request, and let the operator reconcile the desired state against Azure&rsquo;s Policy API.</p>
 <hr>
 <h2 id="the-gitops-way">The GitOps Way</h2>
 <p>Traditional Azure Policy management is imperative and fragile. You run a script, call an ARM template, or click through the portal — and the moment someone makes a change outside that process, drift is invisible until an audit catches it.</p>
-<p>Policy Operator flips this model. Every policy definition, initiative, assignment, and exemption lives in Git as a Kubernetes manifest. Changes go through pull requests, code review, and CI pipelines before they ever reach Azure. The operator continuously reconciles — if something drifts in Azure, it is corrected automatically to match what Git says it should be.</p>
+<p>Azure Policy Operator flips this model. Every policy definition, initiative, assignment, and exemption lives in Git as a Kubernetes manifest. Changes go through pull requests, code review, and CI pipelines before they ever reach Azure. The operator continuously reconciles — if something drifts in Azure, it is corrected automatically to match what Git says it should be.</p>
 <p><strong>The result:</strong> policy-as-code with real auditability, rollback via <code>git revert</code>, and zero manual portal access required.</p>
 <hr>
 <h2 id="beyond-terraform-and-epac">Beyond Terraform and EPAC</h2>
 <h3 id="why-not-terraform">Why not Terraform?</h3>
 <p>Terraform is a general-purpose infrastructure tool. Managing Azure Policy with it means wrapping policy JSON in HCL strings, losing syntax validation, and coupling governance lifecycles to infrastructure change cycles. Policy definitions buried inside Terraform modules are hard to review, test independently, or reuse across teams.</p>
-<p>Policy Operator treats policies as first-class Kubernetes objects — with status conditions, events, and reconciliation loops — not as blobs of JSON glued into <code>.tf</code> files.</p>
+<p>Azure Policy Operator treats policies as first-class Kubernetes objects — with status conditions, events, and reconciliation loops — not as blobs of JSON glued into <code>.tf</code> files.</p>
 <h3 id="why-not-epac">Why not EPAC?</h3>
 <p>Microsoft&rsquo;s <a href="https://aka.ms/epac">Enterprise Policy as Code (EPAC)</a> is a powerful PowerShell-based framework, but it comes with significant operational overhead: a separate deployment pipeline, PowerShell expertise, its own configuration schema, and no native integration with Kubernetes-based platforms.</p>
-<p>If your organisation already runs workloads on Kubernetes — whether on AKS or any other cluster — Policy Operator fits naturally into the same platform engineering workflow. You use the same RBAC, the same CI tooling, the same GitOps engine (Flux, Argo CD) that manages your application workloads. No separate toolchain to learn or maintain.</p>
+<p>If your organisation already runs workloads on Kubernetes — whether on AKS or any other cluster — Azure Policy Operator fits naturally into the same platform engineering workflow. You use the same RBAC, the same CI tooling, the same GitOps engine (Flux, Argo CD) that manages your application workloads. No separate toolchain to learn or maintain.</p>
 <hr>
 <h2 id="extending-kubernetes">Extending Kubernetes</h2>
-<p>Policy Operator is not just a convenience wrapper. It is a genuine extension of the Kubernetes control plane into the Azure governance layer.</p>
+<p>Azure Policy Operator is not just a convenience wrapper. It is a genuine extension of the Kubernetes control plane into the Azure governance layer.</p>
 <ul>
 <li><strong>Custom Resources</strong> — <code>AzurePolicyDefinition</code>, <code>AzurePolicyInitiative</code>, <code>AzurePolicyAssignment</code>, <code>AzurePolicyExemption</code> are first-class Kubernetes objects with full <code>kubectl</code> support.</li>
 <li><strong>Status &amp; Events</strong> — every resource reports its Azure sync status and surfaces errors as Kubernetes events, so <code>kubectl describe</code> gives you a full picture.</li>
 <li><strong>Controller reconciliation</strong> — the operator continuously watches both the Kubernetes API and Azure, healing drift automatically.</li>
 <li><strong>Platform composability</strong> — policy resources can be templated with Helm, generated by Crossplane, or composed into Platform Team abstractions — just like any other Kubernetes workload.</li>
 </ul>
-<p>This makes Policy Operator the natural choice for teams building Internal Developer Platforms on Kubernetes who want Azure governance to be a first-class, auditable part of that platform.</p>
+<p>This makes Azure Policy Operator the natural choice for teams building Internal Developer Platforms on Kubernetes who want Azure governance to be a first-class, auditable part of that platform.</p>
 
       </div>
 
       <div class="doc-footer">
         <nav class="doc-nav" aria-label="Page navigation">
           
-            <a class="doc-nav-card prev" href="/docs/getting-started/">
-              <span class="doc-nav-label">← Previous</span>
+          
+            <a class="doc-nav-card next" href="/docs/getting-started/">
+              <span class="doc-nav-label">Next →</span>
               <span class="doc-nav-title">Getting Started</span>
             </a>
-          
           
         </nav>
       </div>
@@ -227,7 +227,7 @@
   <p class="toc-label">On this page</p>
   <nav id="TableOfContents">
   <ul>
-    <li><a href="#what-is-policy-operator">What is Policy Operator?</a></li>
+    <li><a href="#what-is-azure-policy-operator">What is Azure Policy Operator?</a></li>
     <li><a href="#the-gitops-way">The GitOps Way</a></li>
     <li><a href="#beyond-terraform-and-epac">Beyond Terraform and EPAC</a>
       <ul>
@@ -255,8 +255,8 @@
       
       <div>
         <div class="footer-brand">
-          <img src="/img/logo.svg" alt="Policy Operator logo" class="footer-logo">
-          Policy Operator
+          <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="footer-logo">
+          Azure Policy Operator
         </div>
         <p class="footer-desc">
           Manage Azure Policy resources declaratively through Kubernetes custom resources.
@@ -287,7 +287,7 @@
     </div>
 
     <div class="footer-bottom">
-      <span>© 2026 Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
+      <span>© 2026 Azure Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
       <a href="https://github.com/example/policy-operator" target="_blank" rel="noopener" style="color:inherit">View on GitHub →</a>
     </div>
   </div>
