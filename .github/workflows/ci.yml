@@ -26,6 +26,12 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Format check
+        run: make fmt
+
+      - name: Lint
+        run: make lint
+
       - name: Run tests
         run: make test
 
