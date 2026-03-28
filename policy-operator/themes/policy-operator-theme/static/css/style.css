@@ -1092,6 +1092,7 @@ footer {
 [data-theme="dark"] .api-field__name    { color: #60a5fa; }
 [data-theme="dark"] .api-field__header:hover .api-field__name { color: #93c5fd; }
 [data-theme="dark"] .api-field__children { background: rgba(0,0,0,.2); }
+[data-theme="dark"] .api-schema__panel[data-schema-panel="examples"] h3 { color: #f1f5f9; }
 [data-theme="dark"] :root { --api-accent: #818cf8; --api-accent-bg: rgba(129,140,248,.12); --api-border: var(--border); --api-row-sep: rgba(255,255,255,.04); }
 
 /* Dogs — screen blend works on dark backgrounds */
