@@ -40,21 +40,14 @@ policies/
 │   └── management/
 │       └── assign-management-baseline.yaml
 │
-├── exemptions/
-│   ├── landingzones/
-│   │   └── exempt-lz-app1-temp.yaml
-│   ├── migrations/
-│   │   └── exempt-mig-temp-window.yaml
-│   └── management/
-│       └── exempt-mgmt-breakglass.yaml
-│
-└── remediations/
+└── exemptions/
     ├── landingzones/
-    │   └── rem-lz-tag-enforcement.yaml
+    │   └── exempt-lz-app1-temp.yaml
     ├── migrations/
-    │   └── rem-mig-legacy-cleanup.yaml
+    │   └── exempt-mig-temp-window.yaml
     └── management/
-        └── rem-mgmt-baseline-fix.yaml
+        └── exempt-mgmt-breakglass.yaml
+
 ```
 
 > **Tip:** Keep definitions in a flat folder. Their names are globally unique and don't need a management-group split. Everything else benefits from per-group isolation.
