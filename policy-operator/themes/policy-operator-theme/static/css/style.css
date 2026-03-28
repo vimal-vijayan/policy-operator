@@ -1085,7 +1085,10 @@ footer {
 [data-theme="dark"] .feature-title  { color: #f1f5f9; }
 
 /* API schema */
-[data-theme="dark"] .api-schema__tabbar { background: rgba(255,255,255,.04); }
+[data-theme="dark"] .api-schema__tabbar        { background: rgba(255,255,255,.04); }
+[data-theme="dark"] .api-schema__tab           { color: var(--text-muted); }
+[data-theme="dark"] .api-schema__tab:hover     { color: #f1f5f9; }
+[data-theme="dark"] .api-schema__tab--active   { color: #f1f5f9; background: var(--bg-alt); }
 [data-theme="dark"] .api-schema         { background: var(--bg-alt); border-color: var(--border); }
 [data-theme="dark"] .api-field          { border-color: var(--border); }
 [data-theme="dark"] .api-field__header:hover { background: rgba(255,255,255,.04); }
