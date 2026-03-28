@@ -28,16 +28,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
-	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policydefinition"
 )
 
 const azurePolicyDefinitionFinalizer = "governance.platform.io/azurepolicydefinition-finalizer"
+
+// DefinitionService is the interface for managing Azure Policy Definitions.
+type DefinitionService interface {
+	CreateOrUpdate(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
+	Delete(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error
+}
 
 // AzurePolicyDefinitionReconciler reconciles a AzurePolicyDefinition object
 type AzurePolicyDefinitionReconciler struct {
 	client.Client
 	Scheme  *runtime.Scheme
-	Service *policydefinition.Service
+	Service DefinitionService
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicydefinitions,verbs=get;list;watch;create;update;patch;delete

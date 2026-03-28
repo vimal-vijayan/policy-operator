@@ -34,16 +34,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
-	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policyassignment"
 )
 
 const azurePolicyAssignmentFinalizer = "governance.platform.io/azurepolicyassignment-finalizer"
+
+// PolicyAssignmentService defines the Azure operations required by the assignment controller.
+type PolicyAssignmentService interface {
+	CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error)
+	Delete(ctx context.Context, scope string, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error
+}
 
 // AzurePolicyAssignmentReconciler reconciles a AzurePolicyAssignment object
 type AzurePolicyAssignmentReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Service  *policyassignment.Service
+	Service  PolicyAssignmentService
 	Recorder record.EventRecorder
 }
 

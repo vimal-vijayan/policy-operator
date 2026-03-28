@@ -33,16 +33,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
-	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policybundle"
 )
 
 const azurePolicyInitiativeFinalizer = "governance.platform.io/azurepolicyinitiative-finalizer"
+
+// InitiativeService is the interface for managing Azure Policy Set Definitions.
+type InitiativeService interface {
+	CreateOrUpdate(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedPolicyDefinitionIDs []string) (string, error)
+	Delete(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) error
+}
 
 // AzurePolicyInitiativeReconciler reconciles a AzurePolicyInitiative object
 type AzurePolicyInitiativeReconciler struct {
 	client.Client
 	Scheme  *runtime.Scheme
-	Service *policybundle.Service
+	Service InitiativeService
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyinitiatives,verbs=get;list;watch;create;update;patch;delete

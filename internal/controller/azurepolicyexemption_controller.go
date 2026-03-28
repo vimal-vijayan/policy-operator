@@ -30,16 +30,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
-	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policyexemption"
 )
 
 const azurePolicyExemptionFinalizer = "governance.platform.io/azurepolicyexemption-finalizer"
+
+// ExemptionService is the interface for managing Azure Policy Exemptions.
+type ExemptionService interface {
+	CreateOrUpdate(ctx context.Context, exemption *governancev1alpha1.AzurePolicyExemption) (string, error)
+	Delete(ctx context.Context, scope, exemptionID string) error
+}
 
 // AzurePolicyExemptionReconciler reconciles a AzurePolicyExemption object
 type AzurePolicyExemptionReconciler struct {
 	client.Client
 	Scheme  *runtime.Scheme
-	Service *policyexemption.Service
+	Service ExemptionService
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyexemptions,verbs=get;list;watch;create;update;patch;delete

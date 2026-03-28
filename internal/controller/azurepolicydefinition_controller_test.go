@@ -18,67 +18,266 @@ package controller
 
 import (
 	"context"
+	"errors"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
 )
 
+// fakePolicyDefinitionService is a test double for the DefinitionService interface.
+type fakePolicyDefinitionService struct {
+	createOrUpdateFn func(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
+	deleteFn         func(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error
+}
+
+func (f *fakePolicyDefinitionService) CreateOrUpdate(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error) {
+	if f.createOrUpdateFn != nil {
+		return f.createOrUpdateFn(ctx, def)
+	}
+	return "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyDefinitions/" + def.Name, nil
+}
+
+func (f *fakePolicyDefinitionService) Delete(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error {
+	if f.deleteFn != nil {
+		return f.deleteFn(ctx, def)
+	}
+	return nil
+}
+
 var _ = Describe("AzurePolicyDefinition Controller", func() {
-	Context("When reconciling a resource", func() {
-		const resourceName = "test-resource"
+	const resourceName = "test-policy-definition"
+	const fakeID = "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyDefinitions/test-policy-definition"
 
-		ctx := context.Background()
+	ctx := context.Background()
+	namespacedName := types.NamespacedName{Name: resourceName, Namespace: "default"}
 
-		typeNamespacedName := types.NamespacedName{
-			Name:      resourceName,
-			Namespace: "default", // TODO(user):Modify as needed
+	newResource := func(withFinalizer bool) *governancev1alpha1.AzurePolicyDefinition {
+		res := &governancev1alpha1.AzurePolicyDefinition{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      resourceName,
+				Namespace: "default",
+			},
+			Spec: governancev1alpha1.AzurePolicyDefinitionSpec{
+				DisplayName:    "Test Policy",
+				Mode:           "All",
+				PolicyType:     "Custom",
+				SubscriptionID: "00000000-0000-0000-0000-000000000000",
+				PolicyRuleJSON: "{}",
+			},
 		}
-		azurepolicydefinition := &governancev1alpha1.AzurePolicyDefinition{}
+		if withFinalizer {
+			res.Finalizers = []string{azurePolicyDefinitionFinalizer}
+		}
+		return res
+	}
 
+	newReconciler := func(svc DefinitionService) *AzurePolicyDefinitionReconciler {
+		return &AzurePolicyDefinitionReconciler{
+			Client:  k8sClient,
+			Scheme:  k8sClient.Scheme(),
+			Service: svc,
+		}
+	}
+
+	cleanupResource := func() {
+		res := &governancev1alpha1.AzurePolicyDefinition{}
+		if err := k8sClient.Get(ctx, namespacedName, res); err == nil {
+			res.Finalizers = nil
+			_ = k8sClient.Update(ctx, res)
+			_ = k8sClient.Delete(ctx, res)
+		}
+	}
+
+	Context("When reconciling a new resource without a finalizer", func() {
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind AzurePolicyDefinition")
-			err := k8sClient.Get(ctx, typeNamespacedName, azurepolicydefinition)
-			if err != nil && errors.IsNotFound(err) {
-				resource := &governancev1alpha1.AzurePolicyDefinition{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      resourceName,
-						Namespace: "default",
-					},
-					// TODO(user): Specify other spec details if needed.
-				}
-				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
-			}
+			Expect(k8sClient.Create(ctx, newResource(false))).To(Succeed())
 		})
+		AfterEach(func() { cleanupResource() })
 
-		AfterEach(func() {
-			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &governancev1alpha1.AzurePolicyDefinition{}
-			err := k8sClient.Get(ctx, typeNamespacedName, resource)
+		It("should add the finalizer without calling CreateOrUpdate", func() {
+			createCalled := false
+			svc := &fakePolicyDefinitionService{
+				createOrUpdateFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyDefinition) (string, error) {
+					createCalled = true
+					return "", nil
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(createCalled).To(BeFalse(), "CreateOrUpdate should not be called on first reconcile")
+
+			updated := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8sClient.Get(ctx, namespacedName, updated)).To(Succeed())
+			Expect(updated.Finalizers).To(ContainElement(azurePolicyDefinitionFinalizer))
+		})
+	})
+
+	Context("When reconciling a resource that already has the finalizer", func() {
+		BeforeEach(func() {
+			Expect(k8sClient.Create(ctx, newResource(true))).To(Succeed())
+		})
+		AfterEach(func() { cleanupResource() })
+
+		It("should call CreateOrUpdate and set PolicyDefinitionID and Ready=True", func() {
+			svc := &fakePolicyDefinitionService{
+				createOrUpdateFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyDefinition) (string, error) {
+					return fakeID, nil
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance AzurePolicyDefinition")
-			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
+			updated := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8sClient.Get(ctx, namespacedName, updated)).To(Succeed())
+			Expect(updated.Status.PolicyDefinitionID).To(Equal(fakeID))
+
+			cond := apimeta.FindStatusCondition(updated.Status.Conditions, "Ready")
+			Expect(cond).NotTo(BeNil())
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.Reason).To(Equal("Reconciled"))
 		})
-		It("should successfully reconcile the resource", func() {
-			By("Reconciling the created resource")
-			controllerReconciler := &AzurePolicyDefinitionReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
+
+		It("should record AppliedVersion in status after successful reconciliation", func() {
+			res := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8sClient.Get(ctx, namespacedName, res)).To(Succeed())
+			res.Spec.Version = "1.0.0"
+			Expect(k8sClient.Update(ctx, res)).To(Succeed())
+
+			svc := &fakePolicyDefinitionService{
+				createOrUpdateFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyDefinition) (string, error) {
+					return fakeID, nil
+				},
 			}
 
-			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).NotTo(HaveOccurred())
+
+			updated := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8sClient.Get(ctx, namespacedName, updated)).To(Succeed())
+			Expect(updated.Status.AppliedVersion).To(Equal("1.0.0"))
+		})
+
+		It("should set Ready=False with ReconcileFailed reason when CreateOrUpdate fails", func() {
+			svc := &fakePolicyDefinitionService{
+				createOrUpdateFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyDefinition) (string, error) {
+					return "", errors.New("azure api error")
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).To(HaveOccurred())
+
+			updated := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8sClient.Get(ctx, namespacedName, updated)).To(Succeed())
+
+			cond := apimeta.FindStatusCondition(updated.Status.Conditions, "Ready")
+			Expect(cond).NotTo(BeNil())
+			Expect(cond.Status).To(Equal(metav1.ConditionFalse))
+			Expect(cond.Reason).To(Equal("ReconcileFailed"))
+			Expect(cond.Message).To(ContainSubstring("azure api error"))
+		})
+	})
+
+	Context("When deleting a resource with a PolicyDefinitionID set in status", func() {
+		AfterEach(func() { cleanupResource() })
+
+		It("should call Delete and remove the finalizer", func() {
+			resource := newResource(true)
+			Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+
+			Expect(k8sClient.Get(ctx, namespacedName, resource)).To(Succeed())
+			resource.Status.PolicyDefinitionID = fakeID
+			Expect(k8sClient.Status().Update(ctx, resource)).To(Succeed())
+
+			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
+
+			deleteCalled := false
+			svc := &fakePolicyDefinitionService{
+				deleteFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyDefinition) error {
+					deleteCalled = true
+					return nil
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(deleteCalled).To(BeTrue())
+
+			updated := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8serrors.IsNotFound(k8sClient.Get(ctx, namespacedName, updated))).To(BeTrue())
+		})
+
+		It("should return an error and keep the finalizer when Delete fails", func() {
+			resource := newResource(true)
+			Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+
+			Expect(k8sClient.Get(ctx, namespacedName, resource)).To(Succeed())
+			resource.Status.PolicyDefinitionID = fakeID
+			Expect(k8sClient.Status().Update(ctx, resource)).To(Succeed())
+
+			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
+
+			svc := &fakePolicyDefinitionService{
+				deleteFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyDefinition) error {
+					return errors.New("delete failed")
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).To(HaveOccurred())
+
+			updated := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8sClient.Get(ctx, namespacedName, updated)).To(Succeed())
+			Expect(updated.Finalizers).To(ContainElement(azurePolicyDefinitionFinalizer))
+
+			cond := apimeta.FindStatusCondition(updated.Status.Conditions, "Ready")
+			Expect(cond).NotTo(BeNil())
+			Expect(cond.Status).To(Equal(metav1.ConditionFalse))
+			Expect(cond.Reason).To(Equal("DeleteFailed"))
+		})
+	})
+
+	Context("When deleting a resource without a PolicyDefinitionID in status", func() {
+		AfterEach(func() { cleanupResource() })
+
+		It("should remove the finalizer without calling Delete", func() {
+			resource := newResource(true)
+			Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
+
+			deleteCalled := false
+			svc := &fakePolicyDefinitionService{
+				deleteFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyDefinition) error {
+					deleteCalled = true
+					return nil
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(deleteCalled).To(BeFalse())
+
+			updated := &governancev1alpha1.AzurePolicyDefinition{}
+			Expect(k8serrors.IsNotFound(k8sClient.Get(ctx, namespacedName, updated))).To(BeTrue())
+		})
+	})
+
+	Context("When the resource does not exist", func() {
+		It("should return no error", func() {
+			svc := &fakePolicyDefinitionService{}
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{
+				NamespacedName: types.NamespacedName{Name: "non-existent", Namespace: "default"},
 			})
 			Expect(err).NotTo(HaveOccurred())
-			// TODO(user): Add more specific assertions depending on your controller's reconciliation logic.
-			// Example: If you expect a certain status condition after reconciliation, verify it here.
 		})
 	})
 })
