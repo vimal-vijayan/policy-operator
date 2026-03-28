@@ -1,0 +1,74 @@
+{{/*
+  api-field shortcode
+  Renders a single row in the API field tree.
+
+  Parameters:
+    name      (string)  — field name, required
+    type      (string)  — type label: String | Object | Array | Boolean | Integer
+    required  (bool)    — marks the field as required
+    desc      (string)  — short description shown when expanded (leaf) or inline (object)
+    children  (bool)    — true when .Inner contains nested api-field shortcodes
+    default   (string)  — default value
+    mutual    (string)  — mutually exclusive with this other field name
+    enum      (string)  — pipe-separated allowed values, e.g. "Audit|Deny|Disabled"
+*/}}
+{{ $name     := .Get "name" }}
+{{ $type     := .Get "type"     | default "String" }}
+{{ $required := .Get "required" | default false }}
+{{ $desc     := .Get "desc"     | default "" }}
+{{ $children := .Get "children" | default false }}
+{{ $default  := .Get "default" }}
+{{ $mutual   := .Get "mutual" }}
+{{ $enum     := .Get "enum" }}
+{{ $id       := printf "apif-%s" (printf "%s-%s" $name (now.UnixNano | string)) | urlize }}
+
+<div class="api-field{{ if $children }} api-field--object{{ end }}">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="{{ $id }}"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">{{ $name }}</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      {{ if $required }}
+        <span class="api-field__req">required</span>
+      {{ end }}
+      <span class="api-field__type">{{ $type }}</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="{{ $id }}" hidden>
+    {{ if $children }}
+      {{/* Object/Array field — show optional desc then nested child rows */}}
+      {{ with $desc }}<p class="api-field__desc">{{ . }}</p>{{ end }}
+      {{ with $default }}<p class="api-field__meta-line"><span class="apf-label">Default:</span> <code class="apf-val">{{ . }}</code></p>{{ end }}
+      {{ with $mutual }}<p class="api-field__meta-line apf-mutual">Mutually exclusive with <code>{{ . }}</code>.</p>{{ end }}
+      <div class="api-field__children">
+        {{ .Inner }}
+      </div>
+    {{ else }}
+      {{/* Leaf field — render description + optional inline metadata */}}
+      <div class="api-field__content">
+        {{ with $desc }}<p class="api-field__desc">{{ . }}</p>{{ end }}
+        {{ with $enum }}
+          <p class="api-field__meta-line"><span class="apf-label">Allowed values:</span>
+            {{ range (split . "|") }}<code class="apf-enum">{{ . }}</code> {{ end }}
+          </p>
+        {{ end }}
+        {{ with $default }}<p class="api-field__meta-line"><span class="apf-label">Default:</span> <code class="apf-val apf-val--green">{{ . }}</code></p>{{ end }}
+        {{ with $mutual }}<p class="api-field__meta-line apf-mutual">Mutually exclusive with <code>{{ . }}</code>.</p>{{ end }}
+        {{ with .Inner }}{{ . | markdownify }}{{ end }}
+      </div>
+    {{ end }}
+  </div>
+</div>

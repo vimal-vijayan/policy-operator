@@ -1,0 +1,8 @@
+{{/*
+  api-examples shortcode
+  Holds the examples content for the adjacent api-schema's "Examples" tab.
+  JS moves this content into the examples panel on page load.
+*/}}
+<div class="api-examples-src" hidden aria-hidden="true">
+  {{ .Inner | markdownify }}
+</div>

@@ -1,0 +1,77 @@
+baseURL       = 'https://policy-operator.io/'
+languageCode  = 'en-us'
+title         = 'Policy Operator'
+theme         = 'policy-operator-theme'
+
+# Enable auto-generated table of contents
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel   = 4
+  ordered    = false
+
+[markup.goldmark.renderer]
+  unsafe = true   # allow raw HTML in markdown
+
+[markup.highlight]
+  style         = "dracula"
+  lineNos       = false
+  codeFences    = true
+  guessSyntax   = true
+
+# ── Site params ──────────────────────────────────────────────────────────────
+[params]
+  description = "Manage Azure Policy resources declaratively through Kubernetes custom resources."
+  heroTitle   = "Policy Operator"
+  githubURL   = "https://github.com/example/policy-operator"
+
+  [params.heroGetStarted]
+    url   = "/docs/getting-started/"
+    label = "Get Started →"
+
+  heroTags = ["Kubernetes Operator", "Azure Policy", "GitOps", "Go"]
+
+  [[params.features]]
+    icon        = "🛡️"
+    title       = "Policy Definitions"
+    description = "Define and manage Azure Policy definitions as Kubernetes custom resources using the AzurePolicyDefinition kind."
+    url         = "/docs/policy-definitions/"
+
+  [[params.features]]
+    icon        = "📋"
+    title       = "Policy Initiatives"
+    description = "Group related policies into initiatives (policy sets) with AzurePolicyInitiative for comprehensive governance."
+    url         = "/docs/policy-initiatives/"
+
+  [[params.features]]
+    icon        = "🔗"
+    title       = "Policy Assignments"
+    description = "Assign policies and initiatives to management groups, subscriptions, or resource groups via AzurePolicyAssignment."
+    url         = "/docs/policy-assignments/"
+
+  [[params.features]]
+    icon        = "🚫"
+    title       = "Policy Exemptions"
+    description = "Create time-bound policy exemptions for exceptions and waivers using AzurePolicyExemption."
+    url         = "/docs/policy-exemptions/"
+
+  [[params.features]]
+    icon        = "♻️"
+    title       = "GitOps Ready"
+    description = "Manage the full Azure governance lifecycle through pull requests, code review, and automated pipelines."
+    url         = "/docs/gitops-argocd/"
+
+# ── Navigation menus ─────────────────────────────────────────────────────────
+[[menus.main]]
+  name   = "Docs"
+  url    = "/docs/"
+  weight = 10
+
+[[menus.main]]
+  name   = "API Reference"
+  url    = "/docs/api-reference/"
+  weight = 20
+
+[[menus.main]]
+  name   = "GitHub"
+  url    = "https://github.com/example/policy-operator"
+  weight = 90

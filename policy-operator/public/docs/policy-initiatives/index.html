@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+<title>Policy Initiatives · Policy Operator</title>
+
+<meta name="description" content="Group related Azure Policy definitions into initiatives (policy sets) using AzurePolicyInitiative.">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+
+
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
+
+
+
+
+
+  
+</head>
+<body class="page-doc">
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="container navbar-inner">
+
+    <a class="navbar-brand" href="/">
+      <img src="/img/logo.svg" alt="Policy Operator logo" class="navbar-logo">
+      <span>Policy Operator</span>
+    </a>
+
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+
+    <button class="navbar-toggle" id="navbar-toggle"
+            aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="navbar-menu" id="navbar-menu" role="menubar">
+      
+        
+        <a class="navbar-link"
+           href="/docs/"
+           
+           role="menuitem">
+          Docs
+        </a>
+      
+        
+        <a class="navbar-link"
+           href="/docs/api-reference/"
+           
+           role="menuitem">
+          API Reference
+        </a>
+      
+        
+        <a class="navbar-link external"
+           href="https://github.com/example/policy-operator"
+           target="_blank" rel="noopener noreferrer"
+           role="menuitem">
+          GitHub
+        </a>
+      
+    </div>
+
+  </div>
+</nav>
+
+
+  
+<div class="doc-wrap">
+
+  
+  <aside class="doc-sidebar" id="doc-sidebar" aria-label="Documentation navigation">
+    
+
+<div class="doc-sidebar-inner" id="doc-sidebar-inner">
+
+  
+  
+  
+
+  
+    
+
+    
+    
+      <div class="sidebar-section">
+        
+          <a class="sidebar-link"
+             href="/docs/introduction/">Introduction</a>
+        
+          <a class="sidebar-link"
+             href="/docs/getting-started/">Getting Started</a>
+        
+          <a class="sidebar-link"
+             href="/docs/api-reference/">API Reference</a>
+        
+          <a class="sidebar-link"
+             href="/docs/policy-definitions/">Policy Definitions</a>
+        
+          <a class="sidebar-link active"
+             href="/docs/policy-initiatives/">Policy Initiatives</a>
+        
+          <a class="sidebar-link"
+             href="/docs/policy-assignments/">Policy Assignments</a>
+        
+          <a class="sidebar-link"
+             href="/docs/policy-exemptions/">Policy Exemptions</a>
+        
+          <a class="sidebar-link"
+             href="/docs/gitops-argocd/">GitOps with Argo CD</a>
+        
+      </div>
+    
+
+  
+
+</div>
+
+  </aside>
+
+  <div class="doc-main">
+
+    
+    <article class="doc-content">
+
+      <header class="doc-header">
+
+        
+        
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <a href="/">Policy Operator</a>
+            
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <a href="/docs/">Documentation</a>
+            
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span class="breadcrumb-current">Policy Initiatives</span>
+          </nav>
+        
+
+        <h1 class="doc-title">Policy Initiatives</h1>
+
+        
+          <p class="doc-subtitle">Group related Azure Policy definitions into initiatives (policy sets) using AzurePolicyInitiative.</p>
+        
+
+        <div class="doc-meta">
+          
+          
+          <span>4 min read</span>
+        </div>
+
+      </header>
+
+      <div class="doc-body">
+        <p>The <code>AzurePolicyInitiative</code> custom resource maps to an <a href="https://learn.microsoft.com/en-us/azure/governance/policy/concepts/initiative-definition-structure">Azure Policy Set Definition</a>. An initiative groups one or more policy definitions so they can be assigned and tracked together. The operator reconciles each resource by creating or updating the corresponding policy set definition in Azure.</p>
+
+
+
+
+
+<div class="api-schema">
+
+  
+  <div class="api-schema__tabbar" role="tablist" aria-label="Documentation tabs">
+    <button
+      class="api-schema__tab api-schema__tab--active"
+      role="tab"
+      aria-selected="true"
+      data-schema-tab="docs"
+      type="button"
+    >API Documentation</button>
+    
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="examples"
+      type="button"
+    >Examples (4)</button>
+    
+  </div>
+
+  
+  <div class="api-schema__panel" data-schema-panel="docs" role="tabpanel">
+    <div class="api-field-tree">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-apiversion-1774729142648011000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">apiVersion</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-apiversion-1774729142648011000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">API version for this resource. Must be policy.azure.com/v1alpha1.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-kind-1774729142648131000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">kind</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-kind-1774729142648131000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Resource kind. Must be AzurePolicyInitiative.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyInitiative
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field api-field--object">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-metadata-1774729142648785000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">metadata</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-metadata-1774729142648785000" hidden>
+    
+      
+      <p class="api-field__desc">Standard Kubernetes object metadata.</p>
+      
+      
+      <div class="api-field__children">
+        
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-name-1774729142648236000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">name</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+        <span class="api-field__req">required</span>
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-name-1774729142648236000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Unique name of the resource within its namespace.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: security-baseline-initiative
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-namespace-1774729142648399000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">namespace</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-namespace-1774729142648399000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Kubernetes namespace.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: platform-policies
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-labels-1774729142648520000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">labels</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-labels-1774729142648520000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Map of key/value pairs for organizing resources.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">labels</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">team</span>: platform
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">env</span>: production
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-annotations-1774729142648669000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">annotations</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-annotations-1774729142648669000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Arbitrary non-identifying metadata.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">policy.azure.com/owner</span>: platform-team
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+      </div>
+    
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field api-field--object">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-spec-1774729142650681000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">spec</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+        <span class="api-field__req">required</span>
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-spec-1774729142650681000" hidden>
+    
+      
+      <p class="api-field__desc">Desired state of the AzurePolicyInitiative.</p>
+      
+      
+      <div class="api-field__children">
+        
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-displayname-1774729142648805000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">displayName</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+        <span class="api-field__req">required</span>
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-displayname-1774729142648805000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Human-readable name shown in the Azure portal and in compliance reports.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Security Baseline Initiative&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-description-1774729142648910000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">description</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-description-1774729142648910000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">A human-readable explanation of what the initiative enforces and why.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Enforces a security baseline across all subscriptions.&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-version-1774729142649004000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">version</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-version-1774729142649004000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Semantic version of the initiative (e.g. 1.0.0). Written into Azure Policy metadata under the version key; takes precedence over any version key in spec.metadata.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">version</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-metadata-1774729142649109000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">metadata</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-metadata-1774729142649109000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Arbitrary metadata attached to the Azure Policy set definition as a raw JSON object. Common keys: category, version.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">category</span>: <span style="color:#f1fa8c">&#34;Security&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">version</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field api-field--object">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-parameters-1774729142649965000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">parameters</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Array</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-parameters-1774729142649965000" hidden>
+    
+      
+      <p class="api-field__desc">Declares the parameters accepted by the initiative. Each entry defines a parameter that can be passed through to member policy definitions at assignment time.</p>
+      
+      
+      <div class="api-field__children">
+        
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-name-1774729142649245000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">name</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+        <span class="api-field__req">required</span>
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-name-1774729142649245000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">The parameter name referenced inside policyDefinitions[].parameters.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: effect
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-type-1774729142649348000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">type</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+        <span class="api-field__req">required</span>
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-type-1774729142649348000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Data type of the parameter.</p>
+        
+          <p class="api-field__meta-line"><span class="apf-label">Allowed values:</span>
+            <code class="apf-enum">String</code> <code class="apf-enum">Array</code> <code class="apf-enum">Object</code> <code class="apf-enum">Boolean</code> <code class="apf-enum">Integer</code> <code class="apf-enum">Float</code> <code class="apf-enum">DateTime</code> 
+          </p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: effect
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: String
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-defaultvalue-1774729142649476000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">defaultValue</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-defaultvalue-1774729142649476000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Default value used when no value is supplied at assignment time.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: effect
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: String
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">defaultValue</span>: <span style="color:#f1fa8c">&#34;Audit&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-allowedvalues-1774729142649614000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">allowedValues</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Array</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-allowedvalues-1774729142649614000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Restricts the set of values that can be supplied for this parameter.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: effect
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: String
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">allowedValues</span>: [<span style="color:#f1fa8c">&#34;Audit&#34;</span>, <span style="color:#f1fa8c">&#34;Deny&#34;</span>, <span style="color:#f1fa8c">&#34;Disabled&#34;</span>]
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-strongtype-1774729142649826000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">strongType</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-strongtype-1774729142649826000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Azure portal UI hint for this parameter (e.g. location, resourceTypes). Enables portal dropdowns and pickers.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: allowedLocations
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: Array
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">strongType</span>: <span style="color:#f1fa8c">&#34;location&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
+      </div>
+    
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field api-field--object">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-policydefinitions-1774729142650454000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">policyDefinitions</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+        <span class="api-field__req">required</span>
+      
+      <span class="api-field__type">Array</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-policydefinitions-1774729142650454000" hidden>
+    
+      
+      <p class="api-field__desc">The list of policy definitions included in the initiative. At least one entry is required. Each entry must specify exactly one of policyDefinitionId or policyDefinitionRef.</p>
+      
+      
+      <div class="api-field__children">
+        
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-policydefinitionid-1774729142650035000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">policyDefinitionId</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-policydefinitionid-1774729142650035000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">The full Azure resource ID of a built-in or externally managed custom policy definition. Exactly one of policyDefinitionId or policyDefinitionRef must be specified.</p>
+        
+        
+        <p class="api-field__meta-line apf-mutual">Mutually exclusive with <code>policyDefinitionRef</code>.</p>
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionId</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">        /providers/Microsoft.Authorization/policyDefinitions/0a914e76-4921-4c19-b460-a2d36003525a</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-policydefinitionref-1774729142650151000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">policyDefinitionRef</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-policydefinitionref-1774729142650151000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">The name of an AzurePolicyDefinition CR in the same namespace. The operator resolves this reference to the Azure resource ID at reconcile time. Exactly one of policyDefinitionId or policyDefinitionRef must be specified.</p>
+        
+        
+        <p class="api-field__meta-line apf-mutual">Mutually exclusive with <code>policyDefinitionId</code>.</p>
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionRef</span>: require-https-storage
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-parameters-1774729142650276000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">parameters</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-parameters-1774729142650276000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Parameter values passed to the referenced policy definition. Keys are parameter names; values follow the Azure Policy parameter value schema.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionRef</span>: require-https-storage
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">effect</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">value</span>: <span style="color:#f1fa8c">&#34;[parameters(&#39;effect&#39;)]&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
+      </div>
+    
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-subscriptionid-1774729142650478000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">subscriptionId</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-subscriptionid-1774729142650478000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Azure Subscription ID to create the initiative in. When omitted and managementGroupId is not set, the operator&#39;s own subscription is used.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">subscriptionId</span>: <span style="color:#f1fa8c">&#34;00000000-0000-0000-0000-000000000000&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-managementgroupid-1774729142650591000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">managementGroupId</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-managementgroupid-1774729142650591000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Management Group ID to create the initiative in. Use this to share the initiative across multiple subscriptions.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">managementGroupId</span>: <span style="color:#f1fa8c">&#34;my-management-group&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+
+      </div>
+    
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="api-field api-field--object">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-status-1774729142652782000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">status</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Object</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-status-1774729142652782000" hidden>
+    
+      
+      <p class="api-field__desc">Observed state of the AzurePolicyInitiative. Populated by the operator after a successful reconcile.</p>
+      
+      
+      <div class="api-field__children">
+        
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-initiativeid-1774729142650725000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">initiativeId</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-initiativeid-1774729142650725000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Full Azure resource ID of the created or updated policy set definition.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">initiativeId</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    /subscriptions/00000000-0000-0000-0000-000000000000
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    /providers/Microsoft.Authorization/policySetDefinitions/security-baseline-initiative</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-appliedversion-1774729142651719000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">appliedVersion</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-appliedversion-1774729142651719000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">The spec.version value last successfully written to Azure Policy metadata.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">appliedVersion</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-conditions-1774729142652599000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">conditions</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">Array</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-conditions-1774729142652599000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Standard Kubernetes conditions reflecting the current reconcile state (e.g. Ready).</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">status</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">conditions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">type</span>: Ready
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">status</span>: <span style="color:#f1fa8c">&#34;True&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">reason</span>: ReconcileSucceeded
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">lastTransitionTime</span>: <span style="color:#f1fa8c">&#34;2024-01-15T10:30:00Z&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+
+      </div>
+    
+  </div>
+</div>
+
+
+
+    </div>
+  </div>
+
+  
+  
+  <div class="api-schema__panel" data-schema-panel="examples" role="tabpanel" hidden>
+  </div>
+  
+
+</div>
+
+
+<div class="api-examples-src" hidden aria-hidden="true">
+  <h3 id="security-baseline-with-cr-references">Security baseline with CR references</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyInitiative
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: security-baseline-initiative
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: platform-policies
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Security Baseline Initiative&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Enforces HTTPS on storage accounts and audits VMs with public IPs.&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">version</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">category</span>: <span style="color:#f1fa8c">&#34;Security&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: storageEffect
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: String
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">defaultValue</span>: <span style="color:#f1fa8c">&#34;Audit&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">allowedValues</span>: [<span style="color:#f1fa8c">&#34;Audit&#34;</span>, <span style="color:#f1fa8c">&#34;Deny&#34;</span>, <span style="color:#f1fa8c">&#34;Disabled&#34;</span>]
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionRef</span>: require-https-storage
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">effect</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">value</span>: <span style="color:#f1fa8c">&#34;[parameters(&#39;storageEffect&#39;)]&#34;</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionRef</span>: audit-public-ip-on-vms
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">subscriptionId</span>: <span style="color:#f1fa8c">&#34;00000000-0000-0000-0000-000000000000&#34;</span>
+</span></span></code></pre></div><h3 id="built-in-policy-definitions-at-management-group-scope">Built-in policy definitions at management group scope</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyInitiative
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: cis-benchmark-initiative
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: platform-policies
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;CIS Azure Benchmark (Subset)&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Applies a subset of CIS Azure Benchmark built-in policies.&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">version</span>: <span style="color:#f1fa8c">&#34;2.0.0&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">category</span>: <span style="color:#f1fa8c">&#34;Regulatory Compliance&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionId</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">        /providers/Microsoft.Authorization/policyDefinitions/0a914e76-4921-4c19-b460-a2d36003525a</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionId</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">        /providers/Microsoft.Authorization/policyDefinitions/404c3081-a854-4457-ae30-26a93ef643f9</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">managementGroupId</span>: <span style="color:#f1fa8c">&#34;corp-management-group&#34;</span>
+</span></span></code></pre></div><h3 id="mixed-cr-and-built-in-definitions-with-initiative-parameters">Mixed CR and built-in definitions with initiative parameters</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyInitiative
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: tagging-and-location-initiative
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: platform-policies
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Tagging and Location Governance&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Enforces required tags and restricts deployments to approved regions.&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">version</span>: <span style="color:#f1fa8c">&#34;1.2.0&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">category</span>: <span style="color:#f1fa8c">&#34;Tags&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: tagEffect
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: String
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">defaultValue</span>: <span style="color:#f1fa8c">&#34;Deny&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">allowedValues</span>: [<span style="color:#f1fa8c">&#34;Audit&#34;</span>, <span style="color:#f1fa8c">&#34;Deny&#34;</span>]
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: allowedLocations
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: Array
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">strongType</span>: <span style="color:#f1fa8c">&#34;location&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">defaultValue</span>: [<span style="color:#f1fa8c">&#34;australiaeast&#34;</span>, <span style="color:#f1fa8c">&#34;australiasoutheast&#34;</span>]
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionRef</span>: require-cost-center-tag
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">effect</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">value</span>: <span style="color:#f1fa8c">&#34;[parameters(&#39;tagEffect&#39;)]&#34;</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionId</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">        /providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">listOfAllowedLocations</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">value</span>: <span style="color:#f1fa8c">&#34;[parameters(&#39;allowedLocations&#39;)]&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">managementGroupId</span>: <span style="color:#f1fa8c">&#34;my-management-group&#34;</span>
+</span></span></code></pre></div><h3 id="minimal-initiative-no-parameters">Minimal initiative (no parameters)</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyInitiative
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: basic-audit-initiative
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: platform-policies
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Basic Audit Initiative&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionRef</span>: audit-public-ip-on-vms
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionRef</span>: require-https-storage
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">subscriptionId</span>: <span style="color:#f1fa8c">&#34;00000000-0000-0000-0000-000000000000&#34;</span>
+</span></span></code></pre></div>
+</div>
+
+
+      </div>
+
+      <div class="doc-footer">
+        <nav class="doc-nav" aria-label="Page navigation">
+          
+            <a class="doc-nav-card prev" href="/docs/policy-assignments/">
+              <span class="doc-nav-label">← Previous</span>
+              <span class="doc-nav-title">Policy Assignments</span>
+            </a>
+          
+          
+            <a class="doc-nav-card next" href="/docs/policy-definitions/">
+              <span class="doc-nav-label">Next →</span>
+              <span class="doc-nav-title">Policy Definitions</span>
+            </a>
+          
+        </nav>
+      </div>
+
+    </article>
+
+    
+    
+      <aside class="doc-toc" aria-label="Table of contents">
+        
+<nav aria-label="Table of contents">
+  <p class="toc-label">On this page</p>
+  <nav id="TableOfContents"></nav>
+</nav>
+
+
+      </aside>
+    
+
+  </div>
+</div>
+
+
+  <footer>
+  <div class="container">
+    <div class="footer-grid">
+
+      
+      <div>
+        <div class="footer-brand">
+          <img src="/img/logo.svg" alt="Policy Operator logo" class="footer-logo">
+          Policy Operator
+        </div>
+        <p class="footer-desc">
+          Manage Azure Policy resources declaratively through Kubernetes custom resources.
+        </p>
+      </div>
+
+      
+      <div>
+        <p class="footer-col-title">Documentation</p>
+        <ul class="footer-links">
+          <li><a href="/docs/getting-started/">Getting Started</a></li>
+          <li><a href="/docs/api-reference/">API Reference</a></li>
+          <li><a href="/docs/configuration/">Configuration</a></li>
+          <li><a href="/docs/troubleshooting/">Troubleshooting</a></li>
+        </ul>
+      </div>
+
+      
+      <div>
+        <p class="footer-col-title">Community</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/example/policy-operator" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="/docs/contributing/">Contributing</a></li>
+          <li><a href="/docs/changelog/">Changelog</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
+      <a href="https://github.com/example/policy-operator" target="_blank" rel="noopener" style="color:inherit">View on GitHub →</a>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <img class="cat-decor cat-1" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-2" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-3" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-4" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-5" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-6" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+
+  <div class="dog-decor dog-pug" aria-hidden="true">
+    <img src="/img/pug-caricature.svg" alt="" width="300" height="400">
+  </div>
+  <div class="dog-decor dog-labrador" aria-hidden="true">
+    <img src="/img/labrador-caricature.svg" alt="" width="300" height="400">
+  </div>
+
+  <script src="/js/main.js" defer></script>
+  
+
+</body>
+</html>

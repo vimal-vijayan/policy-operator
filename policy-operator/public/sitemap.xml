@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://policy-operator.io/docs/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/introduction/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/getting-started/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/api-reference/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/policy-definitions/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/policy-initiatives/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/policy-assignments/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/policy-exemptions/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/docs/gitops-argocd/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/categories/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/</loc>
+  </url><url>
+    <loc>https://policy-operator.io/tags/</loc>
+  </url>
+</urlset>

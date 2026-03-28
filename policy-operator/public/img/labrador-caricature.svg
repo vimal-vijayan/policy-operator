@@ -1,0 +1,83 @@
+<svg viewBox="0 0 300 460" xmlns="http://www.w3.org/2000/svg" width="300" height="460">
+
+  <!-- Floppy ears (hang down alongside head) -->
+  <ellipse cx="38" cy="195" rx="48" ry="88" fill="#C8A850" transform="rotate(-5 38 195)"/>
+  <ellipse cx="262" cy="195" rx="48" ry="88" fill="#C8A850" transform="rotate(5 262 195)"/>
+  <!-- Inner ear slightly lighter -->
+  <ellipse cx="40" cy="200" rx="33" ry="68" fill="#D4B860" transform="rotate(-5 40 200)"/>
+  <ellipse cx="260" cy="200" rx="33" ry="68" fill="#D4B860" transform="rotate(5 260 200)"/>
+
+  <!-- Head (broad, rounded, cream-gold) -->
+  <ellipse cx="150" cy="188" rx="126" ry="110" fill="#EDD9A0"/>
+
+  <!-- Subtle brow definition -->
+  <path d="M88 130 Q118 118 150 120 Q182 118 212 130" fill="none" stroke="#C8A850" stroke-width="4" stroke-linecap="round"/>
+  <!-- Slight brow furrow shadow -->
+  <path d="M118 138 Q150 130 182 138" fill="none" stroke="#C0A040" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Eyes — almond-shaped, warm and kind -->
+  <!-- Eye whites -->
+  <ellipse cx="104" cy="162" rx="30" ry="22" fill="white" stroke="#8B5A10" stroke-width="2"/>
+  <ellipse cx="196" cy="162" rx="30" ry="22" fill="white" stroke="#8B5A10" stroke-width="2"/>
+  <!-- Eyelid shadow (droopy, friendly) -->
+  <path d="M74 155 Q104 144 134 155" fill="#C8A040" opacity="0.4"/>
+  <path d="M166 155 Q196 144 226 155" fill="#C8A040" opacity="0.4"/>
+  <!-- Iris (warm amber-brown) -->
+  <circle cx="106" cy="163" r="17" fill="#7A4A10"/>
+  <circle cx="196" cy="163" r="17" fill="#7A4A10"/>
+  <!-- Pupil -->
+  <circle cx="106" cy="163" r="10" fill="#0d0800"/>
+  <circle cx="196" cy="163" r="10" fill="#0d0800"/>
+  <!-- Catchlight -->
+  <circle cx="113" cy="155" r="5.5" fill="white" opacity="0.9"/>
+  <circle cx="203" cy="155" r="5.5" fill="white" opacity="0.9"/>
+  <!-- Small lower catchlight -->
+  <circle cx="100" cy="168" r="2.5" fill="white" opacity="0.5"/>
+  <circle cx="190" cy="168" r="2.5" fill="white" opacity="0.5"/>
+  <!-- Lower eyelid line -->
+  <path d="M76 167 Q104 175 132 167" fill="none" stroke="#8B5A10" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M168 167 Q196 175 224 167" fill="none" stroke="#8B5A10" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- Muzzle/snout (longer than pug, cream-colored) -->
+  <ellipse cx="150" cy="252" rx="74" ry="60" fill="#E8D090"/>
+
+  <!-- Muzzle top lighter fur -->
+  <ellipse cx="150" cy="238" rx="56" ry="30" fill="#F0DCA8"/>
+
+  <!-- Nose (large, black, with subtle highlight) -->
+  <ellipse cx="150" cy="228" rx="36" ry="25" fill="#1a1a1a"/>
+  <!-- Nostril indentations -->
+  <ellipse cx="132" cy="234" rx="10" ry="8" fill="#0a0a0a"/>
+  <ellipse cx="168" cy="234" rx="10" ry="8" fill="#0a0a0a"/>
+  <!-- Nose highlight -->
+  <ellipse cx="142" cy="220" rx="8" ry="5" fill="#5a5a5a" opacity="0.6"/>
+  <!-- Nose ridge highlight -->
+  <path d="M140 216 Q150 212 160 216" fill="none" stroke="#6a6a6a" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Few subtle freckle dots on muzzle -->
+  <circle cx="133" cy="252" r="2.5" fill="#C0A040" opacity="0.7"/>
+  <circle cx="150" cy="256" r="2.5" fill="#C0A040" opacity="0.7"/>
+  <circle cx="167" cy="252" r="2.5" fill="#C0A040" opacity="0.7"/>
+
+  <!-- Mouth (closed, gentle) -->
+  <!-- Center lip line -->
+  <path d="M150 254 L150 270" fill="none" stroke="#A07828" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Mouth curve -->
+  <path d="M112 270 Q130 280 150 282 Q170 280 188 270" fill="none" stroke="#A07828" stroke-width="2.8" stroke-linecap="round"/>
+  <!-- Subtle lip fold -->
+  <path d="M108 262 Q120 268 112 278" fill="none" stroke="#C0A040" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M192 262 Q180 268 188 278" fill="none" stroke="#C0A040" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Jowl cheeks -->
+  <ellipse cx="86" cy="280" rx="36" ry="28" fill="#E8D090"/>
+  <ellipse cx="214" cy="280" rx="36" ry="28" fill="#E8D090"/>
+
+  <!-- Chin -->
+  <ellipse cx="150" cy="310" rx="80" ry="26" fill="#E8D090"/>
+
+  <!-- Neck / chest fur -->
+  <ellipse cx="150" cy="392" rx="120" ry="80" fill="#EDD9A0"/>
+  <!-- Chest lighter patch -->
+  <ellipse cx="150" cy="408" rx="65" ry="52" fill="#F4E4B8"/>
+
+</svg>

@@ -1,0 +1,53 @@
+{{/* Renders the documentation left-sidebar navigation.
+     Sections are grouped by the 'weight' of their _index.md.
+     Pages within each section are sorted by weight then title.
+*/}}
+
+<div class="doc-sidebar-inner" id="doc-sidebar-inner">
+
+  {{/* Walk all top-level sections under /docs (or the whole site if not a section page) */}}
+  {{ $currentPage := . }}
+  {{ $docsSection := .Site.GetPage "/docs" }}
+
+  {{ if $docsSection }}
+    {{ range $docsSection.Sections }}
+      <div class="sidebar-section">
+        <p class="sidebar-heading">{{ .Title }}</p>
+
+        {{/* Section index page itself */}}
+        {{ if .IsSection }}
+          <a class="sidebar-link{{ if eq $currentPage . }} active{{ end }}"
+             href="{{ .RelPermalink }}">Overview</a>
+        {{ end }}
+
+        {{ range .Pages.ByWeight }}
+          <a class="sidebar-link depth-2{{ if eq $currentPage . }} active{{ end }}"
+             href="{{ .RelPermalink }}">{{ .Title }}</a>
+        {{ end }}
+      </div>
+    {{ end }}
+
+    {{/* Pages directly under /docs (not in a sub-section) */}}
+    {{ if $docsSection.Pages }}
+      <div class="sidebar-section">
+        {{ range $docsSection.Pages.ByWeight }}
+          <a class="sidebar-link{{ if eq $currentPage . }} active{{ end }}"
+             href="{{ .RelPermalink }}">{{ .Title }}</a>
+        {{ end }}
+      </div>
+    {{ end }}
+
+  {{ else }}
+    {{/* Fallback: render all sections */}}
+    {{ range .Site.Sections }}
+      <div class="sidebar-section">
+        <p class="sidebar-heading">{{ .Title }}</p>
+        {{ range .Pages.ByWeight }}
+          <a class="sidebar-link{{ if eq $currentPage . }} active{{ end }}"
+             href="{{ .RelPermalink }}">{{ .Title }}</a>
+        {{ end }}
+      </div>
+    {{ end }}
+  {{ end }}
+
+</div>

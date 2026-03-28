@@ -1,0 +1,91 @@
+{{ define "body-class" }}page-home{{ end }}
+
+{{ define "main" }}
+
+{{/* ── Hero ── */}}
+<section class="hero">
+  <div class="container hero-inner">
+    <img src="{{ "img/logo.svg" | relURL }}" alt="{{ .Site.Title }} logo" class="hero-logo">
+
+    <h1 class="hero-title">{{ .Site.Params.heroTitle | default .Site.Title }}</h1>
+
+    <p class="hero-subtitle">
+      {{ .Site.Params.description | default "Manage Azure Policy resources declaratively through Kubernetes custom resources." }}
+    </p>
+
+    <div class="hero-actions">
+      {{ with .Site.Params.heroGetStarted }}
+        <a href="{{ .url | relURL }}" class="btn btn-primary">{{ .label | default "Get Started" }}</a>
+      {{ else }}
+        <a href="{{ "/docs/getting-started/" | relURL }}" class="btn btn-primary">Get Started →</a>
+      {{ end }}
+      <a href="{{ "/docs/" | relURL }}" class="btn btn-outline">Read the docs</a>
+      {{ with .Site.Params.githubURL }}
+        <a href="{{ . }}" class="btn btn-outline" target="_blank" rel="noopener noreferrer">GitHub</a>
+      {{ end }}
+    </div>
+
+    {{ with .Site.Params.heroTags }}
+      <div class="hero-tags">
+        {{ range . }}<span class="hero-tag">{{ . }}</span>{{ end }}
+      </div>
+    {{ end }}
+  </div>
+</section>
+
+{{/* ── Feature cards ── */}}
+{{ $introPage := .Site.GetPage "/docs/introduction" }}
+{{ with .Site.Params.features }}
+<section class="features">
+  <div class="container">
+    <h2 class="section-title">Everything you need for Azure Governance</h2>
+    <p class="section-subtitle">
+      Manage the full Azure Policy lifecycle as Kubernetes custom resources.
+    </p>
+    <div class="feature-grid">
+      {{ with $introPage }}
+      <a class="feature-card feature-card-link" href="{{ .RelPermalink }}">
+        <div class="feature-icon">📖</div>
+        <h3 class="feature-title">Introduction</h3>
+        <p class="feature-desc">Learn what Policy Operator is, the GitOps approach to Azure governance, and how it compares to Terraform and EPAC.</p>
+      </a>
+      {{ end }}
+      {{ range . }}
+      {{ if .url }}
+      <a class="feature-card feature-card-link" href="{{ .url | relURL }}">
+        <div class="feature-icon">{{ .icon }}</div>
+        <h3 class="feature-title">{{ .title }}</h3>
+        <p class="feature-desc">{{ .description }}</p>
+      </a>
+      {{ else }}
+      <div class="feature-card">
+        <div class="feature-icon">{{ .icon }}</div>
+        <h3 class="feature-title">{{ .title }}</h3>
+        <p class="feature-desc">{{ .description }}</p>
+      </div>
+      {{ end }}
+      {{ end }}
+    </div>
+  </div>
+</section>
+{{ end }}
+
+{{/* ── Page body content (_index.md) ── */}}
+{{ with .Content }}
+<section class="home-content">
+  <div class="container-narrow">
+    {{ . }}
+  </div>
+</section>
+{{ end }}
+
+{{/* ── CTA strip ── */}}
+<section class="cta-strip">
+  <div class="container">
+    <h2>Ready to get started?</h2>
+    <p>Deploy the Policy Operator in minutes and bring your Azure governance policy-as-code.</p>
+    <a href="{{ "/docs/getting-started/" | relURL }}" class="btn btn-primary">Read the docs →</a>
+  </div>
+</section>
+
+{{ end }}

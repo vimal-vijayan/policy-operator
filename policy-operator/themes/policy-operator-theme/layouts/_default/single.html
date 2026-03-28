@@ -1,0 +1,79 @@
+{{ define "body-class" }}page-doc{{ end }}
+
+{{ define "main" }}
+<div class="doc-wrap">
+
+  {{/* Left sidebar */}}
+  <aside class="doc-sidebar" id="doc-sidebar" aria-label="Documentation navigation">
+    {{ partial "doc-sidebar.html" . }}
+  </aside>
+
+  <div class="doc-main">
+
+    {{/* Main content */}}
+    <article class="doc-content">
+
+      <header class="doc-header">
+
+        {{/* Breadcrumbs */}}
+        {{ if .Ancestors }}
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="{{ "/" | relURL }}">Home</a>
+            {{ range .Ancestors.Reverse }}
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+            {{ end }}
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span class="breadcrumb-current">{{ .Title }}</span>
+          </nav>
+        {{ end }}
+
+        <h1 class="doc-title">{{ .Title }}</h1>
+
+        {{ with .Params.description }}
+          <p class="doc-subtitle">{{ . }}</p>
+        {{ end }}
+
+        <div class="doc-meta">
+          {{ with .Params.badge }}<span class="badge badge-{{ . | lower }}">{{ . }}</span>{{ end }}
+          {{ if not .Lastmod.IsZero }}
+            <span>Updated {{ .Lastmod.Format "Jan 2, 2006" }}</span>
+          {{ end }}
+          {{ with .ReadingTime }}<span>{{ . }} min read</span>{{ end }}
+        </div>
+
+      </header>
+
+      <div class="doc-body">
+        {{ .Content }}
+      </div>
+
+      <div class="doc-footer">
+        <nav class="doc-nav" aria-label="Page navigation">
+          {{ with .PrevInSection }}
+            <a class="doc-nav-card prev" href="{{ .RelPermalink }}">
+              <span class="doc-nav-label">← Previous</span>
+              <span class="doc-nav-title">{{ .Title }}</span>
+            </a>
+          {{ end }}
+          {{ with .NextInSection }}
+            <a class="doc-nav-card next" href="{{ .RelPermalink }}">
+              <span class="doc-nav-label">Next →</span>
+              <span class="doc-nav-title">{{ .Title }}</span>
+            </a>
+          {{ end }}
+        </nav>
+      </div>
+
+    </article>
+
+    {{/* Right TOC */}}
+    {{ if .TableOfContents }}
+      <aside class="doc-toc" aria-label="Table of contents">
+        {{ partial "toc.html" . }}
+      </aside>
+    {{ end }}
+
+  </div>
+</div>
+{{ end }}

@@ -1,0 +1,74 @@
+<svg viewBox="0 0 190 135" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Tail (curls up and over) -->
+  <path d="M150 72 C170 58 178 32 160 16 C152 8 140 14 143 24"
+        fill="none" stroke="#C8845A" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Body -->
+  <ellipse cx="100" cy="82" rx="55" ry="31" fill="#D4956A"/>
+
+  <!-- Tummy patch (lighter) -->
+  <ellipse cx="86" cy="90" rx="30" ry="19" fill="#F0C89A"/>
+
+  <!-- Tabby stripes on body -->
+  <path d="M96 64 Q100 74 96 84"  fill="none" stroke="#B07040" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+  <path d="M112 62 Q116 72 112 82" fill="none" stroke="#B07040" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+  <path d="M128 62 Q132 72 128 82" fill="none" stroke="#B07040" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+
+  <!-- Ears -->
+  <polygon points="33,42 40,20 54,42" fill="#D4956A"/>
+  <polygon points="54,42 63,20 72,42" fill="#D4956A"/>
+  <!-- Inner ear -->
+  <polygon points="37,41 41,26 51,41" fill="#F0A0A0" opacity="0.85"/>
+  <polygon points="57,41 63,26 68,41" fill="#F0A0A0" opacity="0.85"/>
+
+  <!-- Head -->
+  <circle cx="50" cy="65" r="27" fill="#D4956A"/>
+
+  <!-- Eyes (slightly squinted — content walking look) -->
+  <ellipse cx="41" cy="63" rx="6" ry="7" fill="#2a1a08"/>
+  <ellipse cx="59" cy="62" rx="6" ry="7" fill="#2a1a08"/>
+  <!-- Iris amber -->
+  <ellipse cx="41" cy="63" rx="4" ry="5" fill="#8B5A10"/>
+  <ellipse cx="59" cy="62" rx="4" ry="5" fill="#8B5A10"/>
+  <!-- Pupil -->
+  <ellipse cx="41" cy="63" rx="2" ry="4" fill="#0d0800"/>
+  <ellipse cx="59" cy="62" rx="2" ry="4" fill="#0d0800"/>
+  <!-- Eye shine -->
+  <circle cx="43" cy="60" r="2.2" fill="white" opacity="0.9"/>
+  <circle cx="61" cy="59" r="2.2" fill="white" opacity="0.9"/>
+  <!-- Upper eyelid line -->
+  <path d="M35 60 Q41 55 47 60" fill="none" stroke="#1a0a00" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M53 59 Q59 54 65 59" fill="none" stroke="#1a0a00" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <polygon points="46,70 50,74 44,74" fill="#E88888"/>
+  <!-- Philtrum -->
+  <line x1="50" y1="65" x2="50" y2="70" stroke="#C07050" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mouth -->
+  <path d="M44 74 Q47 78 50 74" fill="none" stroke="#C06060" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Whiskers -->
+  <line x1="12" y1="68" x2="39" y2="70" stroke="#2a1a08" stroke-width="1.3" opacity="0.45"/>
+  <line x1="12" y1="73" x2="39" y2="72" stroke="#2a1a08" stroke-width="1.3" opacity="0.45"/>
+  <line x1="61" y1="70" x2="84" y2="68" stroke="#2a1a08" stroke-width="1.3" opacity="0.45"/>
+  <line x1="61" y1="72" x2="84" y2="73" stroke="#2a1a08" stroke-width="1.3" opacity="0.45"/>
+
+  <!-- Legs — walking pose (alternating stride) -->
+  <!-- Near front leg (forward stride) -->
+  <path d="M72 100 Q68 116 65 124" stroke="#D4956A" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <ellipse cx="65" cy="125" rx="8" ry="4.5" fill="#D4956A"/>
+
+  <!-- Far front leg (back stride, slightly darker) -->
+  <path d="M85 102 Q88 116 92 124" stroke="#BB7848" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <ellipse cx="92" cy="125" rx="7" ry="4" fill="#BB7848"/>
+
+  <!-- Near back leg (back stride) -->
+  <path d="M128 96 Q132 112 136 122" stroke="#D4956A" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <ellipse cx="136" cy="123" rx="8" ry="4.5" fill="#D4956A"/>
+
+  <!-- Far back leg (forward stride, darker) -->
+  <path d="M116 98 Q112 114 108 122" stroke="#BB7848" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <ellipse cx="108" cy="123" rx="7" ry="4" fill="#BB7848"/>
+
+</svg>

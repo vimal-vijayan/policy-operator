@@ -1,0 +1,31 @@
+{{ define "body-class" }}page-list{{ end }}
+
+{{ define "main" }}
+
+<div class="list-header">
+  <div class="container">
+    <h1 class="list-title">{{ .Title }}</h1>
+    {{ with .Description }}<p class="list-desc">{{ . }}</p>{{ end }}
+    {{ with .Content }}<div style="margin-top:1rem">{{ . }}</div>{{ end }}
+  </div>
+</div>
+
+<div class="container" style="padding-bottom: 4rem;">
+  <div class="page-cards">
+    {{ range .Pages.ByWeight }}
+      <a class="page-card" href="{{ .RelPermalink }}">
+        <div class="page-card-body">
+          <div class="page-card-title">{{ .Title }}</div>
+          {{ with .Description }}<p class="page-card-desc">{{ . }}</p>{{ end }}
+          <div class="page-card-meta">
+            {{ with .Params.badge }}<span class="badge badge-{{ . | lower }}">{{ . }}</span>{{ end }}
+            {{ range .Params.tags }}<span class="tag">{{ . }}</span>{{ end }}
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    {{ end }}
+  </div>
+</div>
+
+{{ end }}
