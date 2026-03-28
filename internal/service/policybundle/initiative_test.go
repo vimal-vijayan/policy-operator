@@ -14,6 +14,8 @@ import (
 	"github.com/vimal-vijayan/azure-policy-operator/internal/client"
 )
 
+const auditEffect = "Audit"
+
 // fakeInitiativesAPI implements initiatives.API using in-memory functions.
 type fakeInitiativesAPI struct {
 	createOrUpdateFn            func(ctx context.Context, name string, params armpolicy.SetDefinition) (armpolicy.SetDefinitionsClientCreateOrUpdateResponse, error)
@@ -228,8 +230,8 @@ func TestCreateOrUpdate_PolicyDefinitionRef_WithParameters(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected 'effect' parameter to be present")
 	}
-	if param.Value != "Audit" {
-		t.Fatalf("expected param value %q, got %#v", "Audit", param.Value)
+	if param.Value != auditEffect {
+		t.Fatalf("expected param value %q, got %#v", auditEffect, param.Value)
 	}
 }
 
@@ -552,8 +554,8 @@ func TestBuildParameters_DefaultValue_IsUnmarshalled(t *testing.T) {
 	}
 	result := buildParameters(params)
 	p := result["effect"]
-	if p.DefaultValue != "Audit" {
-		t.Fatalf("expected default value %q, got %#v", "Audit", p.DefaultValue)
+	if p.DefaultValue != auditEffect {
+		t.Fatalf("expected default value %q, got %#v", auditEffect, p.DefaultValue)
 	}
 }
 
@@ -562,7 +564,7 @@ func TestBuildParameters_AllowedValues_AreMapped(t *testing.T) {
 		{
 			Name:          "effect",
 			Type:          "String",
-			AllowedValues: []string{"Audit", "Deny", "Disabled"},
+			AllowedValues: []string{auditEffect, "Deny", "Disabled"},
 		},
 	}
 	result := buildParameters(params)
@@ -570,8 +572,8 @@ func TestBuildParameters_AllowedValues_AreMapped(t *testing.T) {
 	if len(p.AllowedValues) != 3 {
 		t.Fatalf("expected 3 allowed values, got %d", len(p.AllowedValues))
 	}
-	if p.AllowedValues[0] != "Audit" {
-		t.Fatalf("expected first allowed value %q, got %#v", "Audit", p.AllowedValues[0])
+	if p.AllowedValues[0] != auditEffect {
+		t.Fatalf("expected first allowed value %q, got %#v", auditEffect, p.AllowedValues[0])
 	}
 }
 

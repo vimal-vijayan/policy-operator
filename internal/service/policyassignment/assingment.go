@@ -28,6 +28,7 @@ func NewService(factory *client.ARMClient, exemptionService *policyexemption.Ser
 	}
 }
 
+//nolint:gocyclo
 func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error) {
 	logger := log.FromContext(ctx)
 

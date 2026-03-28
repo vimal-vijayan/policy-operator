@@ -12,6 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+const testDefName = "my-def"
+
 // fakeDefinitionsAPI is a manual fake for definitions.API.
 type fakeDefinitionsAPI struct {
 	createOrUpdateFn            func(ctx context.Context, name string, params armpolicy.Definition) (armpolicy.DefinitionsClientCreateOrUpdateResponse, error)
@@ -90,7 +92,7 @@ func TestCreateOrUpdate_SubscriptionScope_ReturnsID(t *testing.T) {
 		},
 	}
 
-	def := newDefinition("my-def", governancev1alpha1.AzurePolicyDefinitionSpec{
+	def := newDefinition(testDefName, governancev1alpha1.AzurePolicyDefinitionSpec{
 		DisplayName: "My Definition",
 		Mode:        "All",
 	})
@@ -102,8 +104,8 @@ func TestCreateOrUpdate_SubscriptionScope_ReturnsID(t *testing.T) {
 	if id != fakeID {
 		t.Fatalf("expected ID %q, got %q", fakeID, id)
 	}
-	if gotName != "my-def" {
-		t.Fatalf("expected name %q, got %q", "my-def", gotName)
+	if gotName != testDefName {
+		t.Fatalf("expected name %q, got %q", testDefName, gotName)
 	}
 	if gotParams.Properties == nil || *gotParams.Properties.DisplayName != "My Definition" {
 		t.Fatalf("unexpected display name in params: %#v", gotParams.Properties)
@@ -298,7 +300,7 @@ func TestCreateOrUpdate_ManagementGroupScope_CallsManagementGroupAPI(t *testing.
 		},
 	}
 
-	def := newDefinition("my-def", governancev1alpha1.AzurePolicyDefinitionSpec{
+	def := newDefinition(testDefName, governancev1alpha1.AzurePolicyDefinitionSpec{
 		DisplayName:       "My Definition",
 		Mode:              "All",
 		ManagementGroupID: "mg1",
@@ -372,13 +374,13 @@ func TestDelete_SubscriptionScope_CallsDeleteWithName(t *testing.T) {
 		},
 	}
 
-	def := newDefinition("my-def", governancev1alpha1.AzurePolicyDefinitionSpec{})
+	def := newDefinition(testDefName, governancev1alpha1.AzurePolicyDefinitionSpec{})
 
 	if err := newTestDefinitionService(api).Delete(ctx, def); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if gotName != "my-def" {
-		t.Fatalf("expected name %q, got %q", "my-def", gotName)
+	if gotName != testDefName {
+		t.Fatalf("expected name %q, got %q", testDefName, gotName)
 	}
 }
 
@@ -416,15 +418,15 @@ func TestDelete_ManagementGroupScope_CallsDeleteAtManagementGroup(t *testing.T) 
 		},
 	}
 
-	def := newDefinition("my-def", governancev1alpha1.AzurePolicyDefinitionSpec{
+	def := newDefinition(testDefName, governancev1alpha1.AzurePolicyDefinitionSpec{
 		ManagementGroupID: "mg1",
 	})
 
 	if err := newTestDefinitionService(api).Delete(ctx, def); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if gotName != "my-def" {
-		t.Fatalf("expected name %q, got %q", "my-def", gotName)
+	if gotName != testDefName {
+		t.Fatalf("expected name %q, got %q", testDefName, gotName)
 	}
 	if gotMgmtGroup != "mg1" {
 		t.Fatalf("expected management group %q, got %q", "mg1", gotMgmtGroup)

@@ -78,7 +78,7 @@ func (r *AzurePolicyDefinitionReconciler) handleDeletion(ctx context.Context, po
 
 	if policyDef.Status.PolicyDefinitionID != "" {
 		if err := r.Service.Delete(ctx, policyDef); err != nil {
-			r.setCondition(policyDef, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
+			r.setCondition(policyDef, metav1.ConditionFalse, "DeleteFailed", err.Error())
 			if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
 				logger.Error(statusErr, FailedStatusError)
 			}
@@ -96,7 +96,7 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 	policyDefinitionID, err := r.Service.CreateOrUpdate(ctx, policyDef)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy definition")
-		r.setCondition(policyDef, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
+		r.setCondition(policyDef, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
 		}
@@ -105,13 +105,13 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 
 	policyDef.Status.PolicyDefinitionID = policyDefinitionID
 	policyDef.Status.AppliedVersion = policyDef.Spec.Version
-	r.setCondition(policyDef, "Ready", metav1.ConditionTrue, "Reconciled", "Policy definition successfully reconciled")
+	r.setCondition(policyDef, metav1.ConditionTrue, "Reconciled", "Policy definition successfully reconciled")
 	return r.Status().Update(ctx, policyDef)
 }
 
-func (r *AzurePolicyDefinitionReconciler) setCondition(def *governancev1alpha1.AzurePolicyDefinition, condType string, status metav1.ConditionStatus, reason, message string) {
+func (r *AzurePolicyDefinitionReconciler) setCondition(def *governancev1alpha1.AzurePolicyDefinition, status metav1.ConditionStatus, reason, message string) {
 	apimeta.SetStatusCondition(&def.Status.Conditions, metav1.Condition{
-		Type:               condType,
+		Type:               "Ready",
 		Status:             status,
 		Reason:             reason,
 		Message:            message,

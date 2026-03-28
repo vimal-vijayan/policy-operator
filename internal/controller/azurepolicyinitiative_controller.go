@@ -69,7 +69,7 @@ func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctr
 			logger.Info("Running finalizer cleanup", "name", initiative.Name)
 			if initiative.Status.InitiativeID != "" {
 				if err := r.Service.Delete(ctx, initiative); err != nil {
-					r.setCondition(initiative, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
+					r.setCondition(initiative, metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
 						logger.Error(statusErr, FailedStatusError)
 					}
@@ -107,7 +107,7 @@ func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctr
 	initiativeID, err := r.Service.CreateOrUpdate(ctx, initiative, resolvedIDs)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy initiative")
-		r.setCondition(initiative, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
+		r.setCondition(initiative, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
 		}
@@ -116,7 +116,7 @@ func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctr
 
 	initiative.Status.InitiativeID = initiativeID
 	initiative.Status.AppliedVersion = initiative.Spec.Version
-	r.setCondition(initiative, "Ready", metav1.ConditionTrue, "Reconciled", "Policy initiative successfully reconciled")
+	r.setCondition(initiative, metav1.ConditionTrue, "Reconciled", "Policy initiative successfully reconciled")
 	if err := r.Status().Update(ctx, initiative); err != nil {
 		logger.Error(err, FailedStatusError)
 		return ctrl.Result{}, err
@@ -134,13 +134,13 @@ func (r *AzurePolicyInitiativeReconciler) resolvePolicyDefinitionIDs(ctx context
 		if ref.PolicyDefinitionRef != "" {
 			policyDef := &governancev1alpha1.AzurePolicyDefinition{}
 			if err := r.Get(ctx, types.NamespacedName{Name: ref.PolicyDefinitionRef, Namespace: namespace}, policyDef); err != nil {
-				r.setCondition(initiative, "Ready", metav1.ConditionFalse, "RefNotFound",
+				r.setCondition(initiative, metav1.ConditionFalse, "RefNotFound",
 					fmt.Sprintf("AzurePolicyDefinition %q not found: %v", ref.PolicyDefinitionRef, err))
 				_ = r.Status().Update(ctx, initiative)
 				return nil, err
 			}
 			if policyDef.Status.PolicyDefinitionID == "" {
-				r.setCondition(initiative, "Ready", metav1.ConditionFalse, "RefNotReady",
+				r.setCondition(initiative, metav1.ConditionFalse, "RefNotReady",
 					fmt.Sprintf("AzurePolicyDefinition %q has no policyDefinitionId in status yet", ref.PolicyDefinitionRef))
 				_ = r.Status().Update(ctx, initiative)
 				return nil, nil
@@ -153,9 +153,9 @@ func (r *AzurePolicyInitiativeReconciler) resolvePolicyDefinitionIDs(ctx context
 	return resolved, nil
 }
 
-func (r *AzurePolicyInitiativeReconciler) setCondition(initiative *governancev1alpha1.AzurePolicyInitiative, condType string, status metav1.ConditionStatus, reason, message string) {
+func (r *AzurePolicyInitiativeReconciler) setCondition(initiative *governancev1alpha1.AzurePolicyInitiative, status metav1.ConditionStatus, reason, message string) {
 	apimeta.SetStatusCondition(&initiative.Status.Conditions, metav1.Condition{
-		Type:               condType,
+		Type:               "Ready",
 		Status:             status,
 		Reason:             reason,
 		Message:            message,

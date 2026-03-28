@@ -75,7 +75,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 					if r.Recorder != nil {
 						r.Recorder.Eventf(assignment, corev1.EventTypeWarning, "PolicyAssignmentDeleteFailed", "Failed deleting policy assignment %q: %v", assignment.Status.AssignmentID, err)
 					}
-					r.setCondition(assignment, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
+					r.setCondition(assignment, metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
 						logger.Error(statusErr, FailedStatusError)
 					}
@@ -108,12 +108,12 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 	if assignment.Spec.PolicyDefinitionRef != "" {
 		policyDef := &governancev1alpha1.AzurePolicyDefinition{}
 		if err := r.Get(ctx, types.NamespacedName{Name: assignment.Spec.PolicyDefinitionRef, Namespace: req.Namespace}, policyDef); err != nil {
-			r.setCondition(assignment, "Ready", metav1.ConditionFalse, "RefNotFound", fmt.Sprintf("AzurePolicyDefinition %q not found: %v", assignment.Spec.PolicyDefinitionRef, err))
+			r.setCondition(assignment, metav1.ConditionFalse, "RefNotFound", fmt.Sprintf("AzurePolicyDefinition %q not found: %v", assignment.Spec.PolicyDefinitionRef, err))
 			_ = r.Status().Update(ctx, assignment)
 			return ctrl.Result{}, err
 		}
 		if policyDef.Status.PolicyDefinitionID == "" {
-			r.setCondition(assignment, "Ready", metav1.ConditionFalse, "RefNotReady", fmt.Sprintf("AzurePolicyDefinition %q has no policyDefinitionId in status yet", assignment.Spec.PolicyDefinitionRef))
+			r.setCondition(assignment, metav1.ConditionFalse, "RefNotReady", fmt.Sprintf("AzurePolicyDefinition %q has no policyDefinitionId in status yet", assignment.Spec.PolicyDefinitionRef))
 			_ = r.Status().Update(ctx, assignment)
 			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
 		}
@@ -141,7 +141,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		if r.Recorder != nil {
 			r.Recorder.Eventf(assignment, corev1.EventTypeWarning, "PolicyAssignmentReconcileFailed", "Failed creating/updating policy assignment: %v", err)
 		}
-		r.setCondition(assignment, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
+		r.setCondition(assignment, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
 		}
@@ -155,7 +155,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		}
 	}
 
-	r.setCondition(assignment, "Ready", metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
+	r.setCondition(assignment, metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
 	if err := r.Status().Update(ctx, assignment); err != nil {
 		logger.Error(err, FailedStatusError)
 		return ctrl.Result{}, err
@@ -164,9 +164,9 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
 }
 
-func (r *AzurePolicyAssignmentReconciler) setCondition(assignment *governancev1alpha1.AzurePolicyAssignment, condType string, status metav1.ConditionStatus, reason, message string) {
+func (r *AzurePolicyAssignmentReconciler) setCondition(assignment *governancev1alpha1.AzurePolicyAssignment, status metav1.ConditionStatus, reason, message string) {
 	apimeta.SetStatusCondition(&assignment.Status.Conditions, metav1.Condition{
-		Type:               condType,
+		Type:               "Ready",
 		Status:             status,
 		Reason:             reason,
 		Message:            message,

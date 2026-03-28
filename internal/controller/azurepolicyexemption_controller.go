@@ -66,7 +66,7 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 
 			if exemption.Status.ExemptionID != "" {
 				if err := r.Service.Delete(ctx, exemption.Spec.Scope, exemption.Status.ExemptionID); err != nil {
-					r.setCondition(exemption, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
+					r.setCondition(exemption, metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
 						logger.Error(statusErr, FailedStatusError)
 					}
@@ -96,7 +96,7 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 		assignment := &governancev1alpha1.AzurePolicyAssignment{}
 		if err := r.Get(ctx, types.NamespacedName{Name: exemption.Spec.PolicyAssignmentRef, Namespace: exemption.Namespace}, assignment); err != nil {
 			logger.Error(err, "failed to resolve policyAssignmentRef", "ref", exemption.Spec.PolicyAssignmentRef)
-			r.setCondition(exemption, "Ready", metav1.ConditionFalse, "RefResolutionFailed", fmt.Sprintf("policyAssignmentRef %q not found: %v", exemption.Spec.PolicyAssignmentRef, err))
+			r.setCondition(exemption, metav1.ConditionFalse, "RefResolutionFailed", fmt.Sprintf("policyAssignmentRef %q not found: %v", exemption.Spec.PolicyAssignmentRef, err))
 			if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
 				logger.Error(statusErr, FailedStatusError)
 			}
@@ -105,7 +105,7 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 		if assignment.Status.AssignmentID == "" {
 			msg := fmt.Sprintf("policyAssignmentRef %q has not yet been reconciled (AssignmentID is empty)", exemption.Spec.PolicyAssignmentRef)
 			logger.Info(msg)
-			r.setCondition(exemption, "Ready", metav1.ConditionFalse, "RefNotReady", msg)
+			r.setCondition(exemption, metav1.ConditionFalse, "RefNotReady", msg)
 			if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
 				logger.Error(statusErr, FailedStatusError)
 			}
@@ -118,7 +118,7 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 	exemptionID, err := r.Service.CreateOrUpdate(ctx, exemption)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy exemption")
-		r.setCondition(exemption, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
+		r.setCondition(exemption, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
 		}
@@ -126,7 +126,7 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	exemption.Status.ExemptionID = exemptionID
-	r.setCondition(exemption, "Ready", metav1.ConditionTrue, "Reconciled", "Policy exemption successfully reconciled")
+	r.setCondition(exemption, metav1.ConditionTrue, "Reconciled", "Policy exemption successfully reconciled")
 	if err := r.Status().Update(ctx, exemption); err != nil {
 		logger.Error(err, FailedStatusError)
 		return ctrl.Result{}, err
@@ -135,9 +135,9 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
 }
 
-func (r *AzurePolicyExemptionReconciler) setCondition(exemption *governancev1alpha1.AzurePolicyExemption, condType string, status metav1.ConditionStatus, reason, message string) {
+func (r *AzurePolicyExemptionReconciler) setCondition(exemption *governancev1alpha1.AzurePolicyExemption, status metav1.ConditionStatus, reason, message string) {
 	apimeta.SetStatusCondition(&exemption.Status.Conditions, metav1.Condition{
-		Type:               condType,
+		Type:               "Ready",
 		Status:             status,
 		Reason:             reason,
 		Message:            message,

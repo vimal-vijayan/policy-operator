@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/assignments"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/client"
@@ -15,13 +13,6 @@ import (
 )
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
-
-// staticCredential is a minimal azcore.TokenCredential used in tests.
-type staticCredential struct{}
-
-func (s *staticCredential) GetToken(_ context.Context, _ policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	return azcore.AccessToken{Token: "test-token"}, nil
-}
 
 // fakeDefinitionsAPI is a test double for definitions.API.
 type fakeDefinitionsAPI struct{}
