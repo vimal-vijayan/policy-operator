@@ -40,11 +40,6 @@ import (
 
 const azurePolicyAssignmentFinalizer = "governance.platform.io/azurepolicyassignment-finalizer"
 
-const (
-	annotationImportID   = "governance.platform.io/import-id"
-	annotationImportMode = "governance.platform.io/import-mode"
-)
-
 // PolicyAssignmentService defines the Azure operations required by the assignment controller.
 type PolicyAssignmentService interface {
 	CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error)
@@ -167,7 +162,7 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 
 	importMode := assignment.Annotations[annotationImportMode]
 	if importMode == "" {
-		importMode = "observe-only"
+		importMode = importModeObserveOnly
 	}
 
 	logger.Info("Importing existing Azure Policy Assignment", "importID", importID, "importMode", importMode)
@@ -192,7 +187,7 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 	r.setImportedCondition(assignment, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Assignment was adopted successfully.")
 	r.setDriftCondition(assignment, driftFields)
 
-	if importMode == "observe-only" {
+	if importMode == importModeObserveOnly {
 		r.setCondition(assignment, metav1.ConditionTrue, "ObservedOnly", "Resource imported in observe-only mode. No changes applied to Azure.")
 		if err := r.Status().Update(ctx, assignment); err != nil {
 			logger.Error(err, FailedStatusError)

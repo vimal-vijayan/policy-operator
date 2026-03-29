@@ -1,0 +1,31 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyDefinition
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: require-tag-on-resources
+  annotations:
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/require-tag-on-resources"
+    governance.platform.io/import-mode: "observe-only"
+spec:
+  displayName: "Policy operator: Require a tag on resources"
+  description: "Enforces the existence of a required tag on all resources."
+  policyType: Custom
+  mode: Indexed
+  metadata:
+    category: "Tags"
+  version: "1.0.0"
+  parameters:
+    tagName:
+      type: String
+      metadata:
+        displayName: "Tag Name"
+        description: "Name of the tag that must exist on the resource."
+  policyRule:
+    if:
+      field: "[concat('tags[', parameters('tagName'), ']')]"
+      exists: "false"
+    then:
+      effect: "deny"
+  subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"

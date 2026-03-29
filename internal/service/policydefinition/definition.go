@@ -3,6 +3,7 @@ package policydefinition
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -77,6 +78,85 @@ func (s *Service) CreateOrUpdate(ctx context.Context, def *governancev1alpha1.Az
 		return "", err
 	}
 	return *resp.Definition.ID, nil
+}
+
+// Import fetches an existing Azure Policy Definition by its full resource ID, validates that it is
+// of type Custom, and returns any drift fields between the live Azure state and the CR spec.
+func (s *Service) Import(ctx context.Context, importID string, def *governancev1alpha1.AzurePolicyDefinition) ([]string, error) {
+	logger := log.FromContext(ctx)
+
+	if !strings.Contains(strings.ToLower(importID), "/policydefinitions/") {
+		return nil, fmt.Errorf("import ID does not reference a Policy Definition: %q", importID)
+	}
+
+	defName, managementGroupID, err := parseDefinitionImportID(importID)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("Fetching existing Azure Policy Definition for import", "importID", importID)
+
+	var props *armpolicy.DefinitionProperties
+	if managementGroupID != "" {
+		resp, err := s.factory.Definitions.GetAtManagementGroup(ctx, defName, managementGroupID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("fetching policy definition %q: %w", importID, err)
+		}
+		props = resp.Definition.Properties
+	} else {
+		resp, err := s.factory.Definitions.Get(ctx, defName, nil)
+		if err != nil {
+			return nil, fmt.Errorf("fetching policy definition %q: %w", importID, err)
+		}
+		props = resp.Definition.Properties
+	}
+
+	if props == nil {
+		return nil, fmt.Errorf("policy definition %q returned no properties", importID)
+	}
+
+	if props.PolicyType == nil || *props.PolicyType != armpolicy.PolicyTypeCustom {
+		pt := "unknown"
+		if props.PolicyType != nil {
+			pt = string(*props.PolicyType)
+		}
+		return nil, fmt.Errorf("only Custom policy definitions can be imported, got policyType %q", pt)
+	}
+
+	var driftFields []string
+	spec := def.Spec
+
+	if props.DisplayName != nil && *props.DisplayName != spec.DisplayName {
+		logger.V(1).Info("Drift detected in displayName", "azureValue", *props.DisplayName, "specValue", spec.DisplayName)
+		driftFields = append(driftFields, "displayName")
+	}
+	if props.Description != nil && *props.Description != spec.Description {
+		logger.V(1).Info("Drift detected in description", "azureValue", *props.Description, "specValue", spec.Description)
+		driftFields = append(driftFields, "description")
+	}
+	if props.Mode != nil && *props.Mode != spec.Mode {
+		logger.V(1).Info("Drift detected in mode", "azureValue", *props.Mode, "specValue", spec.Mode)
+		driftFields = append(driftFields, "mode")
+	}
+
+	return driftFields, nil
+}
+
+func parseDefinitionImportID(importID string) (name string, managementGroupID string, err error) {
+	parts := strings.Split(importID, "/")
+	for i, part := range parts {
+		if strings.EqualFold(part, "policyDefinitions") && i+1 < len(parts) {
+			name = parts[i+1]
+			for j, p := range parts {
+				if strings.EqualFold(p, "managementGroups") && j+1 < len(parts) {
+					managementGroupID = parts[j+1]
+					break
+				}
+			}
+			return name, managementGroupID, nil
+		}
+	}
+	return "", "", fmt.Errorf("cannot parse policy definition name from import ID: %q", importID)
 }
 
 func (s *Service) Delete(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error {

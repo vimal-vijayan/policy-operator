@@ -35,6 +35,7 @@ import (
 type fakePolicyDefinitionService struct {
 	createOrUpdateFn func(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
 	deleteFn         func(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error
+	importFn         func(ctx context.Context, importID string, def *governancev1alpha1.AzurePolicyDefinition) ([]string, error)
 }
 
 func (f *fakePolicyDefinitionService) CreateOrUpdate(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error) {
@@ -49,6 +50,13 @@ func (f *fakePolicyDefinitionService) Delete(ctx context.Context, def *governanc
 		return f.deleteFn(ctx, def)
 	}
 	return nil
+}
+
+func (f *fakePolicyDefinitionService) Import(ctx context.Context, importID string, def *governancev1alpha1.AzurePolicyDefinition) ([]string, error) {
+	if f.importFn != nil {
+		return f.importFn(ctx, importID, def)
+	}
+	return nil, nil
 }
 
 var _ = Describe("AzurePolicyDefinition Controller", func() {
