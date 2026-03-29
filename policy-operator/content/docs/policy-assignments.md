@@ -6,7 +6,7 @@ weight: 30
 
 The `AzurePolicyAssignment` custom resource maps to an [Azure Policy Assignment](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/assignment-structure). An assignment binds a policy definition or initiative to a scope (subscription, resource group, or management group) and optionally configures parameters, managed identity, resource selectors, and inline exemptions. The operator reconciles each resource by creating or updating the corresponding assignment in Azure.
 
-{{< api-schema kind="AzurePolicyAssignment" version="v1alpha1" examples="4" status="true" >}}
+{{< api-schema kind="AzurePolicyAssignment" version="v1alpha1" examples="5" status="true" >}}
 
 {{< api-field name="apiVersion" type="String" desc="API version for this resource. Must be policy.azure.com/v1alpha1." >}}
 ```yaml
@@ -41,12 +41,38 @@ metadata:
     env: production
 ```
   {{< /api-field >}}
-  {{< api-field name="annotations" type="Object" desc="Arbitrary non-identifying metadata." >}}
+  {{< api-field name="annotations" type="Object" children="true" desc="Arbitrary non-identifying metadata. The operator recognises specific annotations for import and observe-only mode." >}}
+    {{< api-field name="governance.platform.io/import-id" type="String" desc="Azure resource ID of an existing policy assignment to import into operator management. When set, the operator adopts the existing Azure assignment instead of creating a new one." >}}
+```yaml
+metadata:
+  annotations:
+    governance.platform.io/import-id: >-
+      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyAssignments/my-existing-assignment
+```
+    {{< /api-field >}}
+    {{< api-field name="governance.platform.io/import-mode" type="String" enum="observe-only|once|reconcile" default="observe-only" desc="Controls what the operator does after adopting the existing Azure assignment. Must be used alongside governance.platform.io/import-id. If omitted, defaults to observe-only. See the import modes table below." >}}
+
+| Mode | Behaviour |
+|---|---|
+| `observe-only` | Reads the assignment from Azure and populates status. The operator never creates, updates, or deletes the Azure resource. Useful for auditing or brownfield visibility without taking ownership. |
+| `once` | Adopts the existing assignment on the first reconcile, then immediately begins managing it — subsequent reconciles call CreateOrUpdate to converge spec with Azure. |
+| `reconcile` | Same as `once`. Adopts the assignment and continuously reconciles spec changes against Azure going forward. |
+
+```yaml
+metadata:
+  annotations:
+    governance.platform.io/import-id: >-
+      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyAssignments/my-existing-assignment
+    governance.platform.io/import-mode: "observe-only"  # or: once, reconcile
+```
+    {{< /api-field >}}
+    {{< api-field name="(any)" type="String" desc="Any additional annotation key/value pair for organisational metadata." >}}
 ```yaml
 metadata:
   annotations:
     policy.azure.com/owner: platform-team
 ```
+    {{< /api-field >}}
   {{< /api-field >}}
 {{< /api-field >}}
 
@@ -417,6 +443,34 @@ spec:
         /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/legacy-rg/providers/Microsoft.Storage/storageAccounts/legacystore001
       exemptionCategory: Waiver
       expiresOn: "2026-06-30T00:00:00Z"
+```
+
+### Import an existing Azure Policy Assignment (observe-only)
+
+```yaml
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyAssignment
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: audit-vms-dr
+  annotations:
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyAssignments/82d78ad5-665b-4105-ac22-4bfd66010a52"
+    governance.platform.io/import-mode: "observe-only"
+spec:
+  displayName: "Policy operator: Require Cost Center tag on Resource Groups"
+  description: "Enforces that all resource groups have a CostCenter tag."
+  policyDefinitionId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/microsoft.authorization/policydefinitions/require-tag-on-resources"
+  parameters:
+    tagName: "CostCenter"
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+  notScopes:
+    - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-taj"
+  enforcementMode: Default
+  identity:
+    type: SystemAssigned
+    location: westeurope
 ```
 
 {{< /api-examples >}}
