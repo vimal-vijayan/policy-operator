@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -176,7 +177,8 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 		r.setImportedCondition(assignment, metav1.ConditionFalse, "ImportFailed", err.Error())
 		r.setCondition(assignment, metav1.ConditionFalse, "ImportFailed", err.Error())
 		_ = r.Status().Update(ctx, assignment)
-		return ctrl.Result{}, true, err
+		// This Requeue with backoff to handle transient import errors, but avoid tight looping on unrecoverable issues.
+		return ctrl.Result{RequeueAfter: 3 * time.Minute}, true, err
 	}
 
 	assignment.Status.AssignmentID = importID
