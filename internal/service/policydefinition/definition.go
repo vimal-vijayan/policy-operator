@@ -14,6 +14,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+const (
+	annotationImportName    = "governance.platform.io/import-name"
+	annotationImportMode    = "governance.platform.io/import-mode"
+	importModeReconcileOnly = "reconcile"
+	importModeOnlyOnce      = "once"
+)
+
 type Service struct {
 	factory *client.ARMClient
 }
@@ -62,6 +69,11 @@ func (s *Service) CreateOrUpdate(ctx context.Context, def *governancev1alpha1.Az
 	}
 
 	policyName := def.Name
+
+	// For imported definitions, allow using the annotationImportName as the policy name instead of the CR name. This is because the CR name may need to be changed to be a valid Azure resource name, but the annotationImportName can retain the original Azure policy definition name for clarity in logs and error messages.
+	if def.Annotations[annotationImportMode] == importModeReconcileOnly || def.Annotations[annotationImportMode] == importModeOnlyOnce {
+		policyName = def.Annotations[annotationImportName]
+	}
 
 	if spec.ManagementGroupID != "" {
 		logger.Info("Creating/updating policy definition at management group scope", "name", policyName, "managementGroupID", spec.ManagementGroupID)

@@ -6,9 +6,10 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: allowed-locations-policy
   annotations:
-    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/16304ffb641c4201a804ed93"
-    governance.platform.io/import-name: "16304ffb641c4201a804ed93"
-    governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/f3b1859f349a44a7928ff16f"
+    governance.platform.io/import-name: "f3b1859f349a44a7928ff16f"
+    governance.platform.io/import-mode: "reconcile"
+    # governance.platform.io/import-mode: "observe-only"
 spec:
   displayName: "vimal is testing policy"
   description: "this is a test policy"
@@ -20,8 +21,10 @@ spec:
   parameters:
     allowedLocations:
       type: Array
+      defaultValue:
+        - "eastus2"
       metadata:
-        displayName: "Allowed Locations"
+        displayName: "Allowed locations"
         description: "The list of allowed locations for resources."
         strongType: "location"
   policyRuleJson: |
