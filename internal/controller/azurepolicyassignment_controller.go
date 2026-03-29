@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -38,10 +39,16 @@ import (
 
 const azurePolicyAssignmentFinalizer = "governance.platform.io/azurepolicyassignment-finalizer"
 
+const (
+	annotationImportID   = "governance.platform.io/import-id"
+	annotationImportMode = "governance.platform.io/import-mode"
+)
+
 // PolicyAssignmentService defines the Azure operations required by the assignment controller.
 type PolicyAssignmentService interface {
 	CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error)
 	Delete(ctx context.Context, scope string, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error
+	Import(ctx context.Context, importID string, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, []string, error)
 }
 
 // AzurePolicyAssignmentReconciler reconciles a AzurePolicyAssignment object
@@ -58,43 +65,15 @@ type AzurePolicyAssignmentReconciler struct {
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicydefinitions,verbs=get;list;watch
 
 func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
-
 	assignment := &governancev1alpha1.AzurePolicyAssignment{}
 	if err := r.Get(ctx, req.NamespacedName, assignment); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// Handle deletion
 	if !assignment.DeletionTimestamp.IsZero() {
-		if controllerutil.ContainsFinalizer(assignment, azurePolicyAssignmentFinalizer) {
-			logger.Info("Running finalizer cleanup", "name", assignment.Name)
-
-			if assignment.Status.AssignmentID != "" {
-				if err := r.Service.Delete(ctx, assignment.Spec.Scope, assignment.Status.AssignmentID, assignment.Status.Exemptions, assignment.Spec.Identity); err != nil {
-					if r.Recorder != nil {
-						r.Recorder.Eventf(assignment, corev1.EventTypeWarning, "PolicyAssignmentDeleteFailed", "Failed deleting policy assignment %q: %v", assignment.Status.AssignmentID, err)
-					}
-					r.setCondition(assignment, metav1.ConditionFalse, "DeleteFailed", err.Error())
-					if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
-						logger.Error(statusErr, FailedStatusError)
-					}
-					return ctrl.Result{}, err
-				}
-				if r.Recorder != nil {
-					r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentDeleted", "Deleted policy assignment %q", assignment.Status.AssignmentID)
-				}
-			}
-
-			controllerutil.RemoveFinalizer(assignment, azurePolicyAssignmentFinalizer)
-			if err := r.Update(ctx, assignment); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-		return ctrl.Result{}, nil
+		return r.handleDeletion(ctx, assignment)
 	}
 
-	// Add finalizer if not present
 	if !controllerutil.ContainsFinalizer(assignment, azurePolicyAssignmentFinalizer) {
 		controllerutil.AddFinalizer(assignment, azurePolicyAssignmentFinalizer)
 		if err := r.Update(ctx, assignment); err != nil {
@@ -103,24 +82,130 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		return ctrl.Result{}, nil
 	}
 
-	// Resolve policyDefinitionId — either directly from spec or via policyDefinitionRef
-	policyDefinitionID := assignment.Spec.PolicyDefinitionID
-	if assignment.Spec.PolicyDefinitionRef != "" {
-		policyDef := &governancev1alpha1.AzurePolicyDefinition{}
-		if err := r.Get(ctx, types.NamespacedName{Name: assignment.Spec.PolicyDefinitionRef, Namespace: req.Namespace}, policyDef); err != nil {
-			r.setCondition(assignment, metav1.ConditionFalse, "RefNotFound", fmt.Sprintf("AzurePolicyDefinition %q not found: %v", assignment.Spec.PolicyDefinitionRef, err))
-			_ = r.Status().Update(ctx, assignment)
-			return ctrl.Result{}, err
-		}
-		if policyDef.Status.PolicyDefinitionID == "" {
-			r.setCondition(assignment, metav1.ConditionFalse, "RefNotReady", fmt.Sprintf("AzurePolicyDefinition %q has no policyDefinitionId in status yet", assignment.Spec.PolicyDefinitionRef))
-			_ = r.Status().Update(ctx, assignment)
-			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
-		}
-		policyDefinitionID = policyDef.Status.PolicyDefinitionID
+	policyDefinitionID, result, done, err := r.resolvePolicyDefinitionID(ctx, req, assignment)
+	if done {
+		return result, err
 	}
 
-	// Create or update the Azure Policy Assignment (and its inline exemptions and role assignments)
+	result, done, err = r.handleImport(ctx, assignment, policyDefinitionID)
+	if done {
+		return result, err
+	}
+
+	return r.reconcileCreateOrUpdate(ctx, assignment, policyDefinitionID)
+}
+
+func (r *AzurePolicyAssignmentReconciler) handleDeletion(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment) (ctrl.Result, error) {
+	logger := log.FromContext(ctx)
+
+	if !controllerutil.ContainsFinalizer(assignment, azurePolicyAssignmentFinalizer) {
+		return ctrl.Result{}, nil
+	}
+
+	logger.Info("Running finalizer cleanup", "name", assignment.Name)
+
+	if assignment.Status.AssignmentID != "" {
+		if err := r.Service.Delete(ctx, assignment.Spec.Scope, assignment.Status.AssignmentID, assignment.Status.Exemptions, assignment.Spec.Identity); err != nil {
+			if r.Recorder != nil {
+				r.Recorder.Eventf(assignment, corev1.EventTypeWarning, "PolicyAssignmentDeleteFailed", "Failed deleting policy assignment %q: %v", assignment.Status.AssignmentID, err)
+			}
+			r.setCondition(assignment, metav1.ConditionFalse, "DeleteFailed", err.Error())
+			if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
+				logger.Error(statusErr, FailedStatusError)
+			}
+			return ctrl.Result{}, err
+		}
+		if r.Recorder != nil {
+			r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentDeleted", "Deleted policy assignment %q", assignment.Status.AssignmentID)
+		}
+	}
+
+	controllerutil.RemoveFinalizer(assignment, azurePolicyAssignmentFinalizer)
+	return ctrl.Result{}, r.Update(ctx, assignment)
+}
+
+func (r *AzurePolicyAssignmentReconciler) resolvePolicyDefinitionID(ctx context.Context, req ctrl.Request, assignment *governancev1alpha1.AzurePolicyAssignment) (string, ctrl.Result, bool, error) {
+	if assignment.Spec.PolicyDefinitionRef == "" {
+		return assignment.Spec.PolicyDefinitionID, ctrl.Result{}, false, nil
+	}
+
+	policyDef := &governancev1alpha1.AzurePolicyDefinition{}
+	if err := r.Get(ctx, types.NamespacedName{Name: assignment.Spec.PolicyDefinitionRef, Namespace: req.Namespace}, policyDef); err != nil {
+		r.setCondition(assignment, metav1.ConditionFalse, "RefNotFound", fmt.Sprintf("AzurePolicyDefinition %q not found: %v", assignment.Spec.PolicyDefinitionRef, err))
+		_ = r.Status().Update(ctx, assignment)
+		return "", ctrl.Result{}, true, err
+	}
+	if policyDef.Status.PolicyDefinitionID == "" {
+		r.setCondition(assignment, metav1.ConditionFalse, "RefNotReady", fmt.Sprintf("AzurePolicyDefinition %q has no policyDefinitionId in status yet", assignment.Spec.PolicyDefinitionRef))
+		_ = r.Status().Update(ctx, assignment)
+		return "", ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+	}
+	return policyDef.Status.PolicyDefinitionID, ctrl.Result{}, false, nil
+}
+
+func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (ctrl.Result, bool, error) {
+	logger := log.FromContext(ctx)
+	importID := assignment.Annotations[annotationImportID]
+
+	if importID == "" {
+		return ctrl.Result{}, false, nil
+	}
+
+	// Prevent rebinding when status already points to a different Azure resource ID.
+	if assignment.Status.AssignmentID != "" && importID != assignment.Status.AssignmentID {
+		msg := fmt.Sprintf("annotation import-id %q differs from already bound assignmentId %q", importID, assignment.Status.AssignmentID)
+		r.setCondition(assignment, metav1.ConditionFalse, "ImportConflict", msg)
+		_ = r.Status().Update(ctx, assignment)
+		return ctrl.Result{}, true, fmt.Errorf("import conflict: %s", msg)
+	}
+
+	// Already bound — no adoption needed.
+	if assignment.Status.AssignmentID != "" {
+		return ctrl.Result{}, false, nil
+	}
+
+	importMode := assignment.Annotations[annotationImportMode]
+	if importMode == "" {
+		importMode = "observe-only"
+	}
+
+	logger.Info("Importing existing Azure Policy Assignment", "importID", importID, "importMode", importMode)
+
+	assignedLocation, miPrincipalID, driftFields, err := r.Service.Import(ctx, importID, assignment, policyDefinitionID)
+	if err != nil {
+		r.setImportedCondition(assignment, metav1.ConditionFalse, "ImportFailed", err.Error())
+		r.setCondition(assignment, metav1.ConditionFalse, "ImportFailed", err.Error())
+		_ = r.Status().Update(ctx, assignment)
+		return ctrl.Result{}, true, err
+	}
+
+	assignment.Status.AssignmentID = importID
+	if assignedLocation != "" {
+		assignment.Status.AssignedLocation = assignedLocation
+	}
+	if miPrincipalID != "" {
+		assignment.Status.MIPrincipalID = miPrincipalID
+	}
+
+	r.setImportedCondition(assignment, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Assignment was adopted successfully.")
+	r.setDriftCondition(assignment, driftFields)
+
+	if importMode == "observe-only" {
+		r.setCondition(assignment, metav1.ConditionTrue, "ObservedOnly", "Resource imported in observe-only mode. No changes applied to Azure.")
+		if err := r.Status().Update(ctx, assignment); err != nil {
+			logger.Error(err, FailedStatusError)
+			return ctrl.Result{}, true, err
+		}
+		return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+	}
+
+	// For "once" and "reconcile" modes: fall through to CreateOrUpdate.
+	return ctrl.Result{}, false, nil
+}
+
+func (r *AzurePolicyAssignmentReconciler) reconcileCreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (ctrl.Result, error) {
+	logger := log.FromContext(ctx)
+
 	wasAssigned := assignment.Status.AssignmentID != ""
 	assignmentID, assignedLocation, miPrincipalID, exemptionStatuses, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
 	if assignmentID != "" {
@@ -147,6 +232,7 @@ func (r *AzurePolicyAssignmentReconciler) Reconcile(ctx context.Context, req ctr
 		}
 		return ctrl.Result{}, err
 	}
+
 	if r.Recorder != nil && assignment.Status.AssignmentID != "" {
 		if !wasAssigned {
 			r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "PolicyAssignmentCreated", "Created policy assignment %q", assignment.Status.AssignmentID)
@@ -172,6 +258,36 @@ func (r *AzurePolicyAssignmentReconciler) setCondition(assignment *governancev1a
 		Message:            message,
 		ObservedGeneration: assignment.Generation,
 	})
+}
+
+func (r *AzurePolicyAssignmentReconciler) setImportedCondition(assignment *governancev1alpha1.AzurePolicyAssignment, status metav1.ConditionStatus, reason, message string) {
+	apimeta.SetStatusCondition(&assignment.Status.Conditions, metav1.Condition{
+		Type:               "Imported",
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: assignment.Generation,
+	})
+}
+
+func (r *AzurePolicyAssignmentReconciler) setDriftCondition(assignment *governancev1alpha1.AzurePolicyAssignment, driftFields []string) {
+	if len(driftFields) > 0 {
+		apimeta.SetStatusCondition(&assignment.Status.Conditions, metav1.Condition{
+			Type:               "DriftDetected",
+			Status:             metav1.ConditionTrue,
+			Reason:             "SpecMismatch",
+			Message:            fmt.Sprintf("Live Azure assignment differs from desired spec: %s", strings.Join(driftFields, ", ")),
+			ObservedGeneration: assignment.Generation,
+		})
+	} else {
+		apimeta.SetStatusCondition(&assignment.Status.Conditions, metav1.Condition{
+			Type:               "DriftDetected",
+			Status:             metav1.ConditionFalse,
+			Reason:             "InSync",
+			Message:            "Azure assignment matches desired spec.",
+			ObservedGeneration: assignment.Generation,
+		})
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.

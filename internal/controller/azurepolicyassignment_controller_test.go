@@ -35,6 +35,7 @@ import (
 type fakePolicyAssignmentService struct {
 	createOrUpdateFn func(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error)
 	deleteFn         func(ctx context.Context, scope, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error
+	importFn         func(ctx context.Context, importID string, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, []string, error)
 }
 
 func (f *fakePolicyAssignmentService) CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error) {
@@ -50,6 +51,13 @@ func (f *fakePolicyAssignmentService) Delete(ctx context.Context, scope, assignm
 		return f.deleteFn(ctx, scope, assignmentID, exemptions, identity)
 	}
 	return nil
+}
+
+func (f *fakePolicyAssignmentService) Import(ctx context.Context, importID string, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, []string, error) {
+	if f.importFn != nil {
+		return f.importFn(ctx, importID, assignment, policyDefinitionID)
+	}
+	return "", "", nil, nil
 }
 
 var _ = Describe("AzurePolicyAssignment Controller", func() {

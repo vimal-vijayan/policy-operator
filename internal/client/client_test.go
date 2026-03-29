@@ -83,6 +83,10 @@ func (f *fakeAssignmentsAPI) Get(_ context.Context, _ string, _ string, _ *armpo
 	return armpolicy.AssignmentsClientGetResponse{}, nil
 }
 
+func (f *fakeAssignmentsAPI) GetByID(_ context.Context, _ string, _ *armpolicy.AssignmentsClientGetByIDOptions) (armpolicy.AssignmentsClientGetByIDResponse, error) {
+	return armpolicy.AssignmentsClientGetByIDResponse{}, nil
+}
+
 // fakeExemptionsAPI is a test double for exemptions.API.
 type fakeExemptionsAPI struct{}
 

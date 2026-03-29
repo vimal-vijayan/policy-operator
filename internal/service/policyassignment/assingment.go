@@ -321,6 +321,77 @@ func (s *Service) reconcileExemptions(ctx context.Context, assignment *governanc
 	return results, nil
 }
 
+// Import fetches an existing Azure Policy Assignment by its full resource ID, validates it,
+// and returns the live location, managed-identity principal ID, and any spec drift fields.
+func (s *Service) Import(ctx context.Context, importID string, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, []string, error) {
+	logger := log.FromContext(ctx)
+
+	if !strings.Contains(strings.ToLower(importID), "/policyassignments/") {
+		return "", "", nil, fmt.Errorf("import ID does not reference a Policy Assignment: %q", importID)
+	}
+
+	logger.Info("Fetching existing Azure Policy Assignment for import", "importID", importID)
+	resp, err := s.factory.Assignments.GetByID(ctx, importID, nil)
+	if err != nil {
+		return "", "", nil, fmt.Errorf("fetching policy assignment %q: %w", importID, err)
+	}
+
+	live := resp.Assignment
+
+	assignedLocation := ""
+	if live.Location != nil {
+		assignedLocation = *live.Location
+	}
+
+	miPrincipalID := ""
+	if live.Identity != nil && live.Identity.PrincipalID != nil {
+		miPrincipalID = *live.Identity.PrincipalID
+	}
+
+	var driftFields []string
+	if live.Properties != nil {
+		spec := assignment.Spec
+
+		if live.Properties.DisplayName != nil && *live.Properties.DisplayName != spec.DisplayName {
+			driftFields = append(driftFields, "displayName")
+		}
+		if live.Properties.Description != nil && *live.Properties.Description != spec.Description {
+			driftFields = append(driftFields, "description")
+		}
+		if policyDefinitionID != "" && live.Properties.PolicyDefinitionID != nil &&
+			!strings.EqualFold(*live.Properties.PolicyDefinitionID, policyDefinitionID) {
+			driftFields = append(driftFields, "policyDefinitionId")
+		}
+		if live.Properties.EnforcementMode != nil && string(*live.Properties.EnforcementMode) != spec.EnforcementMode {
+			driftFields = append(driftFields, "enforcementMode")
+		}
+
+		// notScopes: compare as sets
+		liveNotScopes := make(map[string]bool)
+		for _, ns := range live.Properties.NotScopes {
+			if ns != nil {
+				liveNotScopes[*ns] = true
+			}
+		}
+		specNotScopes := make(map[string]bool)
+		for _, ns := range spec.NotScopes {
+			specNotScopes[ns] = true
+		}
+		if len(liveNotScopes) != len(specNotScopes) {
+			driftFields = append(driftFields, "notScopes")
+		} else {
+			for ns := range specNotScopes {
+				if !liveNotScopes[ns] {
+					driftFields = append(driftFields, "notScopes")
+					break
+				}
+			}
+		}
+	}
+
+	return assignedLocation, miPrincipalID, driftFields, nil
+}
+
 func (s *Service) Delete(ctx context.Context, scope string, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error {
 	logger := log.FromContext(ctx)
 

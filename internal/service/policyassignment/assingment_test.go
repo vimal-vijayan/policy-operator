@@ -15,8 +15,9 @@ import (
 )
 
 type fakeAssignmentsAPI struct {
-	createFn func(ctx context.Context, scope string, policyAssignmentName string, parameters armpolicy.Assignment) (armpolicy.AssignmentsClientCreateResponse, error)
-	deleteFn func(ctx context.Context, scope string, policyAssignmentName string) error
+	createFn  func(ctx context.Context, scope string, policyAssignmentName string, parameters armpolicy.Assignment) (armpolicy.AssignmentsClientCreateResponse, error)
+	deleteFn  func(ctx context.Context, scope string, policyAssignmentName string) error
+	getByIDFn func() (armpolicy.AssignmentsClientGetByIDResponse, error)
 }
 
 func (f *fakeAssignmentsAPI) Create(ctx context.Context, scope string, policyAssignmentName string, parameters armpolicy.Assignment, _ *armpolicy.AssignmentsClientCreateOptions) (armpolicy.AssignmentsClientCreateResponse, error) {
@@ -35,6 +36,13 @@ func (f *fakeAssignmentsAPI) Delete(ctx context.Context, scope string, policyAss
 
 func (f *fakeAssignmentsAPI) Get(_ context.Context, _ string, _ string, _ *armpolicy.AssignmentsClientGetOptions) (armpolicy.AssignmentsClientGetResponse, error) {
 	return armpolicy.AssignmentsClientGetResponse{}, nil
+}
+
+func (f *fakeAssignmentsAPI) GetByID(_ context.Context, _ string, _ *armpolicy.AssignmentsClientGetByIDOptions) (armpolicy.AssignmentsClientGetByIDResponse, error) {
+	if f.getByIDFn != nil {
+		return f.getByIDFn()
+	}
+	return armpolicy.AssignmentsClientGetByIDResponse{}, nil
 }
 
 type fakeExemptionsAPI struct {
