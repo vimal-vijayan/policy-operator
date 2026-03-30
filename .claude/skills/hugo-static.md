@@ -46,7 +46,7 @@ Used when creating or modifying the logic for managing Hugo static sites. This i
       - Leaf fields expand to show description, allowed enum values, default, and mutual-exclusion notes
       - Field rows: purple square +/- toggle | blue underlined field name | spacer | [required pill] [type badge]
     - Shortcodes used (all in policy-operator/themes/policy-operator-theme/layouts/shortcodes/):
-      - `api-schema` : outer tabbed wrapper; params: kind, version, examples (count), status ("true" to show Status tab)
+      - `api-schema` : outer tabbed wrapper; params: kind, version, examples (count), status ("true" to show Status tab), tips ("true" to show Tips tab)
       - `api-field`  : single field row; params: name, type, required, desc, children, default, mutual, enum
                        - set children="true" for Object/Array fields whose .Inner contains nested api-field shortcodes
                        - omit children for leaf fields; .Inner is markdown description/examples
@@ -54,8 +54,25 @@ Used when creating or modifying the logic for managing Hugo static sites. This i
       - `api-status`   : holds status field rows (api-field shortcodes); JS moves it into the Status tab automatically
                          - place after {{< /api-examples >}} (or after {{< /api-schema >}} if no examples)
                          - source node class: `.api-status-src` (hidden via CSS, same pattern as `.api-examples-src`)
+      - `api-tips`     : holds tips/guide content; JS moves it into the Tips tab automatically
+                         - place after {{< /api-status >}} (or after {{< /api-examples >}} / {{< /api-schema >}} if no status)
+                         - source node class: `.api-tips-src` (hidden div, same JS pattern as api-status)
+                         - enable the tab by passing tips="true" to the parent api-schema shortcode
+    - Tips tab accordion layout (inside {{< api-tips >}} ... {{< /api-tips >}}):
+      - Outer wrapper: `<div class="tips-list">` — bordered, rounded container; each item separated by `border-top`
+      - Each accordion item: `<div class="tips-item">`
+        - Toggle button: `<button class="tips-item__header" data-api-toggle aria-expanded="false" aria-controls="tip-<id>" type="button">`
+          - Title text followed by a chevron SVG (`<svg class="tips-item__chevron" ...>`)
+          - JS rotates the chevron 180° when aria-expanded="true"
+        - Body panel: `<div class="tips-item__body" id="tip-<id>" hidden>`
+          - Supports `<p>`, `<h3>`, `<div class="highlight"><pre><code ...>` code blocks, and `.callout` divs
+          - h3 subheadings within the body have reduced top margin; first h3 has no top margin
+      - Callout box: `<div class="callout callout-warning" style="margin-top:1.25rem"><div class="callout-title">...</div><p>...</p></div>`
+        - Use for warnings (e.g. "Never remove import annotations")
     - CSS: .api-schema, .api-field, .api-field__children blocks in
            policy-operator/themes/policy-operator-theme/static/css/style.css (section 17)
+    - Tips accordion CSS: .tips-list, .tips-item, .tips-item__header, .tips-item__chevron, .tips-item__body in
+           policy-operator/themes/policy-operator-theme/static/css/style.css (section 20)
     - Inline field examples: each api-field in the API Documentation tab can include a YAML
       code block in its .Inner content (markdown fenced ```yaml ... ```) — rendered and
       copy-buttoned automatically; already done for all fields in policy-definitions.md
@@ -66,6 +83,8 @@ Used when creating or modifying the logic for managing Hugo static sites. This i
         all clicks (works for dynamically added content such as the examples panel)
       - After moving api-examples-src innerHTML into the examples panel, call
         initCopyButtons(exPanel) so code blocks in the Examples tab also get copy buttons
+      - api-tips-src follows the same pattern: JS moves `.api-tips-src` innerHTML into
+        `[data-schema-panel="tips"]` and calls initCopyButtons(tpPanel) for copy buttons in the Tips tab
     - Examples in the Examples tab (4 total):
         - Audit storage accounts without HTTPS (inline policyRule + parameters)
         - Deny untagged resources at management group scope

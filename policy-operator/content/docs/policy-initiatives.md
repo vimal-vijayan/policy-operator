@@ -6,7 +6,7 @@ weight: 20
 
 The `AzurePolicyInitiative` custom resource maps to an [Azure Policy Set Definition](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/initiative-definition-structure). An initiative groups one or more policy definitions so they can be assigned and tracked together. The operator reconciles each resource by creating or updating the corresponding policy set definition in Azure.
 
-{{< api-schema kind="AzurePolicyInitiative" version="v1alpha1" examples="4" status="true" >}}
+{{< api-schema kind="AzurePolicyInitiative" version="v1alpha1" examples="5" status="true" tips="true" >}}
 
 {{< api-field name="apiVersion" type="String" desc="API version for this resource. Must be policy.azure.com/v1alpha1." >}}
 ```yaml
@@ -41,12 +41,31 @@ metadata:
     env: production
 ```
   {{< /api-field >}}
-  {{< api-field name="annotations" type="Object" desc="Arbitrary non-identifying metadata." >}}
+  {{< api-field name="annotations" type="Object" children="true" desc="Arbitrary non-identifying metadata. The following annotations control import behaviour when adopting an existing Azure Policy Initiative." >}}
+    {{< api-field name="governance.platform.io/import-id" type="String" desc="Full Azure resource ID of the existing policy set definition to adopt. Required when importing. Supports both subscription and management group scoped IDs." >}}
 ```yaml
 metadata:
   annotations:
-    policy.azure.com/owner: platform-team
+    governance.platform.io/import-id: >-
+      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policySetDefinitions/my-initiative
 ```
+    {{< /api-field >}}
+    {{< api-field name="governance.platform.io/import-name" type="String" desc="The bare Azure policy set definition name (last segment of the resource ID). Used as the initiative name when writing back to Azure in reconcile or adopt-once mode." >}}
+```yaml
+metadata:
+  annotations:
+    governance.platform.io/import-name: "my-initiative"
+```
+    {{< /api-field >}}
+    {{< api-field name="governance.platform.io/import-mode" type="String" default="observe-only" enum="observe-only|reconcile|adopt-once" desc="Controls what happens after the initiative is imported. observe-only: read-only, no changes are pushed to Azure. reconcile: continuously sync Azure to match the spec on every reconcile. adopt-once: adopt and apply changes once, then stop reconciling." >}}
+```yaml
+metadata:
+  annotations:
+    governance.platform.io/import-mode: "observe-only"  # read-only
+    # governance.platform.io/import-mode: "reconcile"   # continuously sync
+    # governance.platform.io/import-mode: "adopt-once"  # adopt once
+```
+    {{< /api-field >}}
   {{< /api-field >}}
 {{< /api-field >}}
 
@@ -277,6 +296,44 @@ spec:
   subscriptionId: "00000000-0000-0000-0000-000000000000"
 ```
 
+### Import existing initiative (reconcile)
+
+Adopt an existing Azure Policy Initiative and continuously sync Azure to match the spec. Uses a mix of `policyDefinitionRef` (CR-managed definition) and `policyDefinitionId` (externally managed definition) to show both reference styles.
+
+```yaml
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyInitiative
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: tag-governance-initiative
+  annotations:
+    governance.platform.io/import-id: >-
+      /subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policySetDefinitions/41939cde4b42430bbb43d66e
+    governance.platform.io/import-name: "41939cde4b42430bbb43d66e"
+    governance.platform.io/import-mode: "reconcile"
+    # governance.platform.io/import-mode: "observe-only"
+    # governance.platform.io/import-mode: "adopt-once"
+spec:
+  displayName: "Tag Governance Initiative"
+  description: "Imported initiative sample for tag governance controls."
+  version: "1.0.0"
+  metadata:
+    category: "platform"
+  policyDefinitions:
+    - policyDefinitionRef: "require-tag-on-resources"
+      parameters:
+        tagName:
+          value: "costcenter"
+    - policyDefinitionId: >-
+        /subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/require-tag-on-resources-with-json
+      parameters:
+        tagName:
+          value: "costcenter"
+  subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"
+```
+
 {{< /api-examples >}}
 
 {{< api-status >}}
@@ -301,19 +358,90 @@ status:
 
 | Type | Status | Reason | Meaning |
 |---|---|---|---|
-| `Ready` | `True` | `ReconcileSucceeded` | Initiative is in sync with Azure |
+| `Ready` | `True` | `Reconciled` | Initiative is in sync with Azure |
+| `Ready` | `True` | `ObservedOnly` | Imported in observe-only mode; no changes pushed to Azure |
 | `Ready` | `False` | `ReconcileFailed` | Last reconcile failed; see message |
-| `Ready` | `False` | `AzureAPIError` | ARM API returned an error |
+| `Ready` | `False` | `DeleteFailed` | Finalizer cleanup failed; see message |
+| `Ready` | `False` | `ImportFailed` | Import from Azure failed; see message |
+| `Ready` | `False` | `ImportConflict` | `import-id` annotation conflicts with already-bound `initiativeId` |
+| `Imported` | `True` | `ImportSucceeded` | Existing Azure initiative was adopted successfully |
+| `Imported` | `False` | `ImportFailed` | Could not fetch or validate the initiative from Azure |
+| `DriftDetected` | `True` | `SpecMismatch` | Live Azure initiative differs from the desired spec; see message for fields |
+| `DriftDetected` | `False` | `InSync` | Azure initiative matches the desired spec |
 
 ```yaml
 status:
   conditions:
     - type: Ready
       status: "True"
-      reason: ReconcileSucceeded
+      reason: Reconciled
       message: "Policy initiative successfully reconciled"
+      lastTransitionTime: "2024-01-15T10:30:00Z"
+    - type: Imported
+      status: "True"
+      reason: ImportSucceeded
+      message: "Existing Azure Policy Initiative was adopted successfully."
+      lastTransitionTime: "2024-01-15T10:30:00Z"
+    - type: DriftDetected
+      status: "True"
+      reason: SpecMismatch
+      message: "Live Azure initiative differs from desired spec: displayName, description"
       lastTransitionTime: "2024-01-15T10:30:00Z"
 ```
 {{< /api-field >}}
 
 {{< /api-status >}}
+
+{{< api-tips >}}
+
+<div class="tips-list">
+
+  <div class="tips-item">
+    <button class="tips-item__header" data-api-toggle aria-expanded="false" aria-controls="tip-import-initiatives" type="button">
+      Importing Azure Policy Initiatives
+      <svg class="tips-item__chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 6 8 10 12 6"/></svg>
+    </button>
+    <div class="tips-item__body" id="tip-import-initiatives" hidden>
+      <p>Oh, you've got an existing initiative with <em>twelve</em> policy definitions already deployed in Azure. How charming. Manually rewriting all of that into YAML is absolutely how you planned to spend your afternoon. Fear not — your AI assistant has a pulse and can read JSON. Export the initiative, paste it in, and let the machine handle the tedious part while you contemplate your life choices.</p>
+      <p>Export your existing initiative and hand it to your AI assistant to generate the <code>AzurePolicyInitiative</code> manifest. It will sort out <code>policyDefinitions</code>, <code>parameters</code>, and all the nested fun:</p>
+<div class="highlight"><pre><code class="language-bash"># Export the initiative from Azure CLI, let AI do the YAML gymnastics
+az policy set-definition show --name "my-initiative" --subscription "00000000-0000-0000-0000-000000000000"</code></pre></div>
+      <h3>Start with <code>observe-only</code> — unless you enjoy surprises</h3>
+      <p>Before you let the operator start overwriting things in Azure, import with <code>observe-only</code> mode. It reads the live initiative and reports drift without touching a single resource. Think of it as reading someone's diary before deciding whether to burn it.</p>
+<div class="highlight"><pre><code class="language-yaml">metadata:
+  annotations:
+    governance.platform.io/import-id: >-
+      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policySetDefinitions/my-initiative
+    governance.platform.io/import-name: "my-initiative"
+    governance.platform.io/import-mode: "observe-only"</code></pre></div>
+      <h3>Watch status and drift with kubectl</h3>
+      <p>Once deployed, <code>kubectl</code> will tell you everything the operator knows — which is frankly more than most humans know about their own policies:</p>
+<div class="highlight"><pre><code class="language-bash">kubectl describe azurepolicyinitiative tag-governance-initiative
+kubectl get azurepolicyinitiative tag-governance-initiative -o yaml</code></pre></div>
+      <p>Pay close attention to the <code>DriftDetected</code> condition. If <code>reason: SpecMismatch</code> appears, your spec and the live Azure initiative disagree. You will know exactly which fields are out of sync before you commit to doing anything about it.</p>
+      <h3>When you're ready, pick your poison</h3>
+      <p>Switch to <strong><code>reconcile</code></strong> for continuous GitOps management — the operator keeps Azure in sync with your spec on every reconcile loop, forever, whether you like it or not. Or use <strong><code>adopt-once</code></strong> to apply your spec exactly once, then quietly walk away.</p>
+<div class="highlight"><pre><code class="language-yaml">governance.platform.io/import-mode: "reconcile"   # continuous sync — no escape
+governance.platform.io/import-mode: "adopt-once"  # adopt once, then pretend it never happened</code></pre></div>
+      <h3>Mix <code>policyDefinitionRef</code> and <code>policyDefinitionId</code> freely</h3>
+      <p>Inside <code>policyDefinitions</code>, you can reference CR-managed definitions by name (<code>policyDefinitionRef</code>) or point directly to any Azure resource ID (<code>policyDefinitionId</code>). Mix and match as needed — the operator handles resolution at reconcile time, no handholding required.</p>
+<div class="highlight"><pre><code class="language-yaml">policyDefinitions:
+  - policyDefinitionRef: "require-tag-on-resources"   # CR in this namespace
+    parameters:
+      tagName:
+        value: "costcenter"
+  - policyDefinitionId: >-
+      /subscriptions/00000000/providers/Microsoft.Authorization/policyDefinitions/some-external-policy
+    parameters:
+      tagName:
+        value: "costcenter"</code></pre></div>
+      <div class="callout callout-warning" style="margin-top:1.25rem">
+        <div class="callout-title">Never remove import annotations</div>
+        <p>The operator maps the CRD <code>metadata.name</code> to the Azure initiative name by default. Import is the exception — <code>governance.platform.io/import-name</code> is used directly instead. Removing these annotations causes the operator to fall back to the CRD name, losing track of the original initiative and potentially creating a glorious duplicate. Removing import annotations from a managed initiative can produce a policy management experience that nobody asked for.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{{< /api-tips >}}
