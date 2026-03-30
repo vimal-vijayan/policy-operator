@@ -1,7 +1,7 @@
 <nav class="navbar" role="navigation" aria-label="Main navigation">
   <div class="container navbar-inner">
 
-    <a class="navbar-brand" href="{{ .Site.Params.githubURL }}" target="_blank" rel="noopener noreferrer">
+    <a class="navbar-brand" href="{{ "/" | relURL }}">
       <img src="{{ "img/logo.svg" | relURL }}" alt="{{ .Site.Title }} logo" class="navbar-logo">
       <span>{{ .Site.Title }}</span>
     </a>
