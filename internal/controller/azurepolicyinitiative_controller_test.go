@@ -35,6 +35,7 @@ import (
 type fakeInitiativeService struct {
 	createOrUpdateFn func(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) (string, error)
 	deleteFn         func(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) error
+	importFn         func(ctx context.Context, importID string, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) ([]string, error)
 }
 
 func (f *fakeInitiativeService) CreateOrUpdate(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) (string, error) {
@@ -49,6 +50,13 @@ func (f *fakeInitiativeService) Delete(ctx context.Context, initiative *governan
 		return f.deleteFn(ctx, initiative)
 	}
 	return nil
+}
+
+func (f *fakeInitiativeService) Import(ctx context.Context, importID string, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) ([]string, error) {
+	if f.importFn != nil {
+		return f.importFn(ctx, importID, initiative, resolvedIDs)
+	}
+	return nil, nil
 }
 
 var _ = Describe("AzurePolicyInitiative Controller", func() {
@@ -194,6 +202,77 @@ var _ = Describe("AzurePolicyInitiative Controller", func() {
 			Expect(cond.Status).To(Equal(metav1.ConditionFalse))
 			Expect(cond.Reason).To(Equal("ReconcileFailed"))
 			Expect(cond.Message).To(ContainSubstring("azure api error"))
+		})
+	})
+
+	Context("When importing an existing initiative", func() {
+		BeforeEach(func() {
+			res := newResource(true)
+			res.Annotations = map[string]string{
+				annotationImportID:   fakeInitiativeID,
+				annotationImportMode: importModeObserveOnly,
+			}
+			Expect(k8sClient.Create(ctx, res)).To(Succeed())
+		})
+		AfterEach(func() { cleanupResource() })
+
+		It("should import in observe-only mode and skip CreateOrUpdate", func() {
+			createCalled := false
+			importCalled := false
+			svc := &fakeInitiativeService{
+				createOrUpdateFn: func(_ context.Context, _ *governancev1alpha1.AzurePolicyInitiative, _ []string) (string, error) {
+					createCalled = true
+					return fakeInitiativeID, nil
+				},
+				importFn: func(_ context.Context, gotImportID string, _ *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) ([]string, error) {
+					importCalled = true
+					Expect(gotImportID).To(Equal(fakeInitiativeID))
+					Expect(resolvedIDs).To(Equal([]string{fakePolicyID}))
+					return nil, nil
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(importCalled).To(BeTrue())
+			Expect(createCalled).To(BeFalse())
+
+			updated := &governancev1alpha1.AzurePolicyInitiative{}
+			Expect(k8sClient.Get(ctx, namespacedName, updated)).To(Succeed())
+			Expect(updated.Status.InitiativeID).To(Equal(fakeInitiativeID))
+
+			ready := apimeta.FindStatusCondition(updated.Status.Conditions, "Ready")
+			Expect(ready).NotTo(BeNil())
+			Expect(ready.Reason).To(Equal("ObservedOnly"))
+
+			imported := apimeta.FindStatusCondition(updated.Status.Conditions, "Imported")
+			Expect(imported).NotTo(BeNil())
+			Expect(imported.Status).To(Equal(metav1.ConditionTrue))
+		})
+
+		It("should fail on import ID conflict", func() {
+			res := &governancev1alpha1.AzurePolicyInitiative{}
+			Expect(k8sClient.Get(ctx, namespacedName, res)).To(Succeed())
+			res.Status.InitiativeID = "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policySetDefinitions/another"
+			Expect(k8sClient.Status().Update(ctx, res)).To(Succeed())
+
+			importCalled := false
+			svc := &fakeInitiativeService{
+				importFn: func(_ context.Context, _ string, _ *governancev1alpha1.AzurePolicyInitiative, _ []string) ([]string, error) {
+					importCalled = true
+					return nil, nil
+				},
+			}
+
+			_, err := newReconciler(svc).Reconcile(ctx, reconcile.Request{NamespacedName: namespacedName})
+			Expect(err).To(HaveOccurred())
+			Expect(importCalled).To(BeFalse())
+
+			updated := &governancev1alpha1.AzurePolicyInitiative{}
+			Expect(k8sClient.Get(ctx, namespacedName, updated)).To(Succeed())
+			cond := apimeta.FindStatusCondition(updated.Status.Conditions, "Ready")
+			Expect(cond).NotTo(BeNil())
+			Expect(cond.Reason).To(Equal("ImportConflict"))
 		})
 	})
 

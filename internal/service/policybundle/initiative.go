@@ -3,6 +3,7 @@ package policybundle
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -11,6 +12,13 @@ import (
 	"github.com/vimal-vijayan/azure-policy-operator/internal/client"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+)
+
+const (
+	annotationImportName    = "governance.platform.io/import-name"
+	annotationImportMode    = "governance.platform.io/import-mode"
+	importModeReconcileOnly = "reconcile"
+	importModeOnlyOnce      = "adopt-once"
 )
 
 type Service struct {
@@ -47,6 +55,10 @@ func (s *Service) CreateOrUpdate(ctx context.Context, initiative *governancev1al
 
 	initiativeName := initiative.Name
 
+	if initiative.Annotations[annotationImportMode] == importModeReconcileOnly || initiative.Annotations[annotationImportMode] == importModeOnlyOnce {
+		initiativeName = initiative.Annotations[annotationImportName]
+	}
+
 	if spec.ManagementGroupID != "" {
 		logger.Info("Creating/updating policy initiative at management group scope", "name", initiativeName, "managementGroupID", spec.ManagementGroupID)
 		resp, err := s.factory.Initiatives.CreateOrUpdateAtManagementGroup(ctx, initiativeName, spec.ManagementGroupID, params, nil)
@@ -62,6 +74,106 @@ func (s *Service) CreateOrUpdate(ctx context.Context, initiative *governancev1al
 		return "", err
 	}
 	return *resp.SetDefinition.ID, nil
+}
+
+// Import fetches an existing Azure Policy Set Definition by its full resource ID and
+// returns any drift fields between the live Azure state and the CR spec.
+func (s *Service) Import(ctx context.Context, importID string, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedPolicyDefinitionIDs []string) ([]string, error) {
+	logger := log.FromContext(ctx)
+
+	if !strings.Contains(strings.ToLower(importID), "/policysetdefinitions/") {
+		return nil, fmt.Errorf("import ID does not reference a Policy Set Definition: %q", importID)
+	}
+
+	initiativeName, managementGroupID, err := parseInitiativeImportID(importID)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("Fetching existing Azure Policy Set Definition for import", "importID", importID)
+
+	props, err := s.getInitiativeProperties(ctx, importID, initiativeName, managementGroupID)
+	if err != nil {
+		return nil, err
+	}
+
+	if props == nil {
+		return nil, fmt.Errorf("policy set definition %q returned no properties", importID)
+	}
+
+	if props.PolicyType == nil || *props.PolicyType != armpolicy.PolicyTypeCustom {
+		pt := "unknown"
+		if props.PolicyType != nil {
+			pt = string(*props.PolicyType)
+		}
+		return nil, fmt.Errorf("only Custom policy set definitions can be imported, got policyType %q", pt)
+	}
+
+	var driftFields []string
+	spec := initiative.Spec
+
+	if props.DisplayName != nil && *props.DisplayName != spec.DisplayName {
+		logger.V(1).Info("Drift detected in displayName", "azureValue", *props.DisplayName, "specValue", spec.DisplayName)
+		driftFields = append(driftFields, "displayName")
+	}
+	if props.Description != nil && *props.Description != spec.Description {
+		logger.V(1).Info("Drift detected in description", "azureValue", *props.Description, "specValue", spec.Description)
+		driftFields = append(driftFields, "description")
+	}
+
+	if hasPolicyDefinitionDrift(props.PolicyDefinitions, resolvedPolicyDefinitionIDs) {
+		logger.V(1).Info("Drift detected in policyDefinitions")
+		driftFields = append(driftFields, "policyDefinitions")
+	}
+
+	return driftFields, nil
+}
+
+func (s *Service) getInitiativeProperties(ctx context.Context, importID, initiativeName, managementGroupID string) (*armpolicy.SetDefinitionProperties, error) {
+	if managementGroupID != "" {
+		resp, err := s.factory.Initiatives.GetAtManagementGroup(ctx, initiativeName, managementGroupID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("fetching policy set definition %q: %w", importID, err)
+		}
+		return resp.SetDefinition.Properties, nil
+	}
+
+	resp, err := s.factory.Initiatives.Get(ctx, initiativeName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("fetching policy set definition %q: %w", importID, err)
+	}
+	return resp.SetDefinition.Properties, nil
+}
+
+func parseInitiativeImportID(importID string) (name string, managementGroupID string, err error) {
+	parts := strings.Split(importID, "/")
+	for i, part := range parts {
+		if strings.EqualFold(part, "policySetDefinitions") && i+1 < len(parts) {
+			name = parts[i+1]
+			for j, p := range parts {
+				if strings.EqualFold(p, "managementGroups") && j+1 < len(parts) {
+					managementGroupID = parts[j+1]
+					break
+				}
+			}
+			return name, managementGroupID, nil
+		}
+	}
+	return "", "", fmt.Errorf("cannot parse policy set definition name from import ID: %q", importID)
+}
+
+func hasPolicyDefinitionDrift(live []*armpolicy.DefinitionReference, desired []string) bool {
+	if len(live) != len(desired) {
+		return true
+	}
+
+	for i := range desired {
+		if live[i] == nil || live[i].PolicyDefinitionID == nil || *live[i].PolicyDefinitionID != desired[i] {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Delete removes the Azure Policy Set Definition.
@@ -91,28 +203,44 @@ func buildPolicyDefinitionRefs(refs []governancev1alpha1.PolicyDefinitionReferen
 		pdr := &armpolicy.DefinitionReference{
 			PolicyDefinitionID: to.Ptr(resolvedIDs[i]),
 		}
-		if ref.Parameters != nil {
-			params := make(map[string]*armpolicy.ParameterValuesValue)
-			var raw map[string]interface{}
-			if err := json.Unmarshal(ref.Parameters.Raw, &raw); err == nil {
-				for k, v := range raw {
-					// Each parameter entry is {"value": <actual>} — extract the inner value.
-					if paramMap, ok := v.(map[string]interface{}); ok {
-						if val, exists := paramMap["value"]; exists {
-							params[k] = &armpolicy.ParameterValuesValue{Value: val}
-							continue
-						}
-					}
-					params[k] = &armpolicy.ParameterValuesValue{Value: v}
-				}
-			}
-			if len(params) > 0 {
-				pdr.Parameters = params
-			}
+		if params := buildDefinitionRefParameters(ref.Parameters); len(params) > 0 {
+			pdr.Parameters = params
 		}
 		result[i] = pdr
 	}
 	return result
+}
+
+func buildDefinitionRefParameters(rawRef *runtime.RawExtension) map[string]*armpolicy.ParameterValuesValue {
+	if rawRef == nil {
+		return nil
+	}
+
+	params := make(map[string]*armpolicy.ParameterValuesValue)
+	var raw map[string]interface{}
+	if err := json.Unmarshal(rawRef.Raw, &raw); err != nil {
+		return nil
+	}
+
+	for k, v := range raw {
+		params[k] = &armpolicy.ParameterValuesValue{Value: extractParameterValue(v)}
+	}
+
+	if len(params) == 0 {
+		return nil
+	}
+
+	return params
+}
+
+func extractParameterValue(v interface{}) interface{} {
+	// Each parameter entry is typically {"value": <actual>}.
+	if paramMap, ok := v.(map[string]interface{}); ok {
+		if val, exists := paramMap["value"]; exists {
+			return val
+		}
+	}
+	return v
 }
 
 func buildParameters(params []governancev1alpha1.InitiativeParameter) map[string]*armpolicy.ParameterDefinitionsValue {

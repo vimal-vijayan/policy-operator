@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -41,6 +42,7 @@ const azurePolicyInitiativeFinalizer = "governance.platform.io/azurepolicyinitia
 type InitiativeService interface {
 	CreateOrUpdate(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedPolicyDefinitionIDs []string) (string, error)
 	Delete(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) error
+	Import(ctx context.Context, importID string, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedPolicyDefinitionIDs []string) ([]string, error)
 }
 
 // AzurePolicyInitiativeReconciler reconciles a AzurePolicyInitiative object
@@ -56,54 +58,68 @@ type AzurePolicyInitiativeReconciler struct {
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicydefinitions,verbs=get;list;watch
 
 func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
-
 	initiative := &governancev1alpha1.AzurePolicyInitiative{}
 	if err := r.Get(ctx, req.NamespacedName, initiative); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// Handle deletion
 	if !initiative.DeletionTimestamp.IsZero() {
-		if controllerutil.ContainsFinalizer(initiative, azurePolicyInitiativeFinalizer) {
-			logger.Info("Running finalizer cleanup", "name", initiative.Name)
-			if initiative.Status.InitiativeID != "" {
-				if err := r.Service.Delete(ctx, initiative); err != nil {
-					r.setCondition(initiative, metav1.ConditionFalse, "DeleteFailed", err.Error())
-					if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
-						logger.Error(statusErr, FailedStatusError)
-					}
-					return ctrl.Result{}, err
-				}
-			}
-			controllerutil.RemoveFinalizer(initiative, azurePolicyInitiativeFinalizer)
-			if err := r.Update(ctx, initiative); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, r.handleDeletion(ctx, initiative)
 	}
 
-	// Add finalizer if not present
 	if !controllerutil.ContainsFinalizer(initiative, azurePolicyInitiativeFinalizer) {
 		controllerutil.AddFinalizer(initiative, azurePolicyInitiativeFinalizer)
-		if err := r.Update(ctx, initiative); err != nil {
-			return ctrl.Result{}, err
-		}
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, r.Update(ctx, initiative)
 	}
 
-	// Resolve all policyDefinitionRef entries to Azure resource IDs
 	resolvedIDs, err := r.resolvePolicyDefinitionIDs(ctx, initiative, req.Namespace)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	if resolvedIDs == nil {
-		// A ref was not ready yet; status already updated, requeue
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 
-	// Create or update the Azure Policy Set Definition
+	result, done, err := r.handleImport(ctx, initiative, resolvedIDs)
+	if done {
+		return result, err
+	}
+
+	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, r.reconcileInitiative(ctx, initiative, resolvedIDs)
+}
+
+func (r *AzurePolicyInitiativeReconciler) handleDeletion(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) error {
+	logger := log.FromContext(ctx)
+
+	if !controllerutil.ContainsFinalizer(initiative, azurePolicyInitiativeFinalizer) {
+		return nil
+	}
+
+	logger.Info("Running finalizer cleanup", "name", initiative.Name)
+
+	if initiative.Annotations[annotationImportMode] == importModeObserveOnly {
+		logger.Info("Skipping finalizer cleanup due to observe-only import mode", "name", initiative.Name)
+		controllerutil.RemoveFinalizer(initiative, azurePolicyInitiativeFinalizer)
+		return r.Update(ctx, initiative)
+	}
+
+	if initiative.Status.InitiativeID != "" {
+		if err := r.Service.Delete(ctx, initiative); err != nil {
+			r.setCondition(initiative, metav1.ConditionFalse, "DeleteFailed", err.Error())
+			if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
+				logger.Error(statusErr, FailedStatusError)
+			}
+			return err
+		}
+	}
+
+	controllerutil.RemoveFinalizer(initiative, azurePolicyInitiativeFinalizer)
+	return r.Update(ctx, initiative)
+}
+
+func (r *AzurePolicyInitiativeReconciler) reconcileInitiative(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) error {
+	logger := log.FromContext(ctx)
+
 	initiativeID, err := r.Service.CreateOrUpdate(ctx, initiative, resolvedIDs)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy initiative")
@@ -111,18 +127,74 @@ func (r *AzurePolicyInitiativeReconciler) Reconcile(ctx context.Context, req ctr
 		if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
 		}
-		return ctrl.Result{}, err
+		return err
 	}
 
 	initiative.Status.InitiativeID = initiativeID
 	initiative.Status.AppliedVersion = initiative.Spec.Version
-	r.setCondition(initiative, metav1.ConditionTrue, "Reconciled", "Policy initiative successfully reconciled")
-	if err := r.Status().Update(ctx, initiative); err != nil {
-		logger.Error(err, FailedStatusError)
-		return ctrl.Result{}, err
+
+	readyReason := "Reconciled"
+	readyMsg := "Policy initiative successfully reconciled"
+	if initiative.Annotations[annotationImportMode] == importModeOnlyOnce {
+		readyReason = ReasonAppliedOnce
+		readyMsg = "Policy initiative applied once from import. No further changes will be applied to Azure."
+	}
+	r.setCondition(initiative, metav1.ConditionTrue, readyReason, readyMsg)
+	return r.Status().Update(ctx, initiative)
+}
+
+func (r *AzurePolicyInitiativeReconciler) handleImport(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) (ctrl.Result, bool, error) {
+	logger := log.FromContext(ctx)
+	importID := initiative.Annotations[annotationImportID]
+
+	if importID == "" {
+		return ctrl.Result{}, false, nil
 	}
 
-	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil
+	if initiative.Status.InitiativeID != "" && !strings.EqualFold(importID, initiative.Status.InitiativeID) {
+		msg := fmt.Sprintf("annotation import-id %q differs from already bound initiativeId %q", importID, initiative.Status.InitiativeID)
+		r.setCondition(initiative, metav1.ConditionFalse, "ImportConflict", msg)
+		_ = r.Status().Update(ctx, initiative)
+		return ctrl.Result{}, true, fmt.Errorf("import conflict: %s", msg)
+	}
+
+	importMode := initiative.Annotations[annotationImportMode]
+	if importMode == "" {
+		importMode = importModeObserveOnly
+	}
+
+	if importMode == importModeOnlyOnce {
+		cond := apimeta.FindStatusCondition(initiative.Status.Conditions, "Ready")
+		if cond != nil && cond.Reason == ReasonAppliedOnce {
+			logger.V(1).Info("Skipping reconcile - already applied once", "name", initiative.Name)
+			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+		}
+	}
+
+	logger.Info("Importing existing Azure Policy Set Definition", "importID", importID, "importMode", importMode)
+
+	driftFields, err := r.Service.Import(ctx, importID, initiative, resolvedIDs)
+	if err != nil {
+		r.setImportedCondition(initiative, metav1.ConditionFalse, "ImportFailed", err.Error())
+		r.setCondition(initiative, metav1.ConditionFalse, "ImportFailed", err.Error())
+		_ = r.Status().Update(ctx, initiative)
+		return ctrl.Result{RequeueAfter: 3 * time.Minute}, true, err
+	}
+
+	initiative.Status.InitiativeID = importID
+	r.setImportedCondition(initiative, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Set Definition was adopted successfully.")
+	r.setDriftCondition(initiative, driftFields)
+
+	if importMode == importModeObserveOnly {
+		r.setCondition(initiative, metav1.ConditionTrue, "ObservedOnly", "Resource imported in observe-only mode. No changes applied to Azure.")
+		if err := r.Status().Update(ctx, initiative); err != nil {
+			logger.Error(err, FailedStatusError)
+			return ctrl.Result{}, true, err
+		}
+		return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+	}
+
+	return ctrl.Result{}, false, nil
 }
 
 // resolvePolicyDefinitionIDs resolves all policyDefinitionRef entries to Azure resource IDs.
@@ -161,6 +233,36 @@ func (r *AzurePolicyInitiativeReconciler) setCondition(initiative *governancev1a
 		Message:            message,
 		ObservedGeneration: initiative.Generation,
 	})
+}
+
+func (r *AzurePolicyInitiativeReconciler) setImportedCondition(initiative *governancev1alpha1.AzurePolicyInitiative, status metav1.ConditionStatus, reason, message string) {
+	apimeta.SetStatusCondition(&initiative.Status.Conditions, metav1.Condition{
+		Type:               "Imported",
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: initiative.Generation,
+	})
+}
+
+func (r *AzurePolicyInitiativeReconciler) setDriftCondition(initiative *governancev1alpha1.AzurePolicyInitiative, driftFields []string) {
+	if len(driftFields) > 0 {
+		apimeta.SetStatusCondition(&initiative.Status.Conditions, metav1.Condition{
+			Type:               "DriftDetected",
+			Status:             metav1.ConditionTrue,
+			Reason:             "SpecMismatch",
+			Message:            fmt.Sprintf("Live Azure initiative differs from desired spec: %s", strings.Join(driftFields, ", ")),
+			ObservedGeneration: initiative.Generation,
+		})
+	} else {
+		apimeta.SetStatusCondition(&initiative.Status.Conditions, metav1.Condition{
+			Type:               "DriftDetected",
+			Status:             metav1.ConditionFalse,
+			Reason:             "InSync",
+			Message:            "Azure initiative matches desired spec.",
+			ObservedGeneration: initiative.Generation,
+		})
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.
