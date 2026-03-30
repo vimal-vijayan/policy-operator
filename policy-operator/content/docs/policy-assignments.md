@@ -6,7 +6,7 @@ weight: 30
 
 The `AzurePolicyAssignment` custom resource maps to an [Azure Policy Assignment](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/assignment-structure). An assignment binds a policy definition or initiative to a scope (subscription, resource group, or management group) and optionally configures parameters, managed identity, resource selectors, and inline exemptions. The operator reconciles each resource by creating or updating the corresponding assignment in Azure.
 
-{{< api-schema kind="AzurePolicyAssignment" version="v1alpha1" examples="5" status="true" >}}
+{{< api-schema kind="AzurePolicyAssignment" version="v1alpha1" examples="6" status="true" tips="true" >}}
 
 {{< api-field name="apiVersion" type="String" desc="API version for this resource. Must be policy.azure.com/v1alpha1." >}}
 ```yaml
@@ -64,6 +64,13 @@ metadata:
     governance.platform.io/import-id: >-
       /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyAssignments/my-existing-assignment
     governance.platform.io/import-mode: "observe-only"  # or: adopt-once, reconcile
+```
+    {{< /api-field >}}
+    {{< api-field name="governance.platform.io/import-name" type="String" desc="The bare Azure policy assignment name (last segment of the resource ID). Used as the assignment name when writing back to Azure in reconcile or adopt-once mode. Must be set when the Kubernetes resource name differs from the Azure assignment name." >}}
+```yaml
+metadata:
+  annotations:
+    governance.platform.io/import-name: "785fcbc8d4df43f6a63ac030"
 ```
     {{< /api-field >}}
     {{< api-field name="(any)" type="String" desc="Any additional annotation key/value pair for organisational metadata." >}}
@@ -445,7 +452,9 @@ spec:
       expiresOn: "2026-06-30T00:00:00Z"
 ```
 
-### Import an existing Azure Policy Assignment (observe-only)
+### Import an existing Azure Policy Assignment (reconcile)
+
+Adopt and continuously reconcile an existing assignment. The `import-name` annotation preserves the original Azure assignment name so the operator does not create a duplicate when the Kubernetes resource name differs.
 
 ```yaml
 apiVersion: governance.platform.io/v1alpha1
@@ -456,18 +465,48 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: audit-vms-dr
   annotations:
-    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyAssignments/82d78ad5-665b-4105-ac22-4bfd66010a52"
-    governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/microsoft.authorization/policyassignments/785fcbc8d4df43f6a63ac030"
+    governance.platform.io/import-mode: "reconcile"
+    governance.platform.io/import-name: "785fcbc8d4df43f6a63ac030"
 spec:
-  displayName: "Policy operator: Require Cost Center tag on Resource Groups"
+  displayName: "Policy operator: Require Cost Center tag on Resource Groups - imported"
   description: "Enforces that all resource groups have a CostCenter tag."
-  policyDefinitionId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/microsoft.authorization/policydefinitions/require-tag-on-resources"
+  policyDefinitionId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/4c47f444f5d44a1db20f8e36"
   parameters:
-    tagName: "CostCenter"
+    allowedLocations:
+      value:
+        - "eastus2"
   scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
   notScopes:
     - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-taj"
   enforcementMode: Default
+  identity:
+    type: SystemAssigned
+    location: westeurope
+```
+
+### Import an existing assignment and bind to a policyDefinitionRef
+
+Import an existing Azure assignment while referencing the policy definition as a CR (`policyDefinitionRef`) instead of a hard-coded Azure resource ID. The operator resolves the CR name to the Azure definition ID at reconcile time.
+
+```yaml
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyAssignment
+metadata:
+  name: assign-require-cost-center-tag
+  namespace: platform-policies
+  annotations:
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/microsoft.authorization/policyassignments/a1b2c3d4e5f643a1bc2d3e4f5a6b7c8d"
+    governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-name: "a1b2c3d4e5f643a1bc2d3e4f5a6b7c8d"
+spec:
+  displayName: "Require CostCenter tag on Resource Groups"
+  description: "Assigns the CostCenter tag policy to the production subscription via CR reference."
+  policyDefinitionRef: require-cost-center-tag
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+  enforcementMode: Default
+  notScopes:
+    - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-legacy"
   identity:
     type: SystemAssigned
     location: westeurope
@@ -548,3 +587,54 @@ status:
 {{< /api-field >}}
 
 {{< /api-status >}}
+
+{{< api-tips >}}
+
+<div class="tips-list">
+
+  <div class="tips-item">
+    <button class="tips-item__header" data-api-toggle aria-expanded="false" aria-controls="tip-import-assignments" type="button">
+      Importing Azure Policy Assignments
+      <svg class="tips-item__chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 6 8 10 12 6"/></svg>
+    </button>
+    <div class="tips-item__body" id="tip-import-assignments" hidden>
+      <p>If you already have policy assignments running in Azure, you don't need to recreate them from scratch. Export the existing assignment with the Azure CLI and hand it off to your AI assistant to generate the manifest — it will fill in <code>policyDefinitionId</code>, <code>parameters</code>, <code>scope</code>, <code>notScopes</code>, and <code>identity</code> while you do something more productive.</p>
+<div class="highlight"><pre><code class="language-bash"># Export an existing assignment — pipe to your AI assistant or save for reference
+az policy assignment show \
+  --name "785fcbc8d4df43f6a63ac030" \
+  --scope "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"</code></pre></div>
+      <h3>Always start with <code>observe-only</code></h3>
+      <p>Before allowing the operator to make any changes, import with <code>observe-only</code> mode. The operator fetches the live assignment from Azure and populates <code>status</code> — nothing in Azure is touched. Use this to validate that your spec matches the live state before committing to full reconciliation.</p>
+<div class="highlight"><pre><code class="language-yaml">metadata:
+  annotations:
+    governance.platform.io/import-id: >-
+      /subscriptions/00000000-0000-0000-0000-000000000000/providers/microsoft.authorization/policyassignments/785fcbc8d4df43f6a63ac030
+    governance.platform.io/import-name: "785fcbc8d4df43f6a63ac030"
+    governance.platform.io/import-mode: "observe-only"</code></pre></div>
+      <h3>The <code>import-name</code> annotation is critical</h3>
+      <p>Azure policy assignment names are often opaque GUIDs like <code>785fcbc8d4df43f6a63ac030</code>. Your Kubernetes resource name will typically be something human-readable like <code>audit-vms-dr</code>. The <code>import-name</code> annotation bridges this gap — it tells the operator which Azure assignment name to use when calling the ARM API, preventing it from creating a duplicate with the Kubernetes resource name.</p>
+<div class="highlight"><pre><code class="language-yaml">metadata:
+  name: audit-vms-dr                         # human-readable Kubernetes name
+  annotations:
+    governance.platform.io/import-id: >-
+      /subscriptions/.../policyassignments/785fcbc8d4df43f6a63ac030
+    governance.platform.io/import-name: "785fcbc8d4df43f6a63ac030"  # actual Azure name</code></pre></div>
+      <h3>Check status and conditions with kubectl</h3>
+      <p>After deploying, inspect what the operator sees:</p>
+<div class="highlight"><pre><code class="language-bash">kubectl describe azurepolicyassignment audit-vms-dr
+kubectl get azurepolicyassignment audit-vms-dr -o yaml</code></pre></div>
+      <p>The <code>status.assignmentId</code> is populated once the operator has successfully adopted the assignment. The <code>Ready</code> condition reflects whether the last reconcile succeeded.</p>
+      <h3>When you're ready, switch to <code>reconcile</code></h3>
+      <p>Once you've verified that the operator has correctly adopted the assignment and the spec reflects the desired state, switch to <strong><code>reconcile</code></strong> for continuous GitOps management. Or use <strong><code>adopt-once</code></strong> to apply your spec a single time and then step back.</p>
+<div class="highlight"><pre><code class="language-yaml">governance.platform.io/import-mode: "reconcile"   # continuous sync
+governance.platform.io/import-mode: "adopt-once"  # adopt once, then hands off</code></pre></div>
+      <div class="callout callout-warning" style="margin-top:1.25rem">
+        <div class="callout-title">Never remove import annotations</div>
+        <p>The operator uses <code>governance.platform.io/import-name</code> as the Azure assignment name instead of the Kubernetes resource name. Removing this annotation causes the operator to fall back to the CRD <code>metadata.name</code>, losing track of the original assignment and potentially creating a duplicate in Azure. Keep both <code>import-id</code> and <code>import-name</code> annotations in place for the lifetime of the resource.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{{< /api-tips >}}

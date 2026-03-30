@@ -18,8 +18,8 @@ spec:
     - jsonPath: .spec.scope
       name: Scope
       type: string
-    - jsonPath: .spec.enforcementMode
-      name: EnforcementMode
+    - jsonPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Status
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
