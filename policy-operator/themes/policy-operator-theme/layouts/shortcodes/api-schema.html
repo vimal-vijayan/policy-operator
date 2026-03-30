@@ -11,6 +11,7 @@
 {{ $version  := .Get "version"  | default "" }}
 {{ $examples := .Get "examples" | default "0" }}
 {{ $hasstatus := .Get "status"  | default "false" }}
+{{ $hastips  := .Get "tips"     | default "false" }}
 
 <div class="api-schema">
 
@@ -41,6 +42,15 @@
       type="button"
     >Status</button>
     {{ end }}
+    {{ if eq $hastips "true" }}
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="tips"
+      type="button"
+    >Tips</button>
+    {{ end }}
   </div>
 
   {{/* API Documentation panel */}}
@@ -59,6 +69,12 @@
   {{/* Status panel — populated by JS from adjacent api-status shortcode */}}
   {{ if eq $hasstatus "true" }}
   <div class="api-schema__panel" data-schema-panel="status" role="tabpanel" hidden>
+  </div>
+  {{ end }}
+
+  {{/* Tips panel — populated by JS from adjacent api-tips shortcode */}}
+  {{ if eq $hastips "true" }}
+  <div class="api-schema__panel" data-schema-panel="tips" role="tabpanel" hidden>
   </div>
   {{ end }}
 

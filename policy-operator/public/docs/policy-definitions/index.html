@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=52710&amp;path=livereload" data-no-instant defer></script>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -170,13 +170,14 @@
         <div class="doc-meta">
           
           
-          <span>4 min read</span>
+          <span>8 min read</span>
         </div>
 
       </header>
 
       <div class="doc-body">
         <p>The <code>AzurePolicyDefinition</code> custom resource maps directly to an <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy Definition</a>. The operator reconciles each resource by creating or updating the corresponding definition in Azure.</p>
+
 
 
 
@@ -201,7 +202,7 @@
       aria-selected="false"
       data-schema-tab="examples"
       type="button"
-    >Examples (4)</button>
+    >Examples (6)</button>
     
     
     <button
@@ -211,6 +212,15 @@
       data-schema-tab="status"
       type="button"
     >Status</button>
+    
+    
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="tips"
+      type="button"
+    >Tips</button>
     
   </div>
 
@@ -234,7 +244,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-apiversion-1774792139155249000"
+    aria-controls="apif-apiversion-1774862679535648000"
     data-api-toggle
     type="button"
   >
@@ -253,7 +263,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-apiversion-1774792139155249000" hidden>
+  <div class="api-field__body" id="apif-apiversion-1774862679535648000" hidden>
     
       
       <div class="api-field__content">
@@ -284,7 +294,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-kind-1774792139158040000"
+    aria-controls="apif-kind-1774862679536255000"
     data-api-toggle
     type="button"
   >
@@ -303,7 +313,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-kind-1774792139158040000" hidden>
+  <div class="api-field__body" id="apif-kind-1774862679536255000" hidden>
     
       
       <div class="api-field__content">
@@ -334,7 +344,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-metadata-1774792139158980000"
+    aria-controls="apif-metadata-1774862679537166000"
     data-api-toggle
     type="button"
   >
@@ -353,7 +363,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-metadata-1774792139158980000" hidden>
+  <div class="api-field__body" id="apif-metadata-1774862679537166000" hidden>
     
       
       <p class="api-field__desc">Standard Kubernetes object metadata.</p>
@@ -376,7 +386,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-name-1774792139158156000"
+    aria-controls="apif-name-1774862679536366000"
     data-api-toggle
     type="button"
   >
@@ -397,7 +407,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-name-1774792139158156000" hidden>
+  <div class="api-field__body" id="apif-name-1774862679536366000" hidden>
     
       
       <div class="api-field__content">
@@ -428,7 +438,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-namespace-1774792139158257000"
+    aria-controls="apif-namespace-1774862679536505000"
     data-api-toggle
     type="button"
   >
@@ -447,7 +457,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-namespace-1774792139158257000" hidden>
+  <div class="api-field__body" id="apif-namespace-1774862679536505000" hidden>
     
       
       <div class="api-field__content">
@@ -478,7 +488,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-labels-1774792139158353000"
+    aria-controls="apif-labels-1774862679536647000"
     data-api-toggle
     type="button"
   >
@@ -497,7 +507,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-labels-1774792139158353000" hidden>
+  <div class="api-field__body" id="apif-labels-1774862679536647000" hidden>
     
       
       <div class="api-field__content">
@@ -526,11 +536,11 @@
 
 
 
-<div class="api-field">
+<div class="api-field api-field--object">
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-annotations-1774792139158473000"
+    aria-controls="apif-annotations-1774862679537133000"
     data-api-toggle
     type="button"
   >
@@ -549,18 +559,175 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-annotations-1774792139158473000" hidden>
+  <div class="api-field__body" id="apif-annotations-1774862679537133000" hidden>
+    
+      
+      <p class="api-field__desc">Arbitrary non-identifying metadata. The following annotations control import behaviour when adopting an existing Azure Policy Definition.</p>
+      
+      
+      <div class="api-field__children">
+        
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-governance.platform.io/import-id-1774862679536764000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">governance.platform.io/import-id</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-governance.platform.io/import-id-1774862679536764000" hidden>
     
       
       <div class="api-field__content">
-        <p class="api-field__desc">Arbitrary non-identifying metadata.</p>
+        <p class="api-field__desc">Full Azure resource ID of the existing policy definition to adopt. Required when importing. Supports both subscription and management group scoped IDs.</p>
         
         
         
         <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
 </span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">policy.azure.com/owner</span>: platform-team
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-id</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyDefinitions/my-policy</span>
 </span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-governance.platform.io/import-name-1774862679536884000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">governance.platform.io/import-name</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-governance.platform.io/import-name-1774862679536884000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">The bare Azure policy definition name (last segment of the resource ID). Used as the policy name when writing back to Azure in reconcile or once mode.</p>
+        
+        
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-name</span>: <span style="color:#f1fa8c">&#34;my-policy&#34;</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+<div class="api-field">
+  <button
+    class="api-field__header"
+    aria-expanded="false"
+    aria-controls="apif-governance.platform.io/import-mode-1774862679536988000"
+    data-api-toggle
+    type="button"
+  >
+    <span class="api-field__toggle" aria-hidden="true">
+      <svg class="apf-plus"  width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="1" x2="5" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="apf-minus" width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
+
+    <span class="api-field__name">governance.platform.io/import-mode</span>
+
+    <span class="api-field__spacer" aria-hidden="true"></span>
+
+    <span class="api-field__right">
+      
+      <span class="api-field__type">String</span>
+    </span>
+  </button>
+
+  <div class="api-field__body" id="apif-governance.platform.io/import-mode-1774862679536988000" hidden>
+    
+      
+      <div class="api-field__content">
+        <p class="api-field__desc">Controls what happens after the definition is imported. observe-only: read-only, no changes are pushed to Azure. reconcile: continuously sync Azure to match the spec on every reconcile. once: adopt and apply changes once, then stop reconciling.</p>
+        
+          <p class="api-field__meta-line"><span class="apf-label">Allowed values:</span>
+            <code class="apf-enum">observe-only</code> <code class="apf-enum">reconcile</code> <code class="apf-enum">once</code> 
+          </p>
+        
+        <p class="api-field__meta-line"><span class="apf-label">Default:</span> <code class="apf-val apf-val--green">observe-only</code></p>
+        
+        <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-mode</span>: <span style="color:#f1fa8c">&#34;observe-only&#34;</span>  <span style="color:#6272a4"># read-only</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4"># governance.platform.io/import-mode: &#34;reconcile&#34;   # continuously sync</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4"># governance.platform.io/import-mode: &#34;once&#34;        # adopt once</span>
+</span></span></code></pre></div>
+      </div>
+    
+  </div>
+</div>
+
+  
       </div>
     
   </div>
@@ -588,7 +755,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-spec-1774792139160408000"
+    aria-controls="apif-spec-1774862679540008000"
     data-api-toggle
     type="button"
   >
@@ -609,7 +776,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-spec-1774792139160408000" hidden>
+  <div class="api-field__body" id="apif-spec-1774862679540008000" hidden>
     
       
       <p class="api-field__desc">Desired state of the AzurePolicyDefinition.</p>
@@ -633,7 +800,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-displayname-1774792139159012000"
+    aria-controls="apif-displayname-1774862679537256000"
     data-api-toggle
     type="button"
   >
@@ -654,7 +821,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-displayname-1774792139159012000" hidden>
+  <div class="api-field__body" id="apif-displayname-1774862679537256000" hidden>
     
       
       <div class="api-field__content">
@@ -686,7 +853,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-description-1774792139159114000"
+    aria-controls="apif-description-1774862679537362000"
     data-api-toggle
     type="button"
   >
@@ -705,7 +872,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-description-1774792139159114000" hidden>
+  <div class="api-field__body" id="apif-description-1774862679537362000" hidden>
     
       
       <div class="api-field__content">
@@ -737,7 +904,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-policytype-1774792139159210000"
+    aria-controls="apif-policytype-1774862679537916000"
     data-api-toggle
     type="button"
   >
@@ -756,7 +923,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-policytype-1774792139159210000" hidden>
+  <div class="api-field__body" id="apif-policytype-1774862679537916000" hidden>
     
       
       <div class="api-field__content">
@@ -792,7 +959,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-mode-1774792139159309000"
+    aria-controls="apif-mode-1774862679538033000"
     data-api-toggle
     type="button"
   >
@@ -813,7 +980,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-mode-1774792139159309000" hidden>
+  <div class="api-field__body" id="apif-mode-1774862679538033000" hidden>
     
       
       <div class="api-field__content">
@@ -850,7 +1017,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-version-1774792139159443000"
+    aria-controls="apif-version-1774862679538153000"
     data-api-toggle
     type="button"
   >
@@ -869,7 +1036,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-version-1774792139159443000" hidden>
+  <div class="api-field__body" id="apif-version-1774862679538153000" hidden>
     
       
       <div class="api-field__content">
@@ -901,7 +1068,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-metadata-1774792139159525000"
+    aria-controls="apif-metadata-1774862679538252000"
     data-api-toggle
     type="button"
   >
@@ -920,7 +1087,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-metadata-1774792139159525000" hidden>
+  <div class="api-field__body" id="apif-metadata-1774862679538252000" hidden>
     
       
       <div class="api-field__content">
@@ -954,7 +1121,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-parameters-1774792139159618000"
+    aria-controls="apif-parameters-1774862679538357000"
     data-api-toggle
     type="button"
   >
@@ -973,7 +1140,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-parameters-1774792139159618000" hidden>
+  <div class="api-field__body" id="apif-parameters-1774862679538357000" hidden>
     
       
       <div class="api-field__content">
@@ -1010,7 +1177,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-policyrule-1774792139159992000"
+    aria-controls="apif-policyrule-1774862679538756000"
     data-api-toggle
     type="button"
   >
@@ -1031,7 +1198,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-policyrule-1774792139159992000" hidden>
+  <div class="api-field__body" id="apif-policyrule-1774862679538756000" hidden>
     
       
       <p class="api-field__desc">The policy logic as an inline object. Exactly one of policyRule or policyRuleJson must be specified.</p>
@@ -1054,7 +1221,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-if-1774792139159751000"
+    aria-controls="apif-if-1774862679538514000"
     data-api-toggle
     type="button"
   >
@@ -1075,7 +1242,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-if-1774792139159751000" hidden>
+  <div class="api-field__body" id="apif-if-1774862679538514000" hidden>
     
       
       <div class="api-field__content">
@@ -1112,7 +1279,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-then-1774792139159898000"
+    aria-controls="apif-then-1774862679538644000"
     data-api-toggle
     type="button"
   >
@@ -1133,7 +1300,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-then-1774792139159898000" hidden>
+  <div class="api-field__body" id="apif-then-1774862679538644000" hidden>
     
       
       <div class="api-field__content">
@@ -1173,7 +1340,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-policyrulejson-1774792139160015000"
+    aria-controls="apif-policyrulejson-1774862679538778000"
     data-api-toggle
     type="button"
   >
@@ -1194,7 +1361,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-policyrulejson-1774792139160015000" hidden>
+  <div class="api-field__body" id="apif-policyrulejson-1774862679538778000" hidden>
     
       
       <div class="api-field__content">
@@ -1235,7 +1402,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-subscriptionid-1774792139160221000"
+    aria-controls="apif-subscriptionid-1774862679539077000"
     data-api-toggle
     type="button"
   >
@@ -1254,7 +1421,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-subscriptionid-1774792139160221000" hidden>
+  <div class="api-field__body" id="apif-subscriptionid-1774862679539077000" hidden>
     
       
       <div class="api-field__content">
@@ -1286,7 +1453,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-managementgroupid-1774792139160317000"
+    aria-controls="apif-managementgroupid-1774862679539918000"
     data-api-toggle
     type="button"
   >
@@ -1305,7 +1472,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-managementgroupid-1774792139160317000" hidden>
+  <div class="api-field__body" id="apif-managementgroupid-1774862679539918000" hidden>
     
       
       <div class="api-field__content">
@@ -1342,6 +1509,12 @@
   
   
   <div class="api-schema__panel" data-schema-panel="status" role="tabpanel" hidden>
+  </div>
+  
+
+  
+  
+  <div class="api-schema__panel" data-schema-panel="tips" role="tabpanel" hidden>
   </div>
   
 
@@ -1436,6 +1609,79 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">then</span>:
 </span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">effect</span>: <span style="color:#f1fa8c">&#34;Audit&#34;</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">managementGroupId</span>: <span style="color:#f1fa8c">&#34;platform-management-group&#34;</span>
+</span></span></code></pre></div><h3 id="import-existing-definition-observe-only">Import existing definition (observe-only)</h3>
+<p>Adopt an existing Azure Policy Definition without making any changes to Azure. The operator fetches the live definition and reports any drift between the Azure state and the spec.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: governance.platform.io/v1alpha1
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyDefinition
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: require-tag-on-resources
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-id</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyDefinitions/require-tag-on-resources</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-name</span>: <span style="color:#f1fa8c">&#34;require-tag-on-resources&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-mode</span>: <span style="color:#f1fa8c">&#34;observe-only&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Require a tag on resources&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Enforces the existence of a required tag on all resources.&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyType</span>: Custom
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">mode</span>: Indexed
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">category</span>: <span style="color:#f1fa8c">&#34;Tags&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">version</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">tagName</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: String
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Tag Name&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Name of the tag that must exist on the resource.&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyRule</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">field</span>: <span style="color:#f1fa8c">&#34;[concat(&#39;tags[&#39;, parameters(&#39;tagName&#39;), &#39;]&#39;)]&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">exists</span>: <span style="color:#f1fa8c">&#34;false&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">then</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">effect</span>: <span style="color:#f1fa8c">&#34;deny&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">subscriptionId</span>: <span style="color:#f1fa8c">&#34;00000000-0000-0000-0000-000000000000&#34;</span>
+</span></span></code></pre></div><h3 id="import-and-reconcile-existing-definition-policyrulejson">Import and reconcile existing definition (policyRuleJson)</h3>
+<p>Adopt an existing definition and continuously sync Azure to match the spec. Uses <code>policyRuleJson</code> for definitions where the rule is more conveniently expressed as raw JSON.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: governance.platform.io/v1alpha1
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyDefinition
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: allowed-locations-policy
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-id</span>: &gt;-<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyDefinitions/allowed-locations-policy</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-name</span>: <span style="color:#f1fa8c">&#34;allowed-locations-policy&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">governance.platform.io/import-mode</span>: <span style="color:#f1fa8c">&#34;reconcile&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Allowed Locations&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Enforces that resources are only deployed in allowed locations.&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyType</span>: Custom
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">mode</span>: Indexed
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">category</span>: <span style="color:#f1fa8c">&#34;General&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">version</span>: <span style="color:#f1fa8c">&#34;1.0.0&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">allowedLocations</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">type</span>: Array
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">defaultValue</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f1fa8c">&#34;eastus2&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">metadata</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Allowed locations&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;The list of allowed locations for resources.&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">strongType</span>: <span style="color:#f1fa8c">&#34;location&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyRuleJson</span>: |<span style="color:#f1fa8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    {
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">      &#34;if&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">        &#34;not&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">          &#34;field&#34;: &#34;location&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">          &#34;in&#34;: &#34;[parameters(&#39;allowedLocations&#39;)]&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">        }
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">      },
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">      &#34;then&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">        &#34;effect&#34;: &#34;audit&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">      }
+</span></span></span><span style="display:flex;"><span><span style="color:#f1fa8c">    }</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">subscriptionId</span>: <span style="color:#f1fa8c">&#34;00000000-0000-0000-0000-000000000000&#34;</span>
 </span></span></code></pre></div>
 </div>
 
@@ -1459,7 +1705,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-policydefinitionid-1774792139164245000"
+    aria-controls="apif-policydefinitionid-1774862679545866000"
     data-api-toggle
     type="button"
   >
@@ -1478,7 +1724,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-policydefinitionid-1774792139164245000" hidden>
+  <div class="api-field__body" id="apif-policydefinitionid-1774862679545866000" hidden>
     
       
       <div class="api-field__content">
@@ -1512,7 +1758,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-appliedversion-1774792139164984000"
+    aria-controls="apif-appliedversion-1774862679547779000"
     data-api-toggle
     type="button"
   >
@@ -1531,7 +1777,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-appliedversion-1774792139164984000" hidden>
+  <div class="api-field__body" id="apif-appliedversion-1774862679547779000" hidden>
     
       
       <div class="api-field__content">
@@ -1563,7 +1809,7 @@
   <button
     class="api-field__header"
     aria-expanded="false"
-    aria-controls="apif-conditions-1774792139165368000"
+    aria-controls="apif-conditions-1774862679547973000"
     data-api-toggle
     type="button"
   >
@@ -1582,7 +1828,7 @@
     </span>
   </button>
 
-  <div class="api-field__body" id="apif-conditions-1774792139165368000" hidden>
+  <div class="api-field__body" id="apif-conditions-1774862679547973000" hidden>
     
       
       <div class="api-field__content">
@@ -1603,8 +1849,14 @@
       <tr>
           <td><code>Ready</code></td>
           <td><code>True</code></td>
-          <td><code>ReconcileSucceeded</code></td>
+          <td><code>Reconciled</code></td>
           <td>Definition is in sync with Azure</td>
+      </tr>
+      <tr>
+          <td><code>Ready</code></td>
+          <td><code>True</code></td>
+          <td><code>ObservedOnly</code></td>
+          <td>Imported in observe-only mode; no changes pushed to Azure</td>
       </tr>
       <tr>
           <td><code>Ready</code></td>
@@ -1615,8 +1867,44 @@
       <tr>
           <td><code>Ready</code></td>
           <td><code>False</code></td>
-          <td><code>AzureAPIError</code></td>
-          <td>ARM API returned an error</td>
+          <td><code>DeleteFailed</code></td>
+          <td>Finalizer cleanup failed; see message</td>
+      </tr>
+      <tr>
+          <td><code>Ready</code></td>
+          <td><code>False</code></td>
+          <td><code>ImportFailed</code></td>
+          <td>Import from Azure failed; see message</td>
+      </tr>
+      <tr>
+          <td><code>Ready</code></td>
+          <td><code>False</code></td>
+          <td><code>ImportConflict</code></td>
+          <td><code>import-id</code> annotation conflicts with already-bound <code>policyDefinitionId</code></td>
+      </tr>
+      <tr>
+          <td><code>Imported</code></td>
+          <td><code>True</code></td>
+          <td><code>ImportSucceeded</code></td>
+          <td>Existing Azure definition was adopted successfully</td>
+      </tr>
+      <tr>
+          <td><code>Imported</code></td>
+          <td><code>False</code></td>
+          <td><code>ImportFailed</code></td>
+          <td>Could not fetch or validate the definition from Azure</td>
+      </tr>
+      <tr>
+          <td><code>DriftDetected</code></td>
+          <td><code>True</code></td>
+          <td><code>SpecMismatch</code></td>
+          <td>Live Azure definition differs from the desired spec; see message for fields</td>
+      </tr>
+      <tr>
+          <td><code>DriftDetected</code></td>
+          <td><code>False</code></td>
+          <td><code>InSync</code></td>
+          <td>Azure definition matches the desired spec</td>
       </tr>
   </tbody>
 </table>
@@ -1624,8 +1912,18 @@
 </span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">conditions</span>:
 </span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">type</span>: Ready
 </span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">status</span>: <span style="color:#f1fa8c">&#34;True&#34;</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">reason</span>: ReconcileSucceeded
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">reason</span>: Reconciled
 </span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">message</span>: <span style="color:#f1fa8c">&#34;Policy definition successfully reconciled&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">lastTransitionTime</span>: <span style="color:#f1fa8c">&#34;2024-01-15T10:30:00Z&#34;</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">type</span>: Imported
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">status</span>: <span style="color:#f1fa8c">&#34;True&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">reason</span>: ImportSucceeded
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">message</span>: <span style="color:#f1fa8c">&#34;Existing Azure Policy Definition was adopted successfully.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">lastTransitionTime</span>: <span style="color:#f1fa8c">&#34;2024-01-15T10:30:00Z&#34;</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">type</span>: DriftDetected
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">status</span>: <span style="color:#f1fa8c">&#34;True&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">reason</span>: SpecMismatch
+</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">message</span>: <span style="color:#f1fa8c">&#34;Live Azure definition differs from desired spec: displayName, description&#34;</span>
 </span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">lastTransitionTime</span>: <span style="color:#f1fa8c">&#34;2024-01-15T10:30:00Z&#34;</span>
 </span></span></code></pre></div>
       </div>
@@ -1636,6 +1934,46 @@
 
 
   </div>
+</div>
+
+
+<div class="api-tips-src" hidden aria-hidden="true">
+  <div class="tips-list">
+  <div class="tips-item">
+    <button class="tips-item__header" data-api-toggle aria-expanded="false" aria-controls="tip-import-definitions" type="button">
+      Importing Azure Policy Definitions
+      <svg class="tips-item__chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 6 8 10 12 6"/></svg>
+    </button>
+    <div class="tips-item__body" id="tip-import-definitions" hidden>
+      <p>Look, nobody is going to sit there and hand-craft YAML for hundreds of custom policies that already exist in Azure. That's what AI is for. Seriously — you've got Claude skills, GitHub Copilot rules, and I'm pretty sure your IDE already has an AI assistant quietly judging your indentation. Put them to work.</p>
+      <p>Export your existing policy definition, drop it in front of your AI assistant, and ask it to generate the <code>AzurePolicyDefinition</code> manifest. It will fill in <code>policyRule</code>, <code>parameters</code>, <code>displayName</code>, and everything else while you grab a coffee.</p>
+<div class="highlight"><pre><code class="language-bash"># Export from Azure CLI, hand it to your AI assistant
+az policy definition show --name "my-custom-policy" --subscription "00000000-0000-0000-0000-000000000000"</code></pre></div>
+      <h3>Always start with <code>observe-only</code></h3>
+      <p>Before you let the operator touch anything, import with <code>observe-only</code> mode. It reads the live definition from Azure and reports drift — no changes pushed.</p>
+<div class="highlight"><pre><code class="language-yaml">metadata:
+  annotations:
+    governance.platform.io/import-id: >-
+      /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyDefinitions/my-policy
+    governance.platform.io/import-name: "my-policy"
+    governance.platform.io/import-mode: "observe-only"</code></pre></div>
+      <h3>Watch status and drift with kubectl</h3>
+      <p>Once deployed, use kubectl to see what the operator sees:</p>
+<div class="highlight"><pre><code class="language-bash">kubectl describe azurepolicydefinition my-policy
+kubectl get azurepolicydefinition my-policy -o yaml</code></pre></div>
+      <p>Watch the <code>DriftDetected</code> condition — if <code>reason: SpecMismatch</code> appears, your spec and the live Azure definition differ. You'll know exactly which fields before committing to anything.</p>
+      <h3>When you're confident, choose your next move</h3>
+      <p>Switch to <strong><code>reconcile</code></strong> for continuous GitOps management — the operator keeps Azure in sync with your spec on every reconcile. Or switch to <strong><code>once</code></strong> to adopt and apply your spec a single time, then step back.</p>
+<div class="highlight"><pre><code class="language-yaml">governance.platform.io/import-mode: "reconcile"  # continuous sync
+governance.platform.io/import-mode: "once"        # adopt once, then hands off</code></pre></div>
+      <div class="callout callout-warning" style="margin-top:1.25rem">
+        <div class="callout-title">Never remove import annotations</div>
+        <p>The operator maps the CRD <code>metadata.name</code> to the Azure policy name by default. Import is the exception — <code>governance.platform.io/import-name</code> is used directly instead. Removing these annotations causes the operator to fall back to the CRD name, losing track of the original definition and potentially creating a duplicate. Removing import annotations from a managed policy can result in an unpleasant policy management experience.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div>
 
 

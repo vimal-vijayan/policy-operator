@@ -124,17 +124,23 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 
 	policyDef.Status.PolicyDefinitionID = policyDefinitionID
 	policyDef.Status.AppliedVersion = policyDef.Spec.Version
-	r.setCondition(policyDef, metav1.ConditionTrue, "Reconciled", "Policy definition successfully reconciled")
+
+	readyReason := "Reconciled"
+	readyMsg := "Policy definition successfully reconciled"
+	if policyDef.Annotations[annotationImportMode] == importModeOnlyOnce {
+		readyReason = "AppliedOnce"
+		readyMsg = "Policy definition applied once from import. No further changes will be applied to Azure."
+	}
+	r.setCondition(policyDef, metav1.ConditionTrue, readyReason, readyMsg)
 	return r.Status().Update(ctx, policyDef)
 }
 
 func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (ctrl.Result, bool, error) {
 	logger := log.FromContext(ctx)
 	importID := def.Annotations[annotationImportID]
-	importName := def.Annotations[annotationImportName]
 
-	if importID == "" || importName == "" {
-		return ctrl.Result{}, false, fmt.Errorf("import-id and import-name annotation must be provided")
+	if importID == "" {
+		return ctrl.Result{}, false, nil
 	}
 
 	// Prevent rebinding when status already points to a different Azure resource ID.
@@ -146,14 +152,18 @@ func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def 
 		return ctrl.Result{}, true, fmt.Errorf("import conflict: %s", msg)
 	}
 
-	// Already bound — no adoption needed.
-	// if def.Status.PolicyDefinitionID != "" {
-	// 	return ctrl.Result{}, false, nil
-	// }
-
 	importMode := def.Annotations[annotationImportMode]
 	if importMode == "" {
-		importMode = "observe-only"
+		importMode = importModeObserveOnly
+	}
+
+	// For "once" mode: if already applied, skip re-reconciling Azure.
+	if importMode == importModeOnlyOnce {
+		cond := apimeta.FindStatusCondition(def.Status.Conditions, "Ready")
+		if cond != nil && cond.Reason == "AppliedOnce" {
+			logger.V(1).Info("Skipping reconcile — already applied once", "name", def.Name)
+			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+		}
 	}
 
 	logger.Info("Importing existing Azure Policy Definition", "importID", importID, "importMode", importMode)

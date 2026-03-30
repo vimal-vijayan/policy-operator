@@ -6,15 +6,16 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: allowed-locations-policy
   annotations:
-    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/f3b1859f349a44a7928ff16f"
-    governance.platform.io/import-name: "f3b1859f349a44a7928ff16f"
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/37fe224a90d74058b78f5232"
+    governance.platform.io/import-name: "37fe224a90d74058b78f5232"
     # governance.platform.io/import-mode: "reconcile"
-    governance.platform.io/import-mode: "observe-only"
+    # governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-mode: "once"
 spec:
-  displayName: "Policy operator demo: Allowed Locations"
-  description: "Enforces that resources are only deployed in allowed locations."
+  displayName: "Test policy for allowed locations"
+  description: "Test policy for allowed locations, once mode"
   policyType: Custom
-  mode: Indexed
+  mode: All
   metadata:
     category: "General"
   version: "1.0.0"

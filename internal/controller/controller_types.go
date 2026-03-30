@@ -13,4 +13,5 @@ const (
 	annotationImportName  = "governance.platform.io/import-name"
 	annotationImportMode  = "governance.platform.io/import-mode"
 	importModeObserveOnly = "observe-only"
+	importModeOnlyOnce    = "once"
 )

@@ -129,6 +129,17 @@ initCopyButtons();
         stSibling = stSibling.nextElementSibling;
       }
     }
+
+    // ── Move api-tips-src content into tips panel ──
+    var tpPanel = schema.querySelector('[data-schema-panel="tips"]');
+    if (tpPanel) {
+      var tpSrc = document.querySelector('.api-tips-src');
+      if (tpSrc) {
+        tpPanel.innerHTML = tpSrc.innerHTML;
+        initCopyButtons(tpPanel);
+        tpSrc.remove();
+      }
+    }
   });
 })();
 
