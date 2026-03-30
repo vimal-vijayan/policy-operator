@@ -128,7 +128,7 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 	readyReason := "Reconciled"
 	readyMsg := "Policy definition successfully reconciled"
 	if policyDef.Annotations[annotationImportMode] == importModeOnlyOnce {
-		readyReason = "AppliedOnce"
+		readyReason = ReasonAppliedOnce
 		readyMsg = "Policy definition applied once from import. No further changes will be applied to Azure."
 	}
 	r.setCondition(policyDef, metav1.ConditionTrue, readyReason, readyMsg)
@@ -160,7 +160,7 @@ func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def 
 	// For "adopt-once" mode: if already applied, skip re-reconciling Azure.
 	if importMode == importModeOnlyOnce {
 		cond := apimeta.FindStatusCondition(def.Status.Conditions, "Ready")
-		if cond != nil && cond.Reason == "AppliedOnce" {
+		if cond != nil && cond.Reason == ReasonAppliedOnce {
 			logger.V(1).Info("Skipping reconcile — already applied once", "name", def.Name)
 			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
 		}

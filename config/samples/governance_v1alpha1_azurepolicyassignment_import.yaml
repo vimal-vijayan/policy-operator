@@ -8,6 +8,7 @@ metadata:
   annotations:
     governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyAssignments/82d78ad5-665b-4105-ac22-4bfd66010a52"
     governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-name: "82d78ad5-665b-4105-ac22-4bfd66010a52"
 spec:
   displayName: "Policy operator: Require Cost Center tag on Resource Groups"
   description: "Enforces that all resource groups have a CostCenter tag."

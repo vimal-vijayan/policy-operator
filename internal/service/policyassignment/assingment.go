@@ -48,7 +48,8 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 	} else if assignment.Annotations[annotationImportMode] == importModeReconcileOnly || assignment.Annotations[annotationImportMode] == importModeOnlyOnce {
 		assignmentName = assignment.Annotations[annotationImportName]
 	} else {
-		assignmentName = uuid.NewString()
+		// assignmentName = uuid.NewString()
+		assignmentName = assignment.Name
 	}
 
 	spec := assignment.Spec

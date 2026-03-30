@@ -14,4 +14,7 @@ const (
 	annotationImportMode  = "governance.platform.io/import-mode"
 	importModeObserveOnly = "observe-only"
 	importModeOnlyOnce    = "adopt-once"
+
+	// ReasonAppliedOnce is used when a resource has been applied once from import and no further changes will be applied.
+	ReasonAppliedOnce = "AppliedOnce"
 )
