@@ -148,7 +148,10 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 	}
 
 	// Prevent rebinding when status already points to a different Azure resource ID.
-	if assignment.Status.AssignmentID != "" && importID != assignment.Status.AssignmentID {
+	// Azure resource IDs are case-insensitive, so compare with EqualFold to avoid
+	// spurious conflicts caused by casing differences (e.g. annotation uses lowercase
+	// provider namespace while Azure returns canonical casing in the status).
+	if assignment.Status.AssignmentID != "" && !strings.EqualFold(importID, assignment.Status.AssignmentID) {
 		msg := fmt.Sprintf("annotation import-id %q differs from already bound assignmentId %q", importID, assignment.Status.AssignmentID)
 		r.setCondition(assignment, metav1.ConditionFalse, "ImportConflict", msg)
 		_ = r.Status().Update(ctx, assignment)
@@ -156,9 +159,9 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 	}
 
 	// Already bound — no adoption needed.
-	if assignment.Status.AssignmentID != "" {
-		return ctrl.Result{}, false, nil
-	}
+	// if assignment.Status.AssignmentID != "" {
+	// 	return ctrl.Result{}, false, nil
+	// }
 
 	importMode := assignment.Annotations[annotationImportMode]
 	if importMode == "" {

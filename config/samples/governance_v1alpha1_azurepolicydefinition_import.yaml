@@ -6,11 +6,11 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: allowed-locations-policy
   annotations:
-    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/b378cf9c5b94417e9b060cd2"
-    governance.platform.io/import-name: "b378cf9c5b94417e9b060cd2"
-    governance.platform.io/import-mode: "reconcile"
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/4c47f444f5d44a1db20f8e36"
+    governance.platform.io/import-name: "4c47f444f5d44a1db20f8e36"
+    # governance.platform.io/import-mode: "reconcile"
     # governance.platform.io/import-mode: "observe-only"
-    # governance.platform.io/import-mode: "adopt-once"
+    governance.platform.io/import-mode: "adopt-once"
 spec:
   displayName: "Test policy for allowed locations"
   description: "Test policy for allowed locations, once mode"
