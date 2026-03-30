@@ -165,6 +165,15 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 		importMode = importModeObserveOnly
 	}
 
+	// For "adopt-once" mode: if already applied, skip re-reconciling Azure.
+	if importMode == importModeOnlyOnce {
+		cond := apimeta.FindStatusCondition(assignment.Status.Conditions, "Ready")
+		if cond != nil && cond.Reason == "AppliedOnce" {
+			logger.V(1).Info("Skipping reconcile — already applied once", "name", assignment.Name)
+			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+		}
+	}
+
 	logger.Info("Importing existing Azure Policy Assignment", "importID", importID, "importMode", importMode)
 
 	assignedLocation, miPrincipalID, driftFields, err := r.Service.Import(ctx, importID, assignment, policyDefinitionID)

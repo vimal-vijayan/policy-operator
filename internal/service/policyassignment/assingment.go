@@ -16,6 +16,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+const (
+	annotationImportName    = "governance.platform.io/import-name"
+	annotationImportMode    = "governance.platform.io/import-mode"
+	importModeReconcileOnly = "reconcile"
+	importModeOnlyOnce      = "adopt-once"
+)
+
 type Service struct {
 	factory          *client.ARMClient
 	exemptionService *policyexemption.Service
@@ -37,6 +44,9 @@ func (s *Service) CreateOrUpdate(ctx context.Context, assignment *governancev1al
 	if assignment.Status.AssignmentID != "" {
 		parts := strings.Split(assignment.Status.AssignmentID, "/")
 		assignmentName = parts[len(parts)-1]
+		// If the existing assignment was imported without a name annotation, preserve the generated name on updates.
+	} else if assignment.Annotations[annotationImportMode] == importModeReconcileOnly || assignment.Annotations[annotationImportMode] == importModeOnlyOnce {
+		assignmentName = assignment.Annotations[annotationImportName]
 	} else {
 		assignmentName = uuid.NewString()
 	}
