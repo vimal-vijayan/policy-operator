@@ -4,16 +4,36 @@ metadata:
   labels:
     app.kubernetes.io/name: policy-operator
     app.kubernetes.io/managed-by: kustomize
-  name: require-tags-on-rgs-2
+  name: audit-vms-without-disaster-recovery
 spec:
-  displayName: "Require Cost Center tag on Resource Groups"
+  displayName: "Operator Sample - Audit virtual machines without disaster recovery configured"
   description: "Enforces that all resource groups have a CostCenter tag."
-  policyDefinitionId: "/providers/Microsoft.Authorization/policyDefinitions/1e30110a-5ceb-460c-a204-c1c3969c6d62"
-  scope: "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2/resourceGroups/az-104-demo"
+  policyDefinitionId: "/providers/Microsoft.Authorization/policyDefinitions/0015ea4d-51ff-4ce3-8d8c-f3f8f0179a56" # Audit virtual machines without disaster recovery configured
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018" # sub-lz-sandbox-sbx
+  notScopes:
+    - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-taj"
   enforcementMode: Default
-  parameters:
-    tagName: "CostCenter"
-    tagValue: "Finance"
+  identity:
+    type: "SystemAssigned"
+    location: "westeurope"
+    permissions:
+      - role: "Contributor"
+        scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+      - roleDefinitionId: "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7" # Reader
+        scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
   metadata:
     assignedBy: "platform-team"
-    category: "Tags"
+    category: "Compute"
+  nonComplianceMessages:
+    default: "This policy assignment is not compliant."
+  exemptions:
+    - displayName: "Exempt backstage dev Resource Group"
+      description: "Resource group for backstage dev environment is exempt from the policy requirement."
+      exemptionCategory: Waiver
+      expiresOn: "2026-12-31T23:59:59Z"
+      scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-backstage-dev"
+    - displayName: "Exempt taj Resource Group"
+      description: "Resource group for taj environment is exempt from the policy requirement."
+      exemptionCategory: Waiver
+      expiresOn: "2026-12-31T23:59:59Z"
+      scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/gemini-poc-env"

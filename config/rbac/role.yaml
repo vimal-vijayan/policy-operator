@@ -10,6 +10,7 @@ rules:
   - azurepolicyassignments
   - azurepolicydefinitions
   - azurepolicyexemptions
+  - azurepolicyinitiatives
   verbs:
   - create
   - delete
@@ -24,6 +25,7 @@ rules:
   - azurepolicyassignments/finalizers
   - azurepolicydefinitions/finalizers
   - azurepolicyexemptions/finalizers
+  - azurepolicyinitiatives/finalizers
   verbs:
   - update
 - apiGroups:
@@ -32,6 +34,7 @@ rules:
   - azurepolicyassignments/status
   - azurepolicydefinitions/status
   - azurepolicyexemptions/status
+  - azurepolicyinitiatives/status
   verbs:
   - get
   - patch

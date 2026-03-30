@@ -5,6 +5,7 @@ resources:
 - bases/governance.platform.io_azurepolicydefinitions.yaml
 - bases/governance.platform.io_azurepolicyassignments.yaml
 - bases/governance.platform.io_azurepolicyexemptions.yaml
+- bases/governance.platform.io_azurepolicyinitiatives.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

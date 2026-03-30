@@ -1,0 +1,9 @@
+{{/*
+  api-tips shortcode
+  Wraps tips/guide content. JS moves the inner HTML into the Tips tab panel,
+  mirroring the same pattern as api-examples and api-status.
+  Usage: {{< api-tips >}} ... markdown content ... {{< /api-tips >}}
+*/}}
+<div class="api-tips-src" hidden aria-hidden="true">
+  {{ .Inner | markdownify }}
+</div>

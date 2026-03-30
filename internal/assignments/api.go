@@ -11,4 +11,5 @@ type API interface {
 	Create(ctx context.Context, scope string, policyAssignmentName string, parameters armpolicy.Assignment, options *armpolicy.AssignmentsClientCreateOptions) (armpolicy.AssignmentsClientCreateResponse, error)
 	Delete(ctx context.Context, scope string, policyAssignmentName string, options *armpolicy.AssignmentsClientDeleteOptions) (armpolicy.AssignmentsClientDeleteResponse, error)
 	Get(ctx context.Context, scope string, policyAssignmentName string, options *armpolicy.AssignmentsClientGetOptions) (armpolicy.AssignmentsClientGetResponse, error)
+	GetByID(ctx context.Context, policyAssignmentID string, options *armpolicy.AssignmentsClientGetByIDOptions) (armpolicy.AssignmentsClientGetByIDResponse, error)
 }

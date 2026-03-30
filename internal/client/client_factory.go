@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/assignments"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/definitions"
 	"github.com/vimal-vijayan/azure-policy-operator/internal/exemptions"
@@ -9,9 +10,12 @@ import (
 )
 
 type ARMClient struct {
-	credential  azcore.TokenCredential
-	Definitions definitions.API
-	Initiatives initiatives.API
-	Assignments assignments.API
-	Exemptions  exemptions.API
+	credential      azcore.TokenCredential
+	SubscriptionID  string
+	Definitions     definitions.API
+	Initiatives     initiatives.API
+	Assignments     assignments.API
+	Exemptions      exemptions.API
+	RoleAssignments *armauthorization.RoleAssignmentsClient
+	RoleDefinitions *armauthorization.RoleDefinitionsClient
 }

@@ -31,8 +31,14 @@ type AzurePolicyExemptionSpec struct {
 	Description string `json:"description,omitempty"`
 
 	// PolicyAssignmentID is the Azure resource ID of the policy assignment being exempted.
-	// +kubebuilder:validation:Required
-	PolicyAssignmentID string `json:"policyAssignmentId"`
+	// +optional
+	PolicyAssignmentID string `json:"policyAssignmentId,omitempty"`
+
+	// PolicyAssignmentRef is a reference to the AzurePolicyAssignment custom resource being exempted. Either PolicyAssignmentID or PolicyAssignmentRef must be specified.
+	// the operator will use the reference to look up the policy assignment and populate the PolicyAssignmentID if not already set.
+	// mutually exclusive with PolicyAssignmentID
+	// +optional
+	PolicyAssignmentRef string `json:"policyAssignmentRef,omitempty"`
 
 	// Scope is the Azure resource scope at which the exemption applies.
 	// +kubebuilder:validation:Required
@@ -47,24 +53,9 @@ type AzurePolicyExemptionSpec struct {
 	// +optional
 	ExpiresOn string `json:"expiresOn,omitempty"`
 
-	// ResourceSelector selects resources within the scope to apply the exemption to.
+	// ResourceSelectors selects resources within the scope to apply the exemption to.
 	// +optional
-	ResourceSelector *ExemptionResourceSelector `json:"resourceSelector,omitempty"`
-}
-
-// ExemptionResourceSelector defines a resource property filter for the exemption.
-type ExemptionResourceSelector struct {
-	// Property is the resource property to filter on (e.g. "resourceType").
-	// +kubebuilder:validation:Required
-	Property string `json:"property"`
-
-	// Operator is the comparison operator.
-	// +kubebuilder:validation:Enum=Equals;NotEquals;In;NotIn
-	Operator string `json:"operator"`
-
-	// Value is the value to compare against.
-	// +kubebuilder:validation:Required
-	Value string `json:"value"`
+	ResourceSelectors []ResourceSelectorSpec `json:"resourceSelectors,omitempty"`
 }
 
 // AzurePolicyExemptionStatus defines the observed state of AzurePolicyExemption

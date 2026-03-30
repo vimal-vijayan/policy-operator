@@ -9,10 +9,10 @@ issues:
   # restore some of the defaults
   # (fill in the rest as needed)
   exclude-rules:
-    - path: "api/*"
+    - path: "api/.*"
       linters:
         - lll
-    - path: "internal/*"
+    - path: "internal/.*"
       linters:
         - dupl
         - lll
@@ -21,13 +21,11 @@ linters:
   enable:
     - dupl
     - errcheck
-    - exportloopref
     - ginkgolinter
     - goconst
     - gocyclo
     - gofmt
     - goimports
-    - gosimple
     - govet
     - ineffassign
     - lll
@@ -36,10 +34,8 @@ linters:
     - prealloc
     - revive
     - staticcheck
-    - typecheck
     - unconvert
     - unparam
-    - unused
 
 linters-settings:
   revive:

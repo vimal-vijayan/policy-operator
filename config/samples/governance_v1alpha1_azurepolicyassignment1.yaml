@@ -6,16 +6,15 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: require-tags-on-rgs
 spec:
-  displayName: "Require Cost Center tag on Resource Groups"
+  displayName: "Policy operator: Require Cost Center tag on Resource Groups"
   description: "Enforces that all resource groups have a CostCenter tag."
-  policyDefinitionId: "/providers/Microsoft.Authorization/policyDefinitions/1e30110a-5ceb-460c-a204-c1c3969c6d62"
-  scope: "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2"
+  policyDefinitionRef: require-tag-on-resources
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
   enforcementMode: Default
   notScopes:
-    - "/subscriptions/4beecc09-f7ae-4469-a36e-dc5106856da2/resourceGroups/az-104-demo"
+    - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-taj"
   parameters:
     tagName: "CostCenter"
-    tagValue: "Finance"
   metadata:
     assignedBy: "platform-team"
     category: "Tags"

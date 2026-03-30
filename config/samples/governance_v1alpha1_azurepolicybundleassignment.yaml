@@ -1,0 +1,62 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyAssignment
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: audit-vms-without-disaster-recovery
+spec:
+  displayName: "Operator Sample - Audit virtual machines without disaster recovery configured"
+  description: "Enforces that all resource groups have a CostCenter tag."
+  policyDefinitionId: "/providers/Microsoft.Authorization/policySetDefinitions/0a2ebd47-3fb9-4735-a006-b7f31ddadd9f" # Allow Usage Cost Resources
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018" # sub-lz-sandbox-sbx
+  notScopes:
+    - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-taj"
+  enforcementMode: Default
+  identity:
+    type: "SystemAssigned"
+    location: "westeurope"
+    permissions:
+      - role: "Contributor"
+        scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+      - roleDefinitionId: "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7" # Reader
+        scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+  metadata:
+    assignedBy: "platform-team"
+    category: "Compute"
+  resourceSelectors:
+    - name: "VirtualMachinesWithoutDisasterRecovery"
+      selectors:
+        - property: "resourceType"
+          operator: "In"
+          values:
+            - "Microsoft.Compute/virtualMachines"
+        - property: "resourceLocation"
+          operator: "notIn"
+          values:
+            - "westeurope"
+            - "northeurope"
+    - name: "SubscriptionLevelResources"
+      selectors:
+        - property: "resourceWithoutLocation"
+          operator: "notIn"
+          values: 
+            - "subscriptionLevelResources"
+  nonComplianceMessages: 
+    default: "This policy assignment is not compliant."
+    perPolicy:
+      - policyReferenceId: "NotAllowM365_Deny"
+        message: "Virtual machines without disaster recovery configured are not compliant."
+      - policyReferenceId: "NotAllowMCPP_Deny"
+        message: "Another non-compliance message for a different policy definition."
+  exemptions:
+    - displayName: "Exempt backstage dev Resource Group"
+      description: "Resource group for backstage dev environment is exempt from the policy requirement."
+      exemptionCategory: Waiver
+      expiresOn: "2026-12-31T23:59:59Z"
+      scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-backstage-dev"
+    - displayName: "Exempt taj Resource Group"
+      description: "Resource group for taj environment is exempt from the policy requirement."
+      exemptionCategory: Waiver
+      expiresOn: "2026-12-31T23:59:59Z"
+      scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/gemini-poc-env"

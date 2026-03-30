@@ -1,0 +1,43 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyDefinition
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: allowed-locations-policy
+  annotations:
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/de52058440b94378aaa4d2f1"
+    governance.platform.io/import-name: "de52058440b94378aaa4d2f1"
+    # governance.platform.io/import-mode: "reconcile"
+    # governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-mode: "adopt-once"
+spec:
+  displayName: "Test policy for allowed locations"
+  description: "Test policy for allowed locations, once mode"
+  policyType: Custom
+  mode: All
+  metadata:
+    category: "General"
+  version: "1.0.0"
+  parameters:
+    allowedLocations:
+      type: Array
+      defaultValue:
+        - "eastus2"
+      metadata:
+        displayName: "Allowed locations"
+        description: "The list of allowed locations for resources."
+        strongType: "location"
+  policyRuleJson: |
+    {
+      "if": {
+        "not": {
+          "field": "location",
+          "in": "[parameters('allowedLocations')]"
+        }
+      },
+      "then": {
+        "effect": "audit"
+      }
+    }
+  subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"

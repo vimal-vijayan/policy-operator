@@ -1,0 +1,11 @@
+{{/*
+  api-status shortcode
+  Wraps status field content. JS moves the inner HTML into the Status tab panel,
+  mirroring the same pattern as api-examples.
+  Usage: {{< api-status >}} ... api-field shortcodes ... {{< /api-status >}}
+*/}}
+<div class="api-status-src">
+  <div class="api-field-tree">
+    {{ .Inner }}
+  </div>
+</div>

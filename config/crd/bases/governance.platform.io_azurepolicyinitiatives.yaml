@@ -1,0 +1,234 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.1
+  name: azurepolicyinitiatives.governance.platform.io
+spec:
+  group: governance.platform.io
+  names:
+    kind: AzurePolicyInitiative
+    listKind: AzurePolicyInitiativeList
+    plural: azurepolicyinitiatives
+    singular: azurepolicyinitiative
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Indicates if the initiative is ready
+      jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: Ready
+      type: string
+    - description: Time since creation
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: Reason for the current status
+      jsonPath: .status.conditions[?(@.type=='Ready')].reason
+      name: Status
+      type: string
+    - description: Azure resource ID of the initiative
+      jsonPath: .status.initiativeId
+      name: ID
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: AzurePolicyInitiative is the Schema for the azurepolicyinitiatives
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AzurePolicyInitiativeSpec defines the desired state of AzurePolicyInitiative
+            properties:
+              description:
+                description: Description is a human-readable description of the initiative.
+                type: string
+              displayName:
+                description: DisplayName is the display name of the policy set definition.
+                type: string
+              managementGroupId:
+                description: ManagementGroupID is the management group scope to deploy
+                  the initiative to.
+                type: string
+              metadata:
+                description: Metadata is additional metadata for the initiative as
+                  a raw JSON object.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              parameters:
+                description: Parameters defines the parameters accepted by the initiative.
+                items:
+                  description: InitiativeParameter defines a parameter accepted by
+                    the policy set definition.
+                  properties:
+                    allowedValues:
+                      description: AllowedValues restricts the set of values that
+                        can be supplied.
+                      items:
+                        type: string
+                      type: array
+                    defaultValue:
+                      description: DefaultValue is the default value if no value is
+                        supplied at assignment time.
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    name:
+                      description: Name is the parameter name.
+                      type: string
+                    strongType:
+                      description: StrongType provides an Azure portal UI hint (e.g.
+                        "location", "resourceTypes").
+                      type: string
+                    type:
+                      description: Type is the data type of the parameter.
+                      enum:
+                      - String
+                      - Array
+                      - Object
+                      - Boolean
+                      - Integer
+                      - Float
+                      - DateTime
+                      type: string
+                  required:
+                  - name
+                  - type
+                  type: object
+                type: array
+              policyDefinitions:
+                description: PolicyDefinitions is the list of policy definitions included
+                  in the initiative.
+                items:
+                  description: |-
+                    PolicyDefinitionReference specifies a policy definition included in the initiative.
+                    Exactly one of policyDefinitionId or policyDefinitionRef must be set.
+                  properties:
+                    parameters:
+                      description: Parameters are parameter values passed to the referenced
+                        policy definition.
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    policyDefinitionId:
+                      description: PolicyDefinitionID is the Azure resource ID of
+                        a built-in or custom policy definition.
+                      type: string
+                    policyDefinitionRef:
+                      description: |-
+                        PolicyDefinitionRef is the name of an AzurePolicyDefinition CR in the same namespace.
+                        The operator resolves this reference to the Azure resource ID at reconcile time.
+                      type: string
+                  type: object
+                  x-kubernetes-validations:
+                  - message: Exactly one of policyDefinitionId or policyDefinitionRef
+                      must be specified.
+                    rule: has(self.policyDefinitionId) != has(self.policyDefinitionRef)
+                minItems: 1
+                type: array
+              subscriptionId:
+                description: |-
+                  SubscriptionID is the Azure subscription to deploy the initiative to.
+                  If omitted and managementGroupId is not set, the operator subscription is used.
+                type: string
+              version:
+                description: |-
+                  Version is the semantic version of the initiative (e.g. "1.0.0").
+                  When set, it is injected into the Azure Policy metadata under the key "version".
+                pattern: ^\d+\.\d+\.\d+$
+                type: string
+            required:
+            - displayName
+            - policyDefinitions
+            type: object
+          status:
+            description: AzurePolicyInitiativeStatus defines the observed state of
+              AzurePolicyInitiative
+            properties:
+              appliedVersion:
+                description: AppliedVersion is the semver version last successfully
+                  written to Azure.
+                type: string
+              conditions:
+                description: Conditions represent the latest available observations
+                  of the resource state.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              initiativeId:
+                description: InitiativeID is the Azure resource ID of the created
+                  policy set definition.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

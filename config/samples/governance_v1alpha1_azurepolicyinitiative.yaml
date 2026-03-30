@@ -1,0 +1,17 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyInitiative
+metadata:
+  name: example-policy-initiative
+  namespace: default
+spec:
+  displayName: "Example Policy Initiative"
+  description: "Groups tagging policies to enforce consistent resource metadata."
+  version: "1.0.0"
+  metadata:
+    category: Governance
+  policyDefinitions:
+    - policyDefinitionId: "/providers/Microsoft.Authorization/policyDefinitions/015b4935-448a-8684-27c0-d13086356c33"
+    - policyDefinitionRef: "require-tag-on-resources"
+      parameters:
+        tagName:
+          value: "costcenter"

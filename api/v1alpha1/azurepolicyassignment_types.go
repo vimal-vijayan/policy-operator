@@ -22,6 +22,7 @@ import (
 )
 
 // AzurePolicyAssignmentSpec defines the desired state of AzurePolicyAssignment
+// +kubebuilder:validation:XValidation:rule="(has(self.policyDefinitionRef) && self.policyDefinitionRef != \"\") != (has(self.policyDefinitionId) && self.policyDefinitionId != \"\")",message="Exactly one of policyDefinitionRef or policyDefinitionId must be specified."
 type AzurePolicyAssignmentSpec struct {
 	// DisplayName is the display name of the policy assignment.
 	// +kubebuilder:validation:Required
@@ -31,9 +32,16 @@ type AzurePolicyAssignmentSpec struct {
 	// +optional
 	Description string `json:"description,omitempty"`
 
+	// PolicyDefinitionRef is the name of an AzurePolicyDefinition CR in the same namespace.
+	// The operator resolves this reference and uses the policyDefinitionId from its status.
+	// Mutually exclusive with policyDefinitionId.
+	// +optional
+	PolicyDefinitionRef string `json:"policyDefinitionRef,omitempty"`
+
 	// PolicyDefinitionID is the Azure resource ID of the policy definition or initiative to assign.
-	// +kubebuilder:validation:Required
-	PolicyDefinitionID string `json:"policyDefinitionId"`
+	// Mutually exclusive with policyDefinitionRef.
+	// +optional
+	PolicyDefinitionID string `json:"policyDefinitionId,omitempty"`
 
 	// Scope is the Azure resource scope at which the assignment applies.
 	// Examples: /subscriptions/{subId}, /subscriptions/{subId}/resourceGroups/{rg},
@@ -64,6 +72,90 @@ type AzurePolicyAssignmentSpec struct {
 	// Required for policies with deployIfNotExists or modify effects.
 	// +optional
 	Identity *AssignmentIdentity `json:"identity,omitempty"`
+
+	// NonComplianceMessages is the messages to display when the policy assignment is not compliant.
+	// +optional
+	NonComplianceMessages *AssignmentNonComplianceMessages `json:"nonComplianceMessages,omitempty"`
+
+	// ResourceSelectors is the resource selector list to filter policies by resource properties.
+	// +optional
+	ResourceSelectors []ResourceSelectorSpec `json:"resourceSelectors,omitempty"`
+
+	// Exemptions is an optional list of inline exemptions to create for this assignment.
+	// +optional
+	Exemptions []AssignmentExemptionSpec `json:"exemptions,omitempty"`
+}
+
+// SelectorSpec defines a single selector expression for resource filtering.
+type SelectorSpec struct {
+	// Property is the selector kind used to filter resources.
+	// +kubebuilder:validation:Enum=resourceType;resourceLocation;resourceWithoutLocation;userPrincipalId;groupPrincipalId
+	// +kubebuilder:validation:Required
+	Property string `json:"property"`
+
+	// Operator is the filter operator.
+	// +kubebuilder:validation:Enum=In;notIn
+	// +kubebuilder:validation:Required
+	Operator string `json:"operator"`
+
+	// Values is the list of values to filter on.
+	// +kubebuilder:validation:Required
+	Values []string `json:"values"`
+}
+
+// ResourceSelectorSpec defines a named resource selector with one or more selector expressions.
+type ResourceSelectorSpec struct {
+	// Name is the name of the resource selector.
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// Selectors is the list of selector expressions.
+	// +optional
+	Selectors []SelectorSpec `json:"selectors,omitempty"`
+}
+
+// AssignmentExemptionSpec defines an inline exemption scoped to a policy assignment.
+type AssignmentExemptionSpec struct {
+	// DisplayName is the display name of the exemption.
+	// +kubebuilder:validation:Required
+	DisplayName string `json:"displayName"`
+
+	// Description is a human-readable description of the exemption.
+	// +optional
+	Description string `json:"description,omitempty"`
+
+	// Scope is the Azure resource scope at which the exemption applies.
+	// +kubebuilder:validation:Required
+	Scope string `json:"scope"`
+
+	// ExemptionCategory is the category of the exemption.
+	// +kubebuilder:validation:Enum=Waiver;Mitigated
+	// +kubebuilder:default=Waiver
+	ExemptionCategory string `json:"exemptionCategory,omitempty"`
+
+	// ExpiresOn is the expiration date and time (UTC ISO 8601) of the exemption.
+	// +optional
+	ExpiresOn string `json:"expiresOn,omitempty"`
+}
+
+// IdentityPermission defines a role assignment to grant to the managed identity.
+// Either Role or RoleDefinitionID must be specified.
+// +kubebuilder:validation:XValidation:rule="(has(self.role) && self.role != \"\") || (has(self.roleDefinitionId) && self.roleDefinitionId != \"\")",message="Either role or roleDefinitionId must be specified in a permission entry."
+type IdentityPermission struct {
+	// Role is the built-in Azure role name (e.g. "Contributor", "Reader").
+	// The operator will resolve this to a roleDefinitionId via the Azure API.
+	// Mutually exclusive with RoleDefinitionID.
+	// +optional
+	Role string `json:"role,omitempty"`
+
+	// RoleDefinitionID is the full Azure resource ID of the role definition.
+	// Mutually exclusive with Role.
+	// +optional
+	RoleDefinitionID string `json:"roleDefinitionId,omitempty"`
+
+	// Scope is the Azure resource scope at which the role assignment is created.
+	// +kubebuilder:validation:Required
+	Scope string `json:"scope"`
 }
 
 // AssignmentIdentity defines the managed identity for a policy assignment.
@@ -77,6 +169,50 @@ type AssignmentIdentity struct {
 	// Required when Type is UserAssigned.
 	// +optional
 	UserAssignedIdentityID string `json:"userAssignedIdentityId,omitempty"`
+
+	// Required for SystemAssigned or UserAssigned identity types. The Azure region where the managed identity is created. This is needed to ensure the identity is created in the same region as the policy assignment, as required by Azure for policy assignments with deployIfNotExists or modify effects. If not specified, it defaults to "westeurope".
+	// Location is the Azure region where the managed identity is created.
+	// +kubebuilder:validation:Enum=eastus;westus;westus2;eastus2;northeurope;westeurope;southeastasia;eastasia;australiaeast;australiasoutheast;brazilsouth;canadacentral;canadaeast;centralindia;southindia;westindia;japaneast;japanwest;koreacentral;koreasouth;southafricanorth;uaenorth;uksouth;ukwest;centralus;southcentralus;northcentralus;westcentralus
+	// +kubebuilder:default=westeurope
+	Location string `json:"location,omitempty"`
+
+	// Permissions is an optional list of role assignments to create for the managed identity.
+	// +optional
+	Permissions []IdentityPermission `json:"permissions,omitempty"`
+}
+
+// AssignmentNonComplianceMessagePerPolicy defines a non-compliance message for a specific policy within an initiative.
+type AssignmentNonComplianceMessagePerPolicy struct {
+	// PolicyReferenceID is the policy definition reference ID from the initiative.
+	// +kubebuilder:validation:Required
+	PolicyReferenceID string `json:"policyReferenceId"`
+
+	// Message is the non-compliance message for the referenced policy.
+	// +kubebuilder:validation:Required
+	Message string `json:"message"`
+}
+
+// AssignmentNonComplianceMessages defines custom non-compliance messages for the assignment.
+type AssignmentNonComplianceMessages struct {
+	// Default is the fallback non-compliance message used when no per-policy message matches.
+	// +optional
+	Default string `json:"default,omitempty"`
+
+	// PerPolicy defines non-compliance messages for specific policy references in an initiative.
+	// +optional
+	PerPolicy []AssignmentNonComplianceMessagePerPolicy `json:"perPolicy,omitempty"`
+}
+
+// AssignmentExemptionStatus tracks an inline exemption created in Azure for a policy assignment.
+type AssignmentExemptionStatus struct {
+	// DisplayName matches the exemption spec entry.
+	DisplayName string `json:"displayName"`
+
+	// ExemptionID is the Azure resource ID of the created exemption.
+	ExemptionID string `json:"exemptionId"`
+
+	// Scope is the Azure resource scope of the exemption, stored for deletion.
+	Scope string `json:"scope"`
 }
 
 // AzurePolicyAssignmentStatus defines the observed state of AzurePolicyAssignment
@@ -84,6 +220,19 @@ type AzurePolicyAssignmentStatus struct {
 	// AssignmentID is the Azure resource ID of the created policy assignment.
 	// +optional
 	AssignmentID string `json:"assignmentId,omitempty"`
+
+	// AssignedLocation is the Azure location set on the policy assignment (required when using managed identity).
+	// Persisted so it can be preserved on updates even if identity is removed from the spec.
+	// +optional
+	AssignedLocation string `json:"assignedLocation,omitempty"`
+
+	// MIPrincipalID is the principal ID of the managed identity associated with the assignment, if any.
+	// +optional
+	MIPrincipalID string `json:"miPrincipalId,omitempty"`
+
+	// Exemptions tracks the Azure resource IDs of inline exemptions created for this assignment.
+	// +optional
+	Exemptions []AssignmentExemptionStatus `json:"exemptions,omitempty"`
 
 	// Conditions represent the latest available observations of the resource state.
 	// +optional
@@ -93,8 +242,10 @@ type AzurePolicyAssignmentStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Scope",type=string,JSONPath=`.spec.scope`
-// +kubebuilder:printcolumn:name="EnforcementMode",type=string,JSONPath=`.spec.enforcementMode`
+// +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].status`
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].reason`
+// +kubebuilder:printcolumn:name="AssignmentID",type=string,JSONPath=`.status.assignmentId`
 
 // AzurePolicyAssignment is the Schema for the azurepolicyassignments API
 type AzurePolicyAssignment struct {

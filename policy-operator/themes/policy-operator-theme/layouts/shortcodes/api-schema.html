@@ -1,0 +1,81 @@
+{{/*
+  api-schema shortcode
+  Renders the outer tabbed container for API documentation.
+
+  Parameters:
+    kind      (string) — resource kind name, e.g. "AzurePolicyDefinition"
+    version   (string) — API version, e.g. "v1alpha1"
+    examples  (int)    — number of examples, used to label the Examples tab
+*/}}
+{{ $kind     := .Get "kind"     | default "" }}
+{{ $version  := .Get "version"  | default "" }}
+{{ $examples := .Get "examples" | default "0" }}
+{{ $hasstatus := .Get "status"  | default "false" }}
+{{ $hastips  := .Get "tips"     | default "false" }}
+
+<div class="api-schema">
+
+  {{/* Tab bar */}}
+  <div class="api-schema__tabbar" role="tablist" aria-label="Documentation tabs">
+    <button
+      class="api-schema__tab api-schema__tab--active"
+      role="tab"
+      aria-selected="true"
+      data-schema-tab="docs"
+      type="button"
+    >API Documentation</button>
+    {{ if gt (int $examples) 0 }}
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="examples"
+      type="button"
+    >Examples ({{ $examples }})</button>
+    {{ end }}
+    {{ if eq $hasstatus "true" }}
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="status"
+      type="button"
+    >Status</button>
+    {{ end }}
+    {{ if eq $hastips "true" }}
+    <button
+      class="api-schema__tab"
+      role="tab"
+      aria-selected="false"
+      data-schema-tab="tips"
+      type="button"
+    >Tips</button>
+    {{ end }}
+  </div>
+
+  {{/* API Documentation panel */}}
+  <div class="api-schema__panel" data-schema-panel="docs" role="tabpanel">
+    <div class="api-field-tree">
+      {{ .Inner }}
+    </div>
+  </div>
+
+  {{/* Examples panel — populated by JS from adjacent api-examples shortcode */}}
+  {{ if gt (int $examples) 0 }}
+  <div class="api-schema__panel" data-schema-panel="examples" role="tabpanel" hidden>
+  </div>
+  {{ end }}
+
+  {{/* Status panel — populated by JS from adjacent api-status shortcode */}}
+  {{ if eq $hasstatus "true" }}
+  <div class="api-schema__panel" data-schema-panel="status" role="tabpanel" hidden>
+  </div>
+  {{ end }}
+
+  {{/* Tips panel — populated by JS from adjacent api-tips shortcode */}}
+  {{ if eq $hastips "true" }}
+  <div class="api-schema__panel" data-schema-panel="tips" role="tabpanel" hidden>
+  </div>
+  {{ end }}
+
+</div>

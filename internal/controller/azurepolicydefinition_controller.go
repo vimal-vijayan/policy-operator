@@ -18,6 +18,8 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -29,16 +31,24 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	governancev1alpha1 "github.com/vimal-vijayan/azure-policy-operator/api/v1alpha1"
-	"github.com/vimal-vijayan/azure-policy-operator/internal/service/policydefinition"
 )
 
-const azurePolicyDefinitionFinalizer = "governance.platform.io/azurepolicydefinition-finalizer"
+const (
+	azurePolicyDefinitionFinalizer = "governance.platform.io/azurepolicydefinition-finalizer"
+)
+
+// DefinitionService is the interface for managing Azure Policy Definitions.
+type DefinitionService interface {
+	CreateOrUpdate(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
+	Delete(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error
+	Import(ctx context.Context, importID string, def *governancev1alpha1.AzurePolicyDefinition) ([]string, error)
+}
 
 // AzurePolicyDefinitionReconciler reconciles a AzurePolicyDefinition object
 type AzurePolicyDefinitionReconciler struct {
 	client.Client
 	Scheme  *runtime.Scheme
-	Service *policydefinition.Service
+	Service DefinitionService
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicydefinitions,verbs=get;list;watch;create;update;patch;delete
@@ -60,7 +70,12 @@ func (r *AzurePolicyDefinitionReconciler) Reconcile(ctx context.Context, req ctr
 		return ctrl.Result{}, r.Update(ctx, policyDef)
 	}
 
-	return ctrl.Result{RequeueAfter: 30 * time.Minute}, r.reconcileDefinition(ctx, policyDef)
+	result, done, err := r.handleImport(ctx, policyDef)
+	if done {
+		return result, err
+	}
+
+	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, r.reconcileDefinition(ctx, policyDef)
 }
 
 func (r *AzurePolicyDefinitionReconciler) handleDeletion(ctx context.Context, policyDef *governancev1alpha1.AzurePolicyDefinition) error {
@@ -72,11 +87,19 @@ func (r *AzurePolicyDefinitionReconciler) handleDeletion(ctx context.Context, po
 
 	logger.Info("Running finalizer cleanup", "name", policyDef.Name)
 
+	importMode := policyDef.Annotations[annotationImportMode]
+
+	if importMode == importModeObserveOnly {
+		logger.Info("Skipping finalizer cleanup due to observe-only import mode", "name", policyDef.Name)
+		controllerutil.RemoveFinalizer(policyDef, azurePolicyDefinitionFinalizer)
+		return r.Update(ctx, policyDef)
+	}
+
 	if policyDef.Status.PolicyDefinitionID != "" {
 		if err := r.Service.Delete(ctx, policyDef); err != nil {
-			r.setCondition(policyDef, "Ready", metav1.ConditionFalse, "DeleteFailed", err.Error())
+			r.setCondition(policyDef, metav1.ConditionFalse, "DeleteFailed", err.Error())
 			if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
-				logger.Error(statusErr, "failed to update status")
+				logger.Error(statusErr, FailedStatusError)
 			}
 			return err
 		}
@@ -92,22 +115,117 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 	policyDefinitionID, err := r.Service.CreateOrUpdate(ctx, policyDef)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy definition")
-		r.setCondition(policyDef, "Ready", metav1.ConditionFalse, "ReconcileFailed", err.Error())
+		r.setCondition(policyDef, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
-			logger.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, FailedStatusError)
 		}
 		return err
 	}
 
 	policyDef.Status.PolicyDefinitionID = policyDefinitionID
 	policyDef.Status.AppliedVersion = policyDef.Spec.Version
-	r.setCondition(policyDef, "Ready", metav1.ConditionTrue, "Reconciled", "Policy definition successfully reconciled")
+
+	readyReason := "Reconciled"
+	readyMsg := "Policy definition successfully reconciled"
+	if policyDef.Annotations[annotationImportMode] == importModeOnlyOnce {
+		readyReason = ReasonAppliedOnce
+		readyMsg = "Policy definition applied once from import. No further changes will be applied to Azure."
+	}
+	r.setCondition(policyDef, metav1.ConditionTrue, readyReason, readyMsg)
 	return r.Status().Update(ctx, policyDef)
 }
 
-func (r *AzurePolicyDefinitionReconciler) setCondition(def *governancev1alpha1.AzurePolicyDefinition, condType string, status metav1.ConditionStatus, reason, message string) {
+func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (ctrl.Result, bool, error) {
+	logger := log.FromContext(ctx)
+	importID := def.Annotations[annotationImportID]
+
+	if importID == "" {
+		return ctrl.Result{}, false, nil
+	}
+
+	// Prevent rebinding when status already points to a different Azure resource ID.
+	if def.Status.PolicyDefinitionID != "" && importID != def.Status.PolicyDefinitionID {
+		logger.V(1).Error(fmt.Errorf("The status policyDefinitionId %q does not match the provided import-id annotation %q", def.Status.PolicyDefinitionID, importID), "Import ID mismatch")
+		msg := fmt.Sprintf("annotation import-id %q differs from already bound policyDefinitionId %q", importID, def.Status.PolicyDefinitionID)
+		r.setCondition(def, metav1.ConditionFalse, "ImportConflict", msg)
+		_ = r.Status().Update(ctx, def)
+		return ctrl.Result{}, true, fmt.Errorf("import conflict: %s", msg)
+	}
+
+	importMode := def.Annotations[annotationImportMode]
+	if importMode == "" {
+		importMode = importModeObserveOnly
+	}
+
+	// For "adopt-once" mode: if already applied, skip re-reconciling Azure.
+	if importMode == importModeOnlyOnce {
+		cond := apimeta.FindStatusCondition(def.Status.Conditions, "Ready")
+		if cond != nil && cond.Reason == ReasonAppliedOnce {
+			logger.V(1).Info("Skipping reconcile — already applied once", "name", def.Name)
+			return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+		}
+	}
+
+	logger.Info("Importing existing Azure Policy Definition", "importID", importID, "importMode", importMode)
+
+	driftFields, err := r.Service.Import(ctx, importID, def)
+	if err != nil {
+		r.setImportedCondition(def, metav1.ConditionFalse, "ImportFailed", err.Error())
+		r.setCondition(def, metav1.ConditionFalse, "ImportFailed", err.Error())
+		_ = r.Status().Update(ctx, def)
+		return ctrl.Result{RequeueAfter: 3 * time.Minute}, true, err
+	}
+
+	def.Status.PolicyDefinitionID = importID
+	r.setImportedCondition(def, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Definition was adopted successfully.")
+	r.setDriftCondition(def, driftFields)
+
+	if importMode == importModeObserveOnly {
+		r.setCondition(def, metav1.ConditionTrue, "ObservedOnly", "Resource imported in observe-only mode. No changes applied to Azure.")
+		if err := r.Status().Update(ctx, def); err != nil {
+			logger.Error(err, FailedStatusError)
+			return ctrl.Result{}, true, err
+		}
+		return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
+	}
+
+	// For "adopt-once" and "reconcile" modes: fall through to CreateOrUpdate.
+	return ctrl.Result{}, false, nil
+}
+
+func (r *AzurePolicyDefinitionReconciler) setImportedCondition(def *governancev1alpha1.AzurePolicyDefinition, status metav1.ConditionStatus, reason, message string) {
 	apimeta.SetStatusCondition(&def.Status.Conditions, metav1.Condition{
-		Type:               condType,
+		Type:               "Imported",
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: def.Generation,
+	})
+}
+
+func (r *AzurePolicyDefinitionReconciler) setDriftCondition(def *governancev1alpha1.AzurePolicyDefinition, driftFields []string) {
+	if len(driftFields) > 0 {
+		apimeta.SetStatusCondition(&def.Status.Conditions, metav1.Condition{
+			Type:               "DriftDetected",
+			Status:             metav1.ConditionTrue,
+			Reason:             "SpecMismatch",
+			Message:            fmt.Sprintf("Live Azure definition differs from desired spec: %s", strings.Join(driftFields, ", ")),
+			ObservedGeneration: def.Generation,
+		})
+	} else {
+		apimeta.SetStatusCondition(&def.Status.Conditions, metav1.Condition{
+			Type:               "DriftDetected",
+			Status:             metav1.ConditionFalse,
+			Reason:             "InSync",
+			Message:            "Azure definition matches desired spec.",
+			ObservedGeneration: def.Generation,
+		})
+	}
+}
+
+func (r *AzurePolicyDefinitionReconciler) setCondition(def *governancev1alpha1.AzurePolicyDefinition, status metav1.ConditionStatus, reason, message string) {
+	apimeta.SetStatusCondition(&def.Status.Conditions, metav1.Condition{
+		Type:               "Ready",
 		Status:             status,
 		Reason:             reason,
 		Message:            message,

@@ -1,0 +1,28 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyExemption
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: exempt-legacy-vms-from-disk-encryption
+spec:
+  displayName: "Policy operator: Exempt legacy VMs from disk encryption requirement"
+  description: "Legacy virtual machines in the az-104-demo resource group are exempt from the disk encryption requirement pending migration to managed disks."
+  policyAssignmentRef: require-tags-on-rgs
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+  exemptionCategory: Waiver
+  expiresOn: "2026-12-31T23:59:59Z"
+  resourceSelectors:
+    - name: "LegacyVMs"
+      selectors:
+        - property: "resourceType"
+          operator: "In"
+          values:
+            - "Microsoft.Compute/virtualMachines"
+        - property: "userPrincipalId"
+          operator: "In"
+          values: 
+            - "dc065977-6b40-487a-88d3-95e1465c17c4" # vimal vijayan 01, vimal vijayan
+            - "c5df6873-7460-44ed-a602-d9078cb0fd19" # Mounir Eddin Jamal
+    
+

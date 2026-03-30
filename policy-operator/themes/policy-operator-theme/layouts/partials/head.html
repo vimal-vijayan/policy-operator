@@ -1,0 +1,22 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+<title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
+
+{{ with .Description }}<meta name="description" content="{{ . }}">{{ else }}{{ with .Site.Params.description }}<meta name="description" content="{{ . }}">{{ end }}{{ end }}
+
+<!-- Fonts: Lora (serif headings) + Inter (sans body) + Fira Code (mono) — beautifulhugo-inspired -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="{{ "css/style.css" | relURL }}">
+<link rel="icon" type="image/svg+xml" href="{{ "img/logo.svg" | relURL }}">
+
+<!-- Prevent flash of wrong theme -->
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
+
+{{ with .Site.Params.googleAnalytics }}<script async src="https://www.googletagmanager.com/gtag/js?id={{ . }}"></script>{{ end }}
+
+{{ block "head-extra" . }}{{ end }}

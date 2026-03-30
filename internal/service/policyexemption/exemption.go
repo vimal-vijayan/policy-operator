@@ -53,17 +53,32 @@ func (s *Service) CreateOrUpdate(ctx context.Context, exemption *governancev1alp
 		}
 	}
 
-	if spec.ResourceSelector != nil {
-		params.Properties.ResourceSelectors = []*armpolicy.ResourceSelector{
-			{
-				Selectors: []*armpolicy.Selector{
-					{
-						Kind: to.Ptr(armpolicy.SelectorKind(spec.ResourceSelector.Property)),
-						In:   []*string{to.Ptr(spec.ResourceSelector.Value)},
-					},
-				},
-			},
+	if len(spec.ResourceSelectors) > 0 {
+		resourceSelectors := make([]*armpolicy.ResourceSelector, len(spec.ResourceSelectors))
+		for i, rs := range spec.ResourceSelectors {
+			selectors := make([]*armpolicy.Selector, len(rs.Selectors))
+			for j, sel := range rs.Selectors {
+				s := &armpolicy.Selector{
+					Kind: to.Ptr(armpolicy.SelectorKind(sel.Property)),
+				}
+				vals := make([]*string, len(sel.Values))
+				for k, v := range sel.Values {
+					vals[k] = to.Ptr(v)
+				}
+				switch sel.Operator {
+				case "In":
+					s.In = vals
+				case "notIn":
+					s.NotIn = vals
+				}
+				selectors[j] = s
+			}
+			resourceSelectors[i] = &armpolicy.ResourceSelector{
+				Name:      to.Ptr(rs.Name),
+				Selectors: selectors,
+			}
 		}
+		params.Properties.ResourceSelectors = resourceSelectors
 	}
 
 	logger.Info("Creating or updating Azure Policy Exemption", "name", exemptionName, "scope", spec.Scope)

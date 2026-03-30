@@ -1,0 +1,28 @@
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyAssignment
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: audit-vms-dr
+  annotations:
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/microsoft.authorization/policyassignments/785fcbc8d4df43f6a63ac030"
+    # governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-mode: "reconcile"
+    # governance.platform.io/import-mode: "adopt-once"
+    governance.platform.io/import-name: "785fcbc8d4df43f6a63ac030"
+spec:
+  displayName: "Policy operator: Require Cost Center tag on Resource Groups - imported"
+  description: "Enforces that all resource groups have a CostCenter tag."
+  policyDefinitionId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/4c47f444f5d44a1db20f8e36"
+  parameters:
+    allowedLocations:
+      value:
+        - "eastus2"
+  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+  notScopes:
+    - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-taj"
+  enforcementMode: Default
+  identity:
+    type: SystemAssigned
+    location: westeurope

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.Language.LanguageCode | default "en" }}">
+<head>
+  {{ partial "head.html" . }}
+  {{ block "head-extra" . }}{{ end }}
+</head>
+<body class="{{ block "body-class" . }}{{ end }}">
+
+  {{ partial "header.html" . }}
+
+  {{ block "main" . }}{{ end }}
+
+  {{ partial "footer.html" . }}
+
+  <!-- Walking cats scattered across the page -->
+  <img class="cat-decor cat-1" src="{{ "img/cat-walk.svg" | relURL }}" alt="" aria-hidden="true">
+  <img class="cat-decor cat-2" src="{{ "img/cat-walk.svg" | relURL }}" alt="" aria-hidden="true">
+  <img class="cat-decor cat-3" src="{{ "img/cat-walk.svg" | relURL }}" alt="" aria-hidden="true">
+  <img class="cat-decor cat-4" src="{{ "img/cat-walk.svg" | relURL }}" alt="" aria-hidden="true">
+  <img class="cat-decor cat-5" src="{{ "img/cat-walk.svg" | relURL }}" alt="" aria-hidden="true">
+  <img class="cat-decor cat-6" src="{{ "img/cat-walk.svg" | relURL }}" alt="" aria-hidden="true">
+
+  <div class="dog-decor dog-pug" aria-hidden="true">
+    <img src="{{ "img/pug-caricature.svg" | relURL }}" alt="" width="300" height="400">
+  </div>
+  <div class="dog-decor dog-labrador" aria-hidden="true">
+    <img src="{{ "img/labrador-caricature.svg" | relURL }}" alt="" width="300" height="400">
+  </div>
+
+  <script src="{{ "js/main.js" | relURL }}" defer></script>
+  {{ block "scripts" . }}{{ end }}
+
+</body>
+</html>

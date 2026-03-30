@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+<title>Introduction · Azure Policy Operator</title>
+
+<meta name="description" content="Why Azure Policy Operator? The GitOps way to manage Azure governance.">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+
+
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
+
+
+
+
+
+  
+</head>
+<body class="page-doc">
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="container navbar-inner">
+
+    <a class="navbar-brand" href="/">
+      <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="navbar-logo">
+      <span>Azure Policy Operator</span>
+    </a>
+
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+
+    <button class="navbar-toggle" id="navbar-toggle"
+            aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="navbar-menu" id="navbar-menu" role="menubar">
+      
+        
+        
+        <a class="navbar-link"
+           href="/docs/"
+           
+           
+           role="menuitem">
+          Docs
+        </a>
+      
+        
+        
+        <a class="navbar-link"
+           href="/docs/api-reference/"
+           
+           
+           role="menuitem">
+          API Reference
+        </a>
+      
+        
+        
+        <a class="navbar-link external navbar-link--github"
+           href="https://github.com/vimal-vijayan/policy-operator"
+           target="_blank" rel="noopener noreferrer"
+           aria-label="GitHub"
+           role="menuitem">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="18" height="18" style="vertical-align:-3px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+      
+    </div>
+
+  </div>
+</nav>
+
+
+  
+<div class="doc-wrap">
+
+  
+  <aside class="doc-sidebar" id="doc-sidebar" aria-label="Documentation navigation">
+    
+
+<div class="doc-sidebar-inner" id="doc-sidebar-inner">
+
+  
+  
+  
+
+  
+    
+
+    
+    
+      <div class="sidebar-section">
+        
+          <a class="sidebar-link active"
+             href="/docs/introduction/">Introduction</a>
+        
+          <a class="sidebar-link"
+             href="/docs/getting-started/">Getting Started</a>
+        
+          <a class="sidebar-link"
+             href="/docs/api-reference/">API Reference</a>
+        
+          <a class="sidebar-link"
+             href="/docs/policy-definitions/">Policy Definitions</a>
+        
+          <a class="sidebar-link"
+             href="/docs/policy-initiatives/">Policy Initiatives</a>
+        
+          <a class="sidebar-link"
+             href="/docs/policy-assignments/">Policy Assignments</a>
+        
+          <a class="sidebar-link"
+             href="/docs/policy-exemptions/">Policy Exemptions</a>
+        
+          <a class="sidebar-link"
+             href="/docs/gitops-argocd/">GitOps with Argo CD</a>
+        
+      </div>
+    
+
+  
+
+</div>
+
+  </aside>
+
+  <div class="doc-main">
+
+    
+    <article class="doc-content">
+
+      <header class="doc-header">
+
+        
+        
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <a href="/">Azure Policy Operator</a>
+            
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <a href="/docs/">Documentation</a>
+            
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span class="breadcrumb-current">Introduction</span>
+          </nav>
+        
+
+        <h1 class="doc-title">Introduction</h1>
+
+        
+          <p class="doc-subtitle">Why Azure Policy Operator? The GitOps way to manage Azure governance.</p>
+        
+
+        <div class="doc-meta">
+          
+          
+          <span>3 min read</span>
+        </div>
+
+      </header>
+
+      <div class="doc-body">
+        <h2 id="what-is-azure-policy-operator">What is Azure Policy Operator?</h2>
+<p>Azure Policy Operator is a Kubernetes-native controller that brings Azure Policy management into the GitOps world. It extends the Kubernetes API with custom resources — giving platform and security teams a declarative, version-controlled way to define, assign, and exempt Azure governance policies without ever leaving the tools they already know.</p>
+<p>Instead of clicking through the Azure Portal or running imperative scripts, you write a YAML manifest, open a pull request, and let the operator reconcile the desired state against Azure&rsquo;s Policy API.</p>
+<hr>
+<h2 id="the-gitops-way">The GitOps Way</h2>
+<p>Traditional Azure Policy management is imperative and fragile. You run a script, call an ARM template, or click through the portal — and the moment someone makes a change outside that process, drift is invisible until an audit catches it.</p>
+<p>Azure Policy Operator flips this model. Every policy definition, initiative, assignment, and exemption lives in Git as a Kubernetes manifest. Changes go through pull requests, code review, and CI pipelines before they ever reach Azure. The operator continuously reconciles — if something drifts in Azure, it is corrected automatically to match what Git says it should be.</p>
+<p><strong>The result:</strong> policy-as-code with real auditability, rollback via <code>git revert</code>, and zero manual portal access required.</p>
+<hr>
+<h2 id="beyond-terraform-and-epac">Beyond Terraform and EPAC</h2>
+<h3 id="why-not-terraform">Why not Terraform?</h3>
+<p>Terraform is a general-purpose infrastructure tool. Managing Azure Policy with it means wrapping policy JSON in HCL strings, losing syntax validation, and coupling governance lifecycles to infrastructure change cycles. Policy definitions buried inside Terraform modules are hard to review, test independently, or reuse across teams.</p>
+<p>Azure Policy Operator treats policies as first-class Kubernetes objects — with status conditions, events, and reconciliation loops — not as blobs of JSON glued into <code>.tf</code> files.</p>
+<h3 id="why-not-epac">Why not EPAC?</h3>
+<p>Microsoft&rsquo;s <a href="https://aka.ms/epac">Enterprise Policy as Code (EPAC)</a> is a powerful PowerShell-based framework, but it comes with significant operational overhead: a separate deployment pipeline, PowerShell expertise, its own configuration schema, and no native integration with Kubernetes-based platforms.</p>
+<p>If your organisation already runs workloads on Kubernetes — whether on AKS or any other cluster — Azure Policy Operator fits naturally into the same platform engineering workflow. You use the same RBAC, the same CI tooling, the same GitOps engine (Flux, Argo CD) that manages your application workloads. No separate toolchain to learn or maintain.</p>
+<hr>
+<h2 id="extending-kubernetes">Extending Kubernetes</h2>
+<p>Azure Policy Operator is not just a convenience wrapper. It is a genuine extension of the Kubernetes control plane into the Azure governance layer.</p>
+<ul>
+<li><strong>Custom Resources</strong> — <code>AzurePolicyDefinition</code>, <code>AzurePolicyInitiative</code>, <code>AzurePolicyAssignment</code>, <code>AzurePolicyExemption</code> are first-class Kubernetes objects with full <code>kubectl</code> support.</li>
+<li><strong>Status &amp; Events</strong> — every resource reports its Azure sync status and surfaces errors as Kubernetes events, so <code>kubectl describe</code> gives you a full picture.</li>
+<li><strong>Controller reconciliation</strong> — the operator continuously watches both the Kubernetes API and Azure, healing drift automatically.</li>
+<li><strong>Platform composability</strong> — policy resources can be templated with Helm, generated by Crossplane, or composed into Platform Team abstractions — just like any other Kubernetes workload.</li>
+</ul>
+<p>This makes Azure Policy Operator the natural choice for teams building Internal Developer Platforms on Kubernetes who want Azure governance to be a first-class, auditable part of that platform.</p>
+
+      </div>
+
+      <div class="doc-footer">
+        <nav class="doc-nav" aria-label="Page navigation">
+          
+          
+            <a class="doc-nav-card next" href="/docs/getting-started/">
+              <span class="doc-nav-label">Next →</span>
+              <span class="doc-nav-title">Getting Started</span>
+            </a>
+          
+        </nav>
+      </div>
+
+    </article>
+
+    
+    
+      <aside class="doc-toc" aria-label="Table of contents">
+        
+<nav aria-label="Table of contents">
+  <p class="toc-label">On this page</p>
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#what-is-azure-policy-operator">What is Azure Policy Operator?</a></li>
+    <li><a href="#the-gitops-way">The GitOps Way</a></li>
+    <li><a href="#beyond-terraform-and-epac">Beyond Terraform and EPAC</a>
+      <ul>
+        <li><a href="#why-not-terraform">Why not Terraform?</a></li>
+        <li><a href="#why-not-epac">Why not EPAC?</a></li>
+      </ul>
+    </li>
+    <li><a href="#extending-kubernetes">Extending Kubernetes</a></li>
+  </ul>
+</nav>
+</nav>
+
+
+      </aside>
+    
+
+  </div>
+</div>
+
+
+  <footer>
+  <div class="container">
+    <div class="footer-grid">
+
+      
+      <div>
+        <div class="footer-brand">
+          <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="footer-logo">
+          Azure Policy Operator
+        </div>
+        <p class="footer-desc">
+          Manage Azure Policy resources declaratively through Kubernetes custom resources.
+        </p>
+      </div>
+
+      
+      <div>
+        <p class="footer-col-title">Documentation</p>
+        <ul class="footer-links">
+          <li><a href="/docs/getting-started/">Getting Started</a></li>
+          <li><a href="/docs/api-reference/">API Reference</a></li>
+          <li><a href="/docs/configuration/">Configuration</a></li>
+          <li><a href="/docs/troubleshooting/">Troubleshooting</a></li>
+        </ul>
+      </div>
+
+      
+      <div>
+        <p class="footer-col-title">Community</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" class="footer-github-link"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="14" height="14" style="vertical-align:-2px;margin-right:.35em"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></li>
+          <li><a href="/docs/contributing/">Contributing</a></li>
+          <li><a href="/docs/changelog/">Changelog</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Azure Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
+      <a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" style="color:inherit;display:inline-flex;align-items:center;gap:.35em"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="15" height="15"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub →</a>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <img class="cat-decor cat-1" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-2" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-3" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-4" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-5" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-6" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+
+  <div class="dog-decor dog-pug" aria-hidden="true">
+    <img src="/img/pug-caricature.svg" alt="" width="300" height="400">
+  </div>
+  <div class="dog-decor dog-labrador" aria-hidden="true">
+    <img src="/img/labrador-caricature.svg" alt="" width="300" height="400">
+  </div>
+
+  <script src="/js/main.js" defer></script>
+  
+
+</body>
+</html>

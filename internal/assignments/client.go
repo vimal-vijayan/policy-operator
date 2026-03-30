@@ -27,3 +27,7 @@ func (c *Client) Delete(ctx context.Context, scope string, policyAssignmentName 
 func (c *Client) Get(ctx context.Context, scope string, policyAssignmentName string, options *armpolicy.AssignmentsClientGetOptions) (armpolicy.AssignmentsClientGetResponse, error) {
 	return c.inner.Get(ctx, scope, policyAssignmentName, options)
 }
+
+func (c *Client) GetByID(ctx context.Context, policyAssignmentID string, options *armpolicy.AssignmentsClientGetByIDOptions) (armpolicy.AssignmentsClientGetByIDResponse, error) {
+	return c.inner.GetByID(ctx, policyAssignmentID, options)
+}

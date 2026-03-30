@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+<title>Documentation · Azure Policy Operator</title>
+
+<meta name="description" content="Learn how to install, configure, and use the Azure Policy Operator to manage Azure Policy resources through Kubernetes.">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+
+
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
+
+
+
+
+
+  
+</head>
+<body class="page-list">
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="container navbar-inner">
+
+    <a class="navbar-brand" href="/">
+      <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="navbar-logo">
+      <span>Azure Policy Operator</span>
+    </a>
+
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+
+    <button class="navbar-toggle" id="navbar-toggle"
+            aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="navbar-menu" id="navbar-menu" role="menubar">
+      
+        
+        
+        <a class="navbar-link"
+           href="/docs/"
+           
+           
+           role="menuitem">
+          Docs
+        </a>
+      
+        
+        
+        <a class="navbar-link"
+           href="/docs/api-reference/"
+           
+           
+           role="menuitem">
+          API Reference
+        </a>
+      
+        
+        
+        <a class="navbar-link external navbar-link--github"
+           href="https://github.com/vimal-vijayan/policy-operator"
+           target="_blank" rel="noopener noreferrer"
+           aria-label="GitHub"
+           role="menuitem">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="18" height="18" style="vertical-align:-3px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+      
+    </div>
+
+  </div>
+</nav>
+
+
+  
+
+<div class="list-header">
+  <div class="container">
+    <h1 class="list-title">Documentation</h1>
+    <p class="list-desc">Learn how to install, configure, and use the Azure Policy Operator to manage Azure Policy resources through Kubernetes.</p>
+    
+  </div>
+</div>
+
+<div class="container" style="padding-bottom: 4rem;">
+  <div class="page-cards">
+    
+      <a class="page-card" href="/docs/introduction/">
+        <div class="page-card-body">
+          <div class="page-card-title">Introduction</div>
+          <p class="page-card-desc">Why Azure Policy Operator? The GitOps way to manage Azure governance.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+      <a class="page-card" href="/docs/getting-started/">
+        <div class="page-card-body">
+          <div class="page-card-title">Getting Started</div>
+          <p class="page-card-desc">Install and configure the Azure Policy Operator in your Kubernetes cluster.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+      <a class="page-card" href="/docs/api-reference/">
+        <div class="page-card-body">
+          <div class="page-card-title">API Reference</div>
+          <p class="page-card-desc">Full specification for all Azure Policy Operator Custom Resource Definitions.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+      <a class="page-card" href="/docs/policy-definitions/">
+        <div class="page-card-body">
+          <div class="page-card-title">Policy Definitions</div>
+          <p class="page-card-desc">Define and manage Azure Policy definitions as Kubernetes custom resources using AzurePolicyDefinition.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+      <a class="page-card" href="/docs/policy-initiatives/">
+        <div class="page-card-body">
+          <div class="page-card-title">Policy Initiatives</div>
+          <p class="page-card-desc">Group related Azure Policy definitions into initiatives (policy sets) using AzurePolicyInitiative.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+      <a class="page-card" href="/docs/policy-assignments/">
+        <div class="page-card-body">
+          <div class="page-card-title">Policy Assignments</div>
+          <p class="page-card-desc">Assign Azure Policy definitions and initiatives to subscriptions, resource groups, or management groups using AzurePolicyAssignment.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+      <a class="page-card" href="/docs/policy-exemptions/">
+        <div class="page-card-body">
+          <div class="page-card-title">Policy Exemptions</div>
+          <p class="page-card-desc">Create time-bound or permanent Azure Policy exemptions for resources using AzurePolicyExemption.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+      <a class="page-card" href="/docs/gitops-argocd/">
+        <div class="page-card-body">
+          <div class="page-card-title">GitOps with Argo CD</div>
+          <p class="page-card-desc">Deploy and lifecycle-manage Azure Policy manifests through pull requests, code review, and Argo CD sync loops.</p>
+          <div class="page-card-meta">
+            
+            
+          </div>
+        </div>
+        <span class="page-card-arrow" aria-hidden="true">→</span>
+      </a>
+    
+  </div>
+</div>
+
+
+
+  <footer>
+  <div class="container">
+    <div class="footer-grid">
+
+      
+      <div>
+        <div class="footer-brand">
+          <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="footer-logo">
+          Azure Policy Operator
+        </div>
+        <p class="footer-desc">
+          Manage Azure Policy resources declaratively through Kubernetes custom resources.
+        </p>
+      </div>
+
+      
+      <div>
+        <p class="footer-col-title">Documentation</p>
+        <ul class="footer-links">
+          <li><a href="/docs/getting-started/">Getting Started</a></li>
+          <li><a href="/docs/api-reference/">API Reference</a></li>
+          <li><a href="/docs/configuration/">Configuration</a></li>
+          <li><a href="/docs/troubleshooting/">Troubleshooting</a></li>
+        </ul>
+      </div>
+
+      
+      <div>
+        <p class="footer-col-title">Community</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" class="footer-github-link"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="14" height="14" style="vertical-align:-2px;margin-right:.35em"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></li>
+          <li><a href="/docs/contributing/">Contributing</a></li>
+          <li><a href="/docs/changelog/">Changelog</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Azure Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
+      <a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" style="color:inherit;display:inline-flex;align-items:center;gap:.35em"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="15" height="15"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub →</a>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <img class="cat-decor cat-1" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-2" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-3" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-4" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-5" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+  <img class="cat-decor cat-6" src="/img/cat-walk.svg" alt="" aria-hidden="true">
+
+  <div class="dog-decor dog-pug" aria-hidden="true">
+    <img src="/img/pug-caricature.svg" alt="" width="300" height="400">
+  </div>
+  <div class="dog-decor dog-labrador" aria-hidden="true">
+    <img src="/img/labrador-caricature.svg" alt="" width="300" height="400">
+  </div>
+
+  <script src="/js/main.js" defer></script>
+  
+
+</body>
+</html>
