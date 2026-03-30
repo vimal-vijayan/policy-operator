@@ -4,28 +4,35 @@ metadata:
   labels:
     app.kubernetes.io/name: policy-operator
     app.kubernetes.io/managed-by: kustomize
-  name: require-tag-on-resources
+  name: allowed-locations-policy
   annotations:
-    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/require-tag-on-resources"
-    governance.platform.io/import-mode: "observe-only"
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/b378cf9c5b94417e9b060cd2"
+    governance.platform.io/import-name: "b378cf9c5b94417e9b060cd2"
+    governance.platform.io/import-mode: "reconcile"
+    # governance.platform.io/import-mode: "observe-only"
+    # governance.platform.io/import-mode: "once"
 spec:
-  displayName: "Policy operator: Require a tag on resources"
-  description: "Enforces the existence of a required tag on all resources."
+  displayName: "Test policy for allowed locations"
+  description: "Test policy for allowed locations, once mode"
   policyType: Custom
-  mode: Indexed
+  mode: All
   metadata:
-    category: "Tags"
+    category: "General"
   version: "1.0.0"
   parameters:
-    tagName:
-      type: String
+    allowedLocations:
+      type: Array
+      defaultValue:
+        - "eastus2"
       metadata:
-        displayName: "Tag Name"
-        description: "Name of the tag that must exist on the resource."
+        displayName: "Allowed locations"
+        description: "The list of allowed locations for resources."
+        strongType: "location"
   policyRule:
     if:
-      field: "[concat('tags[', parameters('tagName'), ']')]"
-      exists: "false"
+      not:
+        field: "location"
+        in: "[parameters('allowedLocations')]"
     then:
-      effect: "deny"
+      effect: "audit"
   subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"
