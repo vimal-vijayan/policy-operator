@@ -22,7 +22,7 @@ theme         = 'policy-operator-theme'
 [params]
   description = "Manage Azure Policy resources declaratively through Kubernetes custom resources."
   heroTitle   = "Azure Policy Operator"
-  githubURL   = "https://github.com/example/policy-operator"
+  githubURL   = "https://github.com/vimal-vijayan/policy-operator"
 
   [params.heroGetStarted]
     url   = "/docs/getting-started/"
@@ -73,5 +73,5 @@ theme         = 'policy-operator-theme'
 
 [[menus.main]]
   name   = "GitHub"
-  url    = "https://github.com/example/policy-operator"
+  url    = "https://github.com/vimal-vijayan/policy-operator"
   weight = 90

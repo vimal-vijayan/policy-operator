@@ -266,6 +266,7 @@ tr:hover td { background: var(--bg-alt); }
 .btn-outline { background: transparent; color: white; border-color: rgba(255,255,255,.45); }
 .btn-outline:hover { background: rgba(255,255,255,.1); border-color: white; }
 .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
+.btn-github { display: inline-flex; align-items: center; gap: .45em; }
 
 /* 8. Feature Cards */
 .features { padding: 5rem 0; background: var(--bg-alt); }
