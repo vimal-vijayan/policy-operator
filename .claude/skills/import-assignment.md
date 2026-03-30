@@ -79,7 +79,7 @@ This is best for:
 	•	GitOps-managed governance
 	•	post-validation enforcement
 
-3. once
+3. adopt-once
 
 Use this mode for one-time adoption.
 
@@ -218,7 +218,7 @@ After import:
 	•	update Azure Assignment where allowed and needed
 	•	clear drift when Azure matches the CR
 
-once
+adopt-once
 
 After import:
 	•	set status.id

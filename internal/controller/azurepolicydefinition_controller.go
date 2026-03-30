@@ -157,7 +157,7 @@ func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def 
 		importMode = importModeObserveOnly
 	}
 
-	// For "once" mode: if already applied, skip re-reconciling Azure.
+	// For "adopt-once" mode: if already applied, skip re-reconciling Azure.
 	if importMode == importModeOnlyOnce {
 		cond := apimeta.FindStatusCondition(def.Status.Conditions, "Ready")
 		if cond != nil && cond.Reason == "AppliedOnce" {
@@ -189,7 +189,7 @@ func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def 
 		return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
 	}
 
-	// For "once" and "reconcile" modes: fall through to CreateOrUpdate.
+	// For "adopt-once" and "reconcile" modes: fall through to CreateOrUpdate.
 	return ctrl.Result{}, false, nil
 }
 

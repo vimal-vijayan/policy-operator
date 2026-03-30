@@ -196,7 +196,7 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 		return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
 	}
 
-	// For "once" and "reconcile" modes: fall through to CreateOrUpdate.
+	// For "adopt-once" and "reconcile" modes: fall through to CreateOrUpdate.
 	return ctrl.Result{}, false, nil
 }
 

@@ -50,20 +50,20 @@ metadata:
       /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyAssignments/my-existing-assignment
 ```
     {{< /api-field >}}
-    {{< api-field name="governance.platform.io/import-mode" type="String" enum="observe-only|once|reconcile" default="observe-only" desc="Controls what the operator does after adopting the existing Azure assignment. Must be used alongside governance.platform.io/import-id. If omitted, defaults to observe-only. See the import modes table below." >}}
+    {{< api-field name="governance.platform.io/import-mode" type="String" enum="observe-only|adopt-once|reconcile" default="observe-only" desc="Controls what the operator does after adopting the existing Azure assignment. Must be used alongside governance.platform.io/import-id. If omitted, defaults to observe-only. See the import modes table below." >}}
 
 | Mode | Behaviour |
 |---|---|
 | `observe-only` | Reads the assignment from Azure and populates status. The operator never creates, updates, or deletes the Azure resource. Useful for auditing or brownfield visibility without taking ownership. |
-| `once` | Adopts the existing assignment on the first reconcile, then immediately begins managing it — subsequent reconciles call CreateOrUpdate to converge spec with Azure. |
-| `reconcile` | Same as `once`. Adopts the assignment and continuously reconciles spec changes against Azure going forward. |
+| `adopt-once` | Adopts the existing assignment on the first reconcile, then immediately begins managing it — subsequent reconciles call CreateOrUpdate to converge spec with Azure. |
+| `reconcile` | Same as `adopt-once`. Adopts the assignment and continuously reconciles spec changes against Azure going forward. |
 
 ```yaml
 metadata:
   annotations:
     governance.platform.io/import-id: >-
       /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policyAssignments/my-existing-assignment
-    governance.platform.io/import-mode: "observe-only"  # or: once, reconcile
+    governance.platform.io/import-mode: "observe-only"  # or: adopt-once, reconcile
 ```
     {{< /api-field >}}
     {{< api-field name="(any)" type="String" desc="Any additional annotation key/value pair for organisational metadata." >}}

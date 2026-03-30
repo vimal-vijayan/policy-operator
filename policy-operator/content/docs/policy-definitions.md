@@ -57,13 +57,13 @@ metadata:
     governance.platform.io/import-name: "my-policy"
 ```
     {{< /api-field >}}
-    {{< api-field name="governance.platform.io/import-mode" type="String" default="observe-only" enum="observe-only|reconcile|once" desc="Controls what happens after the definition is imported. observe-only: read-only, no changes are pushed to Azure. reconcile: continuously sync Azure to match the spec on every reconcile. once: adopt and apply changes once, then stop reconciling." >}}
+    {{< api-field name="governance.platform.io/import-mode" type="String" default="observe-only" enum="observe-only|reconcile|adopt-once" desc="Controls what happens after the definition is imported. observe-only: read-only, no changes are pushed to Azure. reconcile: continuously sync Azure to match the spec on every reconcile. adopt-once: adopt and apply changes once, then stop reconciling." >}}
 ```yaml
 metadata:
   annotations:
     governance.platform.io/import-mode: "observe-only"  # read-only
     # governance.platform.io/import-mode: "reconcile"   # continuously sync
-    # governance.platform.io/import-mode: "once"        # adopt once
+    # governance.platform.io/import-mode: "adopt-once"  # adopt once
 ```
     {{< /api-field >}}
   {{< /api-field >}}
@@ -459,9 +459,9 @@ az policy definition show --name "my-custom-policy" --subscription "00000000-000
 kubectl get azurepolicydefinition my-policy -o yaml</code></pre></div>
       <p>Watch the <code>DriftDetected</code> condition — if <code>reason: SpecMismatch</code> appears, your spec and the live Azure definition differ. You'll know exactly which fields before committing to anything.</p>
       <h3>When you're confident, choose your next move</h3>
-      <p>Switch to <strong><code>reconcile</code></strong> for continuous GitOps management — the operator keeps Azure in sync with your spec on every reconcile. Or switch to <strong><code>once</code></strong> to adopt and apply your spec a single time, then step back.</p>
-<div class="highlight"><pre><code class="language-yaml">governance.platform.io/import-mode: "reconcile"  # continuous sync
-governance.platform.io/import-mode: "once"        # adopt once, then hands off</code></pre></div>
+      <p>Switch to <strong><code>reconcile</code></strong> for continuous GitOps management — the operator keeps Azure in sync with your spec on every reconcile. Or switch to <strong><code>adopt-once</code></strong> to adopt and apply your spec a single time, then step back.</p>
+<div class="highlight"><pre><code class="language-yaml">governance.platform.io/import-mode: "reconcile"   # continuous sync
+governance.platform.io/import-mode: "adopt-once"  # adopt once, then hands off</code></pre></div>
       <div class="callout callout-warning" style="margin-top:1.25rem">
         <div class="callout-title">Never remove import annotations</div>
         <p>The operator maps the CRD <code>metadata.name</code> to the Azure policy name by default. Import is the exception — <code>governance.platform.io/import-name</code> is used directly instead. Removing these annotations causes the operator to fall back to the CRD name, losing track of the original definition and potentially creating a duplicate. Removing import annotations from a managed policy can result in an unpleasant policy management experience.</p>

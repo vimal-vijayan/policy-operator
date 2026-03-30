@@ -10,7 +10,7 @@ metadata:
     governance.platform.io/import-name: "de52058440b94378aaa4d2f1"
     # governance.platform.io/import-mode: "reconcile"
     # governance.platform.io/import-mode: "observe-only"
-    governance.platform.io/import-mode: "once"
+    governance.platform.io/import-mode: "adopt-once"
 spec:
   displayName: "Test policy for allowed locations"
   description: "Test policy for allowed locations, once mode"

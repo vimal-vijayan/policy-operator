@@ -18,7 +18,7 @@ const (
 	annotationImportName    = "governance.platform.io/import-name"
 	annotationImportMode    = "governance.platform.io/import-mode"
 	importModeReconcileOnly = "reconcile"
-	importModeOnlyOnce      = "once"
+	importModeOnlyOnce      = "adopt-once"
 )
 
 type Service struct {
