@@ -21,11 +21,11 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    - jsonPath: .status.policyDefinitionId
-      name: ID
-      type: string
     - jsonPath: .status.conditions[?(@.type=="Ready")].reason
       name: Status
+      type: string
+    - jsonPath: .status.policyDefinitionId
+      name: ID
       type: string
     name: v1alpha1
     schema:

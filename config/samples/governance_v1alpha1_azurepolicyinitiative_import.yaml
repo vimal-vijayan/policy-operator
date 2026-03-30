@@ -6,18 +6,25 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: tag-governance-initiative
   annotations:
-    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policySetDefinitions/2184629e643e45f486f44b80"
-    governance.platform.io/import-name: "2184629e643e45f486f44b80"
-    governance.platform.io/import-mode: "observe-only"
-    # governance.platform.io/import-mode: "reconcile"
+    governance.platform.io/import-id: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policySetDefinitions/41939cde4b42430bbb43d66e"
+    governance.platform.io/import-name: "41939cde4b42430bbb43d66e"
+    governance.platform.io/import-mode: "reconcile"
+    # governance.platform.io/import-mode: "observe-only"
     # governance.platform.io/import-mode: "adopt-once"
 spec:
-  displayName: "testing policy import"
+  displayName: "Tag Governance Initiative"
   description: "Imported initiative sample for tag governance controls."
   version: "1.0.0"
   metadata:
     category: "platform"
   policyDefinitions:
-    - policyDefinitionId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/require-tag-on-resources"
+    # - policyDefinitionId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/require-tag-on-resources"
+    - policyDefinitionRef: "require-tag-on-resources"
+      parameters:
+        tagName:
+          value: "costcenter"
     - policyDefinitionId: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/providers/Microsoft.Authorization/policyDefinitions/require-tag-on-resources-with-json"
+      parameters:
+        tagName:
+          value: "costcenter"
   subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"

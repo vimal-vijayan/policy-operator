@@ -18,14 +18,14 @@ spec:
     - jsonPath: .spec.scope
       name: Scope
       type: string
-    - jsonPath: .status.conditions[?(@.type=="Ready")].reason
-      name: Status
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    - jsonPath: .status.conditions[?(@.type=="Ready")].status
-      name: Ready
+    - jsonPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Status
       type: string
     - jsonPath: .status.assignmentId
       name: AssignmentID

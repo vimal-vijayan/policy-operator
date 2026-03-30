@@ -14,7 +14,24 @@ spec:
     singular: azurepolicyinitiative
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Indicates if the initiative is ready
+      jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: Ready
+      type: string
+    - description: Time since creation
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: Reason for the current status
+      jsonPath: .status.conditions[?(@.type=='Ready')].reason
+      name: Status
+      type: string
+    - description: Azure resource ID of the initiative
+      jsonPath: .status.initiativeId
+      name: ID
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: AzurePolicyInitiative is the Schema for the azurepolicyinitiatives

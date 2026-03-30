@@ -102,8 +102,9 @@ type AzurePolicyDefinitionStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].status`
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
-// +kubebuilder:printcolumn:name="ID",type=string,JSONPath=`.status.policyDefinitionId`
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].reason`
+// +kubebuilder:printcolumn:name="ID",type=string,JSONPath=`.status.policyDefinitionId`
+
 // AzurePolicyDefinition is the Schema for the azurepolicydefinitions API
 type AzurePolicyDefinition struct {
 	metav1.TypeMeta   `json:",inline"`
