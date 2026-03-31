@@ -55,7 +55,7 @@
       {{ end }}
       {{ range . }}
       {{ if .url }}
-      <a class="feature-card feature-card-link" href="{{ .url | relURL }}">
+      <a class="feature-card feature-card-link" href="{{ .url | absURL }}">
         <div class="feature-icon">{{ .icon }}</div>
         <h3 class="feature-title">{{ .title }}</h3>
         <p class="feature-desc">{{ .description }}</p>
