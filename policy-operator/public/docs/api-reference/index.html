@@ -1,400 +1,92 @@
-<!DOCTYPE html>
-<html lang="en-us">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="ie=edge">
-
-<title>API Reference · Azure Policy Operator</title>
-
-<meta name="description" content="Full specification for all Azure Policy Operator Custom Resource Definitions.">
-
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="/css/style.css">
-<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
-
-
-<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
-
-
-
-
-
-  
-</head>
-<body class="page-doc">
-
-  <nav class="navbar" role="navigation" aria-label="Main navigation">
-  <div class="container navbar-inner">
-
-    <a class="navbar-brand" href="/">
-      <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="navbar-logo">
-      <span>Azure Policy Operator</span>
-    </a>
-
-    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
-      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    </button>
-
-    <button class="navbar-toggle" id="navbar-toggle"
-            aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
-      <span></span><span></span><span></span>
-    </button>
-
-    <div class="navbar-menu" id="navbar-menu" role="menubar">
-      
-        
-        
-        <a class="navbar-link"
-           href="/docs/"
-           
-           
-           role="menuitem">
-          Docs
-        </a>
-      
-        
-        
-        <a class="navbar-link"
-           href="/docs/api-reference/"
-           
-           
-           role="menuitem">
-          API Reference
-        </a>
-      
-        
-        
-        <a class="navbar-link external navbar-link--github"
-           href="https://github.com/vimal-vijayan/policy-operator"
-           target="_blank" rel="noopener noreferrer"
-           aria-label="GitHub"
-           role="menuitem">
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="18" height="18" style="vertical-align:-3px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        </a>
-      
-    </div>
-
-  </div>
-</nav>
-
-
-  
-<div class="doc-wrap">
-
-  
-  <aside class="doc-sidebar" id="doc-sidebar" aria-label="Documentation navigation">
-    
-
-<div class="doc-sidebar-inner" id="doc-sidebar-inner">
-
-  
-  
-  
-
-  
-    
-
-    
-    
-      <div class="sidebar-section">
-        
-          <a class="sidebar-link"
-             href="/docs/introduction/">Introduction</a>
-        
-          <a class="sidebar-link"
-             href="/docs/getting-started/">Getting Started</a>
-        
-          <a class="sidebar-link active"
-             href="/docs/api-reference/">API Reference</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-definitions/">Policy Definitions</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-initiatives/">Policy Initiatives</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-assignments/">Policy Assignments</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-exemptions/">Policy Exemptions</a>
-        
-          <a class="sidebar-link"
-             href="/docs/gitops-argocd/">GitOps with Argo CD</a>
-        
-      </div>
-    
-
-  
-
-</div>
-
-  </aside>
-
-  <div class="doc-main">
-
-    
-    <article class="doc-content">
-
-      <header class="doc-header">
-
-        
-        
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="/">Home</a>
-            
-              <span class="breadcrumb-sep" aria-hidden="true">/</span>
-              <a href="/">Azure Policy Operator</a>
-            
-              <span class="breadcrumb-sep" aria-hidden="true">/</span>
-              <a href="/docs/">Documentation</a>
-            
-            <span class="breadcrumb-sep" aria-hidden="true">/</span>
-            <span class="breadcrumb-current">API Reference</span>
-          </nav>
-        
-
-        <h1 class="doc-title">API Reference</h1>
-
-        
-          <p class="doc-subtitle">Full specification for all Azure Policy Operator Custom Resource Definitions.</p>
-        
-
-        <div class="doc-meta">
-          
-          
-          <span>2 min read</span>
-        </div>
-
-      </header>
-
-      <div class="doc-body">
-        <h2 id="supported-kinds">Supported Kinds</h2>
-<p>The operator manages the following custom resources:</p>
-<table>
-  <thead>
-      <tr>
-          <th>Kind</th>
-          <th>API Version</th>
-          <th>Description</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><code>AzurePolicyDefinition</code></td>
-          <td><code>policy.azure.com/v1alpha1</code></td>
-          <td>Azure Policy definition</td>
-      </tr>
-      <tr>
-          <td><code>AzurePolicyInitiative</code></td>
-          <td><code>policy.azure.com/v1alpha1</code></td>
-          <td>Policy set definition</td>
-      </tr>
-      <tr>
-          <td><code>AzurePolicyAssignment</code></td>
-          <td><code>policy.azure.com/v1alpha1</code></td>
-          <td>Policy / initiative assignment</td>
-      </tr>
-      <tr>
-          <td><code>AzurePolicyExemption</code></td>
-          <td><code>policy.azure.com/v1alpha1</code></td>
-          <td>Policy exemption</td>
-      </tr>
-      <tr>
-          <td><code>AzurePolicyRemediation</code></td>
-          <td><code>policy.azure.com/v1alpha1</code></td>
-          <td>Remediation task</td>
-      </tr>
-  </tbody>
-</table>
-<h2 id="azurepolicydefinition">AzurePolicyDefinition</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyDefinition
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: my-policy
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: string          <span style="color:#6272a4"># Human-readable name</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: string          <span style="color:#6272a4"># Optional description</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyType: Custom | BuiltIn # Default</span>: Custom
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">mode: All | Indexed          # Default</span>: All
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>: {}                 <span style="color:#6272a4"># Arbitrary metadata map</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>: {}               <span style="color:#6272a4"># Parameter definitions</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyRule</span>:                  <span style="color:#6272a4"># Required — the policy rule object</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>: {}
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">then</span>: {}
-</span></span></code></pre></div><h2 id="azurepolicyinitiative">AzurePolicyInitiative</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyInitiative
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: my-initiative
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: string
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: string
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">metadata</span>: {}
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>: {}
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitions</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">policyDefinitionId</span>: string    <span style="color:#6272a4"># ARM resource ID or CRD name ref</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">parameters</span>: {}
-</span></span></code></pre></div><h2 id="azurepolicyassignment">AzurePolicyAssignment</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyAssignment
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: my-assignment
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: string
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">scope</span>: string               <span style="color:#6272a4"># Management group / subscription / resource group ID</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitionId</span>: string  <span style="color:#6272a4"># ARM ID of the definition or initiative</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>: {}
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">enforcementMode</span>: Default | DoNotEnforce
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">notScopes</span>: []               <span style="color:#6272a4"># List of resource IDs to exclude</span>
-</span></span></code></pre></div><h2 id="azurepolicyexemption">AzurePolicyExemption</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyExemption
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: my-exemption
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">scope</span>: string
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyAssignmentId</span>: string
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">exemptionCategory</span>: Waiver | Mitigated
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">expiresOn</span>: <span style="color:#f1fa8c">&#34;2026-12-31T00:00:00Z&#34;</span>   <span style="color:#6272a4"># RFC 3339, optional</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: string
-</span></span></code></pre></div><h2 id="azurepolicyremediation">AzurePolicyRemediation</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyRemediation
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: my-remediation
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">scope</span>: string
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyAssignmentId</span>: string
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitionReferenceId</span>: string  <span style="color:#6272a4"># For initiative assignments</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">resourceDiscoveryMode</span>: ExistingNonCompliant | ReEvaluateCompliance
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parallelDeployments</span>: <span style="color:#bd93f9">10</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">failureThreshold</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">percentage</span>: <span style="color:#bd93f9">0.1</span>
-</span></span></code></pre></div>
-      </div>
-
-      <div class="doc-footer">
-        <nav class="doc-nav" aria-label="Page navigation">
-          
-            <a class="doc-nav-card prev" href="/docs/getting-started/">
-              <span class="doc-nav-label">← Previous</span>
-              <span class="doc-nav-title">Getting Started</span>
-            </a>
-          
-          
-            <a class="doc-nav-card next" href="/docs/policy-definitions/">
-              <span class="doc-nav-label">Next →</span>
-              <span class="doc-nav-title">Policy Definitions</span>
-            </a>
-          
-        </nav>
-      </div>
-
-    </article>
-
-    
-    
-      <aside class="doc-toc" aria-label="Table of contents">
-        
-<nav aria-label="Table of contents">
-  <p class="toc-label">On this page</p>
-  <nav id="TableOfContents">
-  <ul>
-    <li><a href="#supported-kinds">Supported Kinds</a></li>
-    <li><a href="#azurepolicydefinition">AzurePolicyDefinition</a></li>
-    <li><a href="#azurepolicyinitiative">AzurePolicyInitiative</a></li>
-    <li><a href="#azurepolicyassignment">AzurePolicyAssignment</a></li>
-    <li><a href="#azurepolicyexemption">AzurePolicyExemption</a></li>
-    <li><a href="#azurepolicyremediation">AzurePolicyRemediation</a></li>
-  </ul>
-</nav>
-</nav>
-
-
-      </aside>
-    
-
-  </div>
-</div>
-
-
-  <footer>
-  <div class="container">
-    <div class="footer-grid">
-
-      
-      <div>
-        <div class="footer-brand">
-          <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="footer-logo">
-          Azure Policy Operator
-        </div>
-        <p class="footer-desc">
-          Manage Azure Policy resources declaratively through Kubernetes custom resources.
-        </p>
-      </div>
-
-      
-      <div>
-        <p class="footer-col-title">Documentation</p>
-        <ul class="footer-links">
-          <li><a href="/docs/getting-started/">Getting Started</a></li>
-          <li><a href="/docs/api-reference/">API Reference</a></li>
-          <li><a href="/docs/configuration/">Configuration</a></li>
-          <li><a href="/docs/troubleshooting/">Troubleshooting</a></li>
-        </ul>
-      </div>
-
-      
-      <div>
-        <p class="footer-col-title">Community</p>
-        <ul class="footer-links">
-          <li><a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" class="footer-github-link"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="14" height="14" style="vertical-align:-2px;margin-right:.35em"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></li>
-          <li><a href="/docs/contributing/">Contributing</a></li>
-          <li><a href="/docs/changelog/">Changelog</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <div class="footer-bottom">
-      <span>© 2026 Azure Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
-      <a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" style="color:inherit;display:inline-flex;align-items:center;gap:.35em"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="15" height="15"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub →</a>
-    </div>
-  </div>
-</footer>
-
-
-  
-  <img class="cat-decor cat-1" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-2" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-3" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-4" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-5" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-6" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-
-  <div class="dog-decor dog-pug" aria-hidden="true">
-    <img src="/img/pug-caricature.svg" alt="" width="300" height="400">
-  </div>
-  <div class="dog-decor dog-labrador" aria-hidden="true">
-    <img src="/img/labrador-caricature.svg" alt="" width="300" height="400">
-  </div>
-
-  <script src="/js/main.js" defer></script>
-  
-
-</body>
-</html>
+<!doctype html><html lang=en-us><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><title>API Reference · Azure Policy Operator</title><meta name=description content="Full specification for all Azure Policy Operator Custom Resource Definitions."><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel=stylesheet><link rel=stylesheet href=/policy-operator/css/style.css><link rel=icon type=image/svg+xml href=/policy-operator/img/logo.svg><script>(function(){var e=localStorage.getItem("theme");e&&document.documentElement.setAttribute("data-theme",e)})()</script></head><body class=page-doc><nav class=navbar role=navigation aria-label="Main navigation"><div class="container navbar-inner"><a class=navbar-brand href=/policy-operator/><img src=/policy-operator/img/logo.svg alt="Azure Policy Operator logo" class=navbar-logo>
+<span>Azure Policy Operator</span>
+</a><button class=theme-toggle id=theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode">
+<svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+<svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+</button>
+<button class=navbar-toggle id=navbar-toggle aria-controls=navbar-menu aria-expanded=false aria-label="Toggle navigation">
+<span></span><span></span><span></span></button><div class=navbar-menu id=navbar-menu role=menubar><a class=navbar-link href=/policy-operator/docs/ role=menuitem>Docs
+</a><a class=navbar-link href=/policy-operator/docs/api-reference/ role=menuitem>API Reference
+</a><a class="navbar-link external navbar-link--github" href=https://github.com/vimal-vijayan/policy-operator target=_blank rel="noopener noreferrer" aria-label=GitHub role=menuitem><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="18" height="18" style="vertical-align:-3px"><path d="M8 0C3.58.0.0 3.58.0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38.0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95.0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12.0.0.67-.21 2.2.82a7.66 7.66.0 012-.27c.68.0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15.0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48.0 1.07-.01 1.93-.01 2.2.0.21.15.46.55.38A8.013 8.013.0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a></div></div></nav><div class=doc-wrap><aside class=doc-sidebar id=doc-sidebar aria-label="Documentation navigation"><div class=doc-sidebar-inner id=doc-sidebar-inner><div class=sidebar-section><a class=sidebar-link href=/policy-operator/docs/introduction/>Introduction</a>
+<a class=sidebar-link href=/policy-operator/docs/getting-started/>Getting Started</a>
+<a class="sidebar-link active" href=/policy-operator/docs/api-reference/>API Reference</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-definitions/>Policy Definitions</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-initiatives/>Policy Initiatives</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-assignments/>Policy Assignments</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-exemptions/>Policy Exemptions</a>
+<a class=sidebar-link href=/policy-operator/docs/gitops-argocd/>GitOps with Argo CD</a></div></div></aside><div class=doc-main><article class=doc-content><header class=doc-header><nav class=breadcrumb aria-label=Breadcrumb><a href=/policy-operator/>Home</a>
+<span class=breadcrumb-sep aria-hidden=true>/</span>
+<a href=/policy-operator/>Azure Policy Operator</a>
+<span class=breadcrumb-sep aria-hidden=true>/</span>
+<a href=/policy-operator/docs/>Documentation</a>
+<span class=breadcrumb-sep aria-hidden=true>/</span>
+<span class=breadcrumb-current>API Reference</span></nav><h1 class=doc-title>API Reference</h1><p class=doc-subtitle>Full specification for all Azure Policy Operator Custom Resource Definitions.</p><div class=doc-meta><span>2 min read</span></div></header><div class=doc-body><h2 id=supported-kinds>Supported Kinds</h2><p>The operator manages the following custom resources:</p><table><thead><tr><th>Kind</th><th>API Version</th><th>Description</th></tr></thead><tbody><tr><td><code>AzurePolicyDefinition</code></td><td><code>policy.azure.com/v1alpha1</code></td><td>Azure Policy definition</td></tr><tr><td><code>AzurePolicyInitiative</code></td><td><code>policy.azure.com/v1alpha1</code></td><td>Policy set definition</td></tr><tr><td><code>AzurePolicyAssignment</code></td><td><code>policy.azure.com/v1alpha1</code></td><td>Policy / initiative assignment</td></tr><tr><td><code>AzurePolicyExemption</code></td><td><code>policy.azure.com/v1alpha1</code></td><td>Policy exemption</td></tr><tr><td><code>AzurePolicyRemediation</code></td><td><code>policy.azure.com/v1alpha1</code></td><td>Remediation task</td></tr></tbody></table><h2 id=azurepolicydefinition>AzurePolicyDefinition</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyDefinition
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: my-policy
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>displayName</span>: string          <span style=color:#6272a4># Human-readable name</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>description</span>: string          <span style=color:#6272a4># Optional description</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyType: Custom | BuiltIn # Default</span>: Custom
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>mode: All | Indexed          # Default</span>: All
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>metadata</span>: {}                 <span style=color:#6272a4># Arbitrary metadata map</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>parameters</span>: {}               <span style=color:#6272a4># Parameter definitions</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyRule</span>:                  <span style=color:#6272a4># Required — the policy rule object</span>
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>if</span>: {}
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>then</span>: {}
+</span></span></code></pre></div><h2 id=azurepolicyinitiative>AzurePolicyInitiative</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyInitiative
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: my-initiative
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>displayName</span>: string
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>description</span>: string
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>metadata</span>: {}
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>parameters</span>: {}
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyDefinitions</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>policyDefinitionId</span>: string    <span style=color:#6272a4># ARM resource ID or CRD name ref</span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>parameters</span>: {}
+</span></span></code></pre></div><h2 id=azurepolicyassignment>AzurePolicyAssignment</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyAssignment
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: my-assignment
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>displayName</span>: string
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>scope</span>: string               <span style=color:#6272a4># Management group / subscription / resource group ID</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyDefinitionId</span>: string  <span style=color:#6272a4># ARM ID of the definition or initiative</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>parameters</span>: {}
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>enforcementMode</span>: Default | DoNotEnforce
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>notScopes</span>: []               <span style=color:#6272a4># List of resource IDs to exclude</span>
+</span></span></code></pre></div><h2 id=azurepolicyexemption>AzurePolicyExemption</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyExemption
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: my-exemption
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>scope</span>: string
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyAssignmentId</span>: string
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>exemptionCategory</span>: Waiver | Mitigated
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>expiresOn</span>: <span style=color:#f1fa8c>&#34;2026-12-31T00:00:00Z&#34;</span>   <span style=color:#6272a4># RFC 3339, optional</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>description</span>: string
+</span></span></code></pre></div><h2 id=azurepolicyremediation>AzurePolicyRemediation</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyRemediation
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: my-remediation
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>scope</span>: string
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyAssignmentId</span>: string
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyDefinitionReferenceId</span>: string  <span style=color:#6272a4># For initiative assignments</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>resourceDiscoveryMode</span>: ExistingNonCompliant | ReEvaluateCompliance
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>parallelDeployments</span>: <span style=color:#bd93f9>10</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>failureThreshold</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>percentage</span>: <span style=color:#bd93f9>0.1</span>
+</span></span></code></pre></div></div><div class=doc-footer><nav class=doc-nav aria-label="Page navigation"><a class="doc-nav-card prev" href=/policy-operator/docs/getting-started/><span class=doc-nav-label>← Previous</span>
+<span class=doc-nav-title>Getting Started</span>
+</a><a class="doc-nav-card next" href=/policy-operator/docs/policy-definitions/><span class=doc-nav-label>Next →</span>
+<span class=doc-nav-title>Policy Definitions</span></a></nav></div></article><aside class=doc-toc aria-label="Table of contents"><nav aria-label="Table of contents"><p class=toc-label>On this page</p><nav id=TableOfContents><ul><li><a href=#supported-kinds>Supported Kinds</a></li><li><a href=#azurepolicydefinition>AzurePolicyDefinition</a></li><li><a href=#azurepolicyinitiative>AzurePolicyInitiative</a></li><li><a href=#azurepolicyassignment>AzurePolicyAssignment</a></li><li><a href=#azurepolicyexemption>AzurePolicyExemption</a></li><li><a href=#azurepolicyremediation>AzurePolicyRemediation</a></li></ul></nav></nav></aside></div></div><footer><div class=container><div class=footer-grid><div><div class=footer-brand><img src=/policy-operator/img/logo.svg alt="Azure Policy Operator logo" class=footer-logo>
+Azure Policy Operator</div><p class=footer-desc>Manage Azure Policy resources declaratively through Kubernetes custom resources.</p></div><div><p class=footer-col-title>Documentation</p><ul class=footer-links><li><a href=/policy-operator/docs/getting-started/>Getting Started</a></li><li><a href=/policy-operator/docs/api-reference/>API Reference</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/configuration/>Configuration</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/troubleshooting/>Troubleshooting</a></li></ul></div><div><p class=footer-col-title>Community</p><ul class=footer-links><li><a href=https://github.com/vimal-vijayan/policy-operator target=_blank rel=noopener class=footer-github-link><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="14" height="14" style="vertical-align:-2px;margin-right:.35em"><path d="M8 0C3.58.0.0 3.58.0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38.0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95.0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12.0.0.67-.21 2.2.82a7.66 7.66.0 012-.27c.68.0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15.0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48.0 1.07-.01 1.93-.01 2.2.0.21.15.46.55.38A8.013 8.013.0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/contributing/>Contributing</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/changelog/>Changelog</a></li></ul></div></div><div class=footer-bottom><span>© 2026 Azure Policy Operator. Built with <a href=https://gohugo.io target=_blank rel=noopener style=color:inherit>Hugo</a>.</span>
+<a href=https://github.com/vimal-vijayan/policy-operator target=_blank rel=noopener style=color:inherit;display:inline-flex;align-items:center;gap:.35em><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="15" height="15"><path d="M8 0C3.58.0.0 3.58.0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38.0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95.0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12.0.0.67-.21 2.2.82a7.66 7.66.0 012-.27c.68.0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15.0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48.0 1.07-.01 1.93-.01 2.2.0.21.15.46.55.38A8.013 8.013.0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub →</a></div></div></footer><img class="cat-decor cat-1" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-2" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-3" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-4" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-5" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-6" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true><div class="dog-decor dog-pug" aria-hidden=true><img src=/policy-operator/img/pug-caricature.svg alt width=300 height=400></div><div class="dog-decor dog-labrador" aria-hidden=true><img src=/policy-operator/img/labrador-caricature.svg alt width=300 height=400></div><script src=/policy-operator/js/main.js defer></script></body></html>

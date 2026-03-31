@@ -1,628 +1,259 @@
-<!DOCTYPE html>
-<html lang="en-us">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="ie=edge">
-
-<title>GitOps with Argo CD · Azure Policy Operator</title>
-
-<meta name="description" content="Deploy and lifecycle-manage Azure Policy manifests through pull requests, code review, and Argo CD sync loops.">
-
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="/css/style.css">
-<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
-
-
-<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})()</script>
-
-
-
-
-
-  
-</head>
-<body class="page-doc">
-
-  <nav class="navbar" role="navigation" aria-label="Main navigation">
-  <div class="container navbar-inner">
-
-    <a class="navbar-brand" href="/">
-      <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="navbar-logo">
-      <span>Azure Policy Operator</span>
-    </a>
-
-    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
-      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    </button>
-
-    <button class="navbar-toggle" id="navbar-toggle"
-            aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
-      <span></span><span></span><span></span>
-    </button>
-
-    <div class="navbar-menu" id="navbar-menu" role="menubar">
-      
-        
-        
-        <a class="navbar-link"
-           href="/docs/"
-           
-           
-           role="menuitem">
-          Docs
-        </a>
-      
-        
-        
-        <a class="navbar-link"
-           href="/docs/api-reference/"
-           
-           
-           role="menuitem">
-          API Reference
-        </a>
-      
-        
-        
-        <a class="navbar-link external navbar-link--github"
-           href="https://github.com/vimal-vijayan/policy-operator"
-           target="_blank" rel="noopener noreferrer"
-           aria-label="GitHub"
-           role="menuitem">
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="18" height="18" style="vertical-align:-3px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        </a>
-      
-    </div>
-
-  </div>
-</nav>
-
-
-  
-<div class="doc-wrap">
-
-  
-  <aside class="doc-sidebar" id="doc-sidebar" aria-label="Documentation navigation">
-    
-
-<div class="doc-sidebar-inner" id="doc-sidebar-inner">
-
-  
-  
-  
-
-  
-    
-
-    
-    
-      <div class="sidebar-section">
-        
-          <a class="sidebar-link"
-             href="/docs/introduction/">Introduction</a>
-        
-          <a class="sidebar-link"
-             href="/docs/getting-started/">Getting Started</a>
-        
-          <a class="sidebar-link"
-             href="/docs/api-reference/">API Reference</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-definitions/">Policy Definitions</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-initiatives/">Policy Initiatives</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-assignments/">Policy Assignments</a>
-        
-          <a class="sidebar-link"
-             href="/docs/policy-exemptions/">Policy Exemptions</a>
-        
-          <a class="sidebar-link active"
-             href="/docs/gitops-argocd/">GitOps with Argo CD</a>
-        
-      </div>
-    
-
-  
-
-</div>
-
-  </aside>
-
-  <div class="doc-main">
-
-    
-    <article class="doc-content">
-
-      <header class="doc-header">
-
-        
-        
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="/">Home</a>
-            
-              <span class="breadcrumb-sep" aria-hidden="true">/</span>
-              <a href="/">Azure Policy Operator</a>
-            
-              <span class="breadcrumb-sep" aria-hidden="true">/</span>
-              <a href="/docs/">Documentation</a>
-            
-            <span class="breadcrumb-sep" aria-hidden="true">/</span>
-            <span class="breadcrumb-current">GitOps with Argo CD</span>
-          </nav>
-        
-
-        <h1 class="doc-title">GitOps with Argo CD</h1>
-
-        
-          <p class="doc-subtitle">Deploy and lifecycle-manage Azure Policy manifests through pull requests, code review, and Argo CD sync loops.</p>
-        
-
-        <div class="doc-meta">
-          
-          
-          <span>6 min read</span>
-        </div>
-
-      </header>
-
-      <div class="doc-body">
-        <blockquote>
-<p><strong>Note:</strong> The architecture and Argo CD deployment model described on this page is a reference design. Actual implementation will vary based on your organisation&rsquo;s specific requirements, tooling, and platform constraints. Treat this as a starting point, not a prescriptive standard.</p>
-</blockquote>
-<p>GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Azure Policy Operator, every Azure Policy definition, assignment, exemption, and remediation becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.</p>
-<h2 id="why-gitops-for-azure-governance">Why GitOps for Azure governance?</h2>
-<table>
-  <thead>
-      <tr>
-          <th>Without GitOps</th>
-          <th>With GitOps</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>Policies applied ad-hoc via portal or CLI</td>
-          <td>Every change goes through pull request + review</td>
-      </tr>
-      <tr>
-          <td>No record of who changed what, or when</td>
-          <td>Full audit trail in Git history</td>
-      </tr>
-      <tr>
-          <td>Drift between environments is invisible</td>
-          <td>Argo CD detects and optionally heals drift</td>
-      </tr>
-      <tr>
-          <td>Rollback means manually re-applying old config</td>
-          <td>Rollback is <code>git revert</code></td>
-      </tr>
-      <tr>
-          <td>Exemptions silently persist past their purpose</td>
-          <td>Expiry enforced in YAML, removed via PR</td>
-      </tr>
-  </tbody>
-</table>
-<hr>
-<h2 id="repository-layout">Repository layout</h2>
-<p>Separate <strong>definitions</strong> from <strong>assignments / exemptions / remediations</strong>. Definitions are global building blocks; the others are scoped to management-group subfolders, which enables per-group progressive rollouts.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>policies/
-</span></span><span style="display:flex;"><span>├── definitions/                         # global — synced by a dedicated App
-</span></span><span style="display:flex;"><span>│   ├── def-allowed-locations.yaml
-</span></span><span style="display:flex;"><span>│   ├── def-tag-enforcement.yaml
-</span></span><span style="display:flex;"><span>│   └── def-deny-public-ip.yaml
-</span></span><span style="display:flex;"><span>│
-</span></span><span style="display:flex;"><span>├── assignments/                         # scoped per management group
-</span></span><span style="display:flex;"><span>│   ├── landingzones/
-</span></span><span style="display:flex;"><span>│   │   ├── assign-allowed-locations.yaml
-</span></span><span style="display:flex;"><span>│   │   └── assign-required-tags.yaml
-</span></span><span style="display:flex;"><span>│   ├── migrations/
-</span></span><span style="display:flex;"><span>│   │   └── assign-migration-guardrails.yaml
-</span></span><span style="display:flex;"><span>│   └── management/
-</span></span><span style="display:flex;"><span>│       └── assign-management-baseline.yaml
-</span></span><span style="display:flex;"><span>│
-</span></span><span style="display:flex;"><span>└── exemptions/
-</span></span><span style="display:flex;"><span>    ├── landingzones/
-</span></span><span style="display:flex;"><span>    │   └── exempt-lz-app1-temp.yaml
-</span></span><span style="display:flex;"><span>    ├── migrations/
-</span></span><span style="display:flex;"><span>    │   └── exempt-mig-temp-window.yaml
-</span></span><span style="display:flex;"><span>    └── management/
-</span></span><span style="display:flex;"><span>        └── exempt-mgmt-breakglass.yaml
-</span></span></code></pre></div><blockquote>
-<p><strong>Tip:</strong> Keep definitions in a flat folder. Their names are globally unique and don&rsquo;t need a management-group split. Everything else benefits from per-group isolation.</p>
-</blockquote>
-<hr>
-<h2 id="argo-cd-application-model">Argo CD application model</h2>
-<p>Use <strong>two Argo CD objects</strong> — one <code>Application</code> for definitions, and one <code>ApplicationSet</code> that auto-generates an <code>Application</code> per management-group subfolder.</p>
-<h3 id="1-definitions-application">1. Definitions Application</h3>
-<p>Definitions must be reconciled before assignments reference them. A standalone <code>Application</code> with <code>Automated</code> sync ensures they land first.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: argoproj.io/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: Application
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: policy-definitions
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: argocd
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">project</span>: default
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">source</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">repoURL</span>: https://github.com/your-org/your-repo.git
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">targetRevision</span>: main
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">path</span>: policies/definitions
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">directory</span>:
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">recurse</span>: <span style="color:#ff79c6">false</span>          <span style="color:#6272a4"># flat folder — no recursion needed</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">destination</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">server</span>: https://kubernetes.default.svc
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">namespace</span>: policy-operator-system
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">syncPolicy</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">automated</span>:
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">prune</span>: <span style="color:#ff79c6">true</span>             <span style="color:#6272a4"># remove definitions deleted from Git</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">selfHeal</span>: <span style="color:#ff79c6">true</span>          <span style="color:#6272a4"># revert out-of-band changes</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">syncOptions</span>:
-</span></span><span style="display:flex;"><span>      - CreateNamespace=true
-</span></span></code></pre></div><h3 id="2-applicationset--one-app-per-management-group-folder">2. ApplicationSet — one App per management-group folder</h3>
-<p>The <code>ApplicationSet</code> scans every subfolder under <code>assignments</code>, <code>exemptions</code>, and <code>remediations</code> and creates a dedicated Argo CD <code>Application</code> for each one. This gives fine-grained sync status, per-group RBAC, and the ability to pause a single management group without affecting others.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: argoproj.io/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: ApplicationSet
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: policies-subfolders
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: argocd
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">goTemplate</span>: <span style="color:#ff79c6">true</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">goTemplateOptions</span>:
-</span></span><span style="display:flex;"><span>    - missingkey=error
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">generators</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">git</span>:
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">repoURL</span>: https://github.com/your-org/your-repo.git
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">revision</span>: main
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">directories</span>:
-</span></span><span style="display:flex;"><span>          - <span style="color:#ff79c6">path</span>: policies/assignments/*
-</span></span><span style="display:flex;"><span>          - <span style="color:#ff79c6">path</span>: policies/exemptions/*
-</span></span><span style="display:flex;"><span>          - <span style="color:#ff79c6">path</span>: policies/remediations/*
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">template</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>      <span style="color:#6272a4"># Produces names like: assignments-landingzones, exemptions-management</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">name</span>: <span style="color:#f1fa8c">&#39;{{ index .path.segments 1 }}-{{ .path.basename }}&#39;</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">labels</span>:
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">category</span>: policy
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">type</span>:            <span style="color:#f1fa8c">&#39;{{ index .path.segments 1 }}&#39;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">managementGroup</span>: <span style="color:#f1fa8c">&#39;{{ .path.basename }}&#39;</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">project</span>: default
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">source</span>:
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">repoURL</span>: https://github.com/your-org/your-repo.git
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">targetRevision</span>: main
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">path</span>: <span style="color:#f1fa8c">&#39;{{ .path.path }}&#39;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">directory</span>:
-</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">recurse</span>: <span style="color:#ff79c6">true</span>       <span style="color:#6272a4"># pick up any sub-subfolders</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">destination</span>:
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">server</span>: https://kubernetes.default.svc
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">namespace</span>: policy-operator-system
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">syncPolicy</span>:
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">automated</span>:
-</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">prune</span>: <span style="color:#ff79c6">true</span>
-</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">selfHeal</span>: <span style="color:#ff79c6">true</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">syncOptions</span>:
-</span></span><span style="display:flex;"><span>          - CreateNamespace=true
-</span></span></code></pre></div><hr>
-<h2 id="progressive-rollout-pattern">Progressive rollout pattern</h2>
-<p>Because each management group is its own Argo CD <code>Application</code>, you control the blast radius of every change:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>1. Merge PR → auto-synced to landingzones  (lowest risk)
-</span></span><span style="display:flex;"><span>2. Review compliance dashboard
-</span></span><span style="display:flex;"><span>3. Manually sync migrations
-</span></span><span style="display:flex;"><span>4. Manually sync management  (highest blast radius)
-</span></span></code></pre></div><p>To hold a management group back from auto-sync, patch its generated Application:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#6272a4"># Disable auto-sync for the management group during a freeze</span>
-</span></span><span style="display:flex;"><span>argocd app <span style="color:#8be9fd;font-style:italic">set</span> assignments-management --sync-policy none
-</span></span></code></pre></div><p>Re-enable when ready:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>argocd app <span style="color:#8be9fd;font-style:italic">set</span> assignments-management --sync-policy automated
-</span></span></code></pre></div><hr>
-<h2 id="multi-environment-strategy">Multi-environment strategy</h2>
-<p>Use <strong>branch-per-environment</strong> or <strong>folder-per-environment</strong> depending on how divergent your environments are.</p>
-<h3 id="branch-per-environment-recommended-for-strong-isolation">Branch-per-environment (recommended for strong isolation)</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>main          → production cluster
-</span></span><span style="display:flex;"><span>staging       → staging cluster
-</span></span><span style="display:flex;"><span>dev           → dev cluster
-</span></span></code></pre></div><p>Point each Argo CD Application&rsquo;s <code>targetRevision</code> to the appropriate branch. Promote by raising a PR from <code>dev → staging → main</code>.</p>
-<h3 id="folder-per-environment-recommended-for-shared-clusters">Folder-per-environment (recommended for shared clusters)</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>policies/
-</span></span><span style="display:flex;"><span>├── base/                # shared definitions
-</span></span><span style="display:flex;"><span>├── overlays/
-</span></span><span style="display:flex;"><span>│   ├── dev/
-</span></span><span style="display:flex;"><span>│   ├── staging/
-</span></span><span style="display:flex;"><span>│   └── production/
-</span></span></code></pre></div><p>Use Kustomize overlays to patch scope and effect per environment:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#6272a4"># overlays/dev/kustomization.yaml</span>
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">resources</span>:
-</span></span><span style="display:flex;"><span>  - ../../base
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">patches</span>:
-</span></span><span style="display:flex;"><span>  - <span style="color:#ff79c6">path</span>: patch-audit-only.yaml   <span style="color:#6272a4"># override Deny → Audit in dev</span>
-</span></span></code></pre></div><hr>
-<h2 id="drift-detection-and-self-healing">Drift detection and self-healing</h2>
-<p>With <code>selfHeal: true</code>, Argo CD continuously compares the live cluster state against Git. If someone applies a manifest directly (bypassing Git), Argo CD reverts it within the next sync cycle (default: 3 minutes).</p>
-<p>Check live drift at any time:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>argocd app diff assignments-landingzones
-</span></span></code></pre></div><p>View a full sync status summary:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>argocd app list -l <span style="color:#8be9fd;font-style:italic">category</span><span style="color:#ff79c6">=</span>policy
-</span></span></code></pre></div><hr>
-<h2 id="secrets-and-credential-management">Secrets and credential management</h2>
-<p>The Azure Policy Operator needs an Azure identity (Service Principal or Workload Identity) to call the ARM API. Keep credentials out of Git:</p>
-<h3 id="option-a--kubernetes-secret-pre-created">Option A — Kubernetes Secret (pre-created)</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl create secret generic azure-policy-credentials <span style="color:#f1fa8c">\
-</span></span></span><span style="display:flex;"><span>  --namespace policy-operator-system <span style="color:#f1fa8c">\
-</span></span></span><span style="display:flex;"><span>  --from-literal<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">clientId</span><span style="color:#ff79c6">=</span>&lt;CLIENT_ID&gt; <span style="color:#f1fa8c">\
-</span></span></span><span style="display:flex;"><span>  --from-literal<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">clientSecret</span><span style="color:#ff79c6">=</span>&lt;CLIENT_SECRET&gt; <span style="color:#f1fa8c">\
-</span></span></span><span style="display:flex;"><span>  --from-literal<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">tenantId</span><span style="color:#ff79c6">=</span>&lt;TENANT_ID&gt;
-</span></span></code></pre></div><p>Reference in your Helm values (not in Git):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#6272a4"># argocd/policy-operator-app.yaml — values passed via Argo CD UI/CLI</span>
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">helm</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">parameters</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: azure.existingSecret
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">value</span>: azure-policy-credentials
-</span></span></code></pre></div><h3 id="option-b--workload-identity-recommended-for-aks">Option B — Workload Identity (recommended for AKS)</h3>
-<p>Annotate the operator&rsquo;s service account with the managed identity client ID. No secret required in the cluster:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">serviceAccount</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">azure.workload.identity/client-id</span>: <span style="color:#f1fa8c">&#34;&lt;MANAGED_IDENTITY_CLIENT_ID&gt;&#34;</span>
-</span></span></code></pre></div><h3 id="option-c--external-secrets-operator">Option C — External Secrets Operator</h3>
-<p>Sync credentials from Azure Key Vault into a Kubernetes Secret automatically:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: external-secrets.io/v1beta1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: ExternalSecret
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: azure-policy-credentials
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: policy-operator-system
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">refreshInterval</span>: 1h
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">secretStoreRef</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">name</span>: azure-keyvault
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">kind</span>: ClusterSecretStore
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">target</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">name</span>: azure-policy-credentials
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">data</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">secretKey</span>: clientSecret
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">remoteRef</span>:
-</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">key</span>: policy-operator-client-secret
-</span></span></code></pre></div><hr>
-<h2 id="example-policy-manifests">Example policy manifests</h2>
-<h3 id="definition--deny-public-ip">Definition — Deny public IP</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#6272a4"># policies/definitions/def-deny-public-ip.yaml</span>
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyDefinition
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: def-deny-public-ip
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Deny public IP addresses&#34;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Prevents creation of public IP resources across all managed scopes.&#34;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyType</span>: Custom
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">mode</span>: All
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyRule</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>:
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">field</span>: <span style="color:#f1fa8c">&#34;type&#34;</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">equals</span>: <span style="color:#f1fa8c">&#34;Microsoft.Network/publicIPAddresses&#34;</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">then</span>:
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">effect</span>: Deny
-</span></span></code></pre></div><h3 id="assignment--landing-zones-scope">Assignment — Landing zones scope</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#6272a4"># policies/assignments/landingzones/assign-deny-public-ip.yaml</span>
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyAssignment
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: assign-deny-public-ip-lz
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Deny public IPs — Landing Zones&#34;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyDefinitionRef</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">name</span>: def-deny-public-ip
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">scope</span>: /providers/Microsoft.Management/managementGroups/landingzones
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">enforcementMode</span>: Default
-</span></span></code></pre></div><h3 id="time-bound-exemption">Time-bound exemption</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#6272a4"># policies/exemptions/landingzones/exempt-lz-app1-temp.yaml</span>
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: policy.azure.com/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AzurePolicyExemption
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: exempt-lz-app1-public-ip
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">annotations</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">policy.azure.com/owner</span>: platform-team
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">policy.azure.com/ticket</span>: <span style="color:#f1fa8c">&#34;OPS-4821&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">policyAssignmentRef</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">name</span>: assign-deny-public-ip-lz
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">exemptionCategory</span>: Waiver
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">displayName</span>: <span style="color:#f1fa8c">&#34;Temporary waiver — App1 migration window&#34;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">expiresOn</span>: <span style="color:#f1fa8c">&#34;2026-06-30T00:00:00Z&#34;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">resourceSelectors</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: app1-resources
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">selectors</span>:
-</span></span><span style="display:flex;"><span>        - <span style="color:#ff79c6">kind</span>: ResourceGroup
-</span></span><span style="display:flex;"><span>          <span style="color:#ff79c6">in</span>:
-</span></span><span style="display:flex;"><span>            - app1-migration-rg
-</span></span></code></pre></div><hr>
-<h2 id="recommended-argo-cd-project-setup">Recommended Argo CD project setup</h2>
-<p>Isolate policy workloads into a dedicated Argo CD project with scoped permissions:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#ff79c6">apiVersion</span>: argoproj.io/v1alpha1
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">kind</span>: AppProject
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">metadata</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">name</span>: azure-policy
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">namespace</span>: argocd
-</span></span><span style="display:flex;"><span><span style="color:#ff79c6">spec</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">description</span>: <span style="color:#f1fa8c">&#34;Azure Policy GitOps managed by Azure Policy Operator&#34;</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">sourceRepos</span>:
-</span></span><span style="display:flex;"><span>    - https://github.com/your-org/your-repo.git
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">destinations</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">namespace</span>: policy-operator-system
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">server</span>: https://kubernetes.default.svc
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">clusterResourceWhitelist</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">group</span>: policy.azure.com
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">kind</span>: AzurePolicyDefinition
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">group</span>: policy.azure.com
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">kind</span>: AzurePolicyAssignment
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">group</span>: policy.azure.com
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">kind</span>: AzurePolicyExemption
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">group</span>: policy.azure.com
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">kind</span>: AzurePolicyRemediation
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#ff79c6">roles</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: policy-admin
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">description</span>: Full access to policy applications
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">policies</span>:
-</span></span><span style="display:flex;"><span>        - p, proj:azure-policy:policy-admin, applications, *, azure-policy/*, allow
-</span></span><span style="display:flex;"><span>    - <span style="color:#ff79c6">name</span>: policy-viewer
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">description</span>: Read-only access
-</span></span><span style="display:flex;"><span>      <span style="color:#ff79c6">policies</span>:
-</span></span><span style="display:flex;"><span>        - p, proj:azure-policy:policy-viewer, applications, get, azure-policy/*, allow
-</span></span></code></pre></div>
-      </div>
-
-      <div class="doc-footer">
-        <nav class="doc-nav" aria-label="Page navigation">
-          
-            <a class="doc-nav-card prev" href="/docs/policy-exemptions/">
-              <span class="doc-nav-label">← Previous</span>
-              <span class="doc-nav-title">Policy Exemptions</span>
-            </a>
-          
-          
-        </nav>
-      </div>
-
-    </article>
-
-    
-    
-      <aside class="doc-toc" aria-label="Table of contents">
-        
-<nav aria-label="Table of contents">
-  <p class="toc-label">On this page</p>
-  <nav id="TableOfContents">
-  <ul>
-    <li><a href="#why-gitops-for-azure-governance">Why GitOps for Azure governance?</a></li>
-    <li><a href="#repository-layout">Repository layout</a></li>
-    <li><a href="#argo-cd-application-model">Argo CD application model</a>
-      <ul>
-        <li><a href="#1-definitions-application">1. Definitions Application</a></li>
-        <li><a href="#2-applicationset--one-app-per-management-group-folder">2. ApplicationSet — one App per management-group folder</a></li>
-      </ul>
-    </li>
-    <li><a href="#progressive-rollout-pattern">Progressive rollout pattern</a></li>
-    <li><a href="#multi-environment-strategy">Multi-environment strategy</a>
-      <ul>
-        <li><a href="#branch-per-environment-recommended-for-strong-isolation">Branch-per-environment (recommended for strong isolation)</a></li>
-        <li><a href="#folder-per-environment-recommended-for-shared-clusters">Folder-per-environment (recommended for shared clusters)</a></li>
-      </ul>
-    </li>
-    <li><a href="#drift-detection-and-self-healing">Drift detection and self-healing</a></li>
-    <li><a href="#secrets-and-credential-management">Secrets and credential management</a>
-      <ul>
-        <li><a href="#option-a--kubernetes-secret-pre-created">Option A — Kubernetes Secret (pre-created)</a></li>
-        <li><a href="#option-b--workload-identity-recommended-for-aks">Option B — Workload Identity (recommended for AKS)</a></li>
-        <li><a href="#option-c--external-secrets-operator">Option C — External Secrets Operator</a></li>
-      </ul>
-    </li>
-    <li><a href="#example-policy-manifests">Example policy manifests</a>
-      <ul>
-        <li><a href="#definition--deny-public-ip">Definition — Deny public IP</a></li>
-        <li><a href="#assignment--landing-zones-scope">Assignment — Landing zones scope</a></li>
-        <li><a href="#time-bound-exemption">Time-bound exemption</a></li>
-      </ul>
-    </li>
-    <li><a href="#recommended-argo-cd-project-setup">Recommended Argo CD project setup</a></li>
-  </ul>
-</nav>
-</nav>
-
-
-      </aside>
-    
-
-  </div>
-</div>
-
-
-  <footer>
-  <div class="container">
-    <div class="footer-grid">
-
-      
-      <div>
-        <div class="footer-brand">
-          <img src="/img/logo.svg" alt="Azure Policy Operator logo" class="footer-logo">
-          Azure Policy Operator
-        </div>
-        <p class="footer-desc">
-          Manage Azure Policy resources declaratively through Kubernetes custom resources.
-        </p>
-      </div>
-
-      
-      <div>
-        <p class="footer-col-title">Documentation</p>
-        <ul class="footer-links">
-          <li><a href="/docs/getting-started/">Getting Started</a></li>
-          <li><a href="/docs/api-reference/">API Reference</a></li>
-          <li><a href="/docs/configuration/">Configuration</a></li>
-          <li><a href="/docs/troubleshooting/">Troubleshooting</a></li>
-        </ul>
-      </div>
-
-      
-      <div>
-        <p class="footer-col-title">Community</p>
-        <ul class="footer-links">
-          <li><a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" class="footer-github-link"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="14" height="14" style="vertical-align:-2px;margin-right:.35em"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></li>
-          <li><a href="/docs/contributing/">Contributing</a></li>
-          <li><a href="/docs/changelog/">Changelog</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <div class="footer-bottom">
-      <span>© 2026 Azure Policy Operator. Built with <a href="https://gohugo.io" target="_blank" rel="noopener" style="color:inherit">Hugo</a>.</span>
-      <a href="https://github.com/vimal-vijayan/policy-operator" target="_blank" rel="noopener" style="color:inherit;display:inline-flex;align-items:center;gap:.35em"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="15" height="15"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.66 7.66 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub →</a>
-    </div>
-  </div>
-</footer>
-
-
-  
-  <img class="cat-decor cat-1" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-2" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-3" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-4" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-5" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-  <img class="cat-decor cat-6" src="/img/cat-walk.svg" alt="" aria-hidden="true">
-
-  <div class="dog-decor dog-pug" aria-hidden="true">
-    <img src="/img/pug-caricature.svg" alt="" width="300" height="400">
-  </div>
-  <div class="dog-decor dog-labrador" aria-hidden="true">
-    <img src="/img/labrador-caricature.svg" alt="" width="300" height="400">
-  </div>
-
-  <script src="/js/main.js" defer></script>
-  
-
-</body>
-</html>
+<!doctype html><html lang=en-us><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><title>GitOps with Argo CD · Azure Policy Operator</title><meta name=description content="Deploy and lifecycle-manage Azure Policy manifests through pull requests, code review, and Argo CD sync loops."><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel=stylesheet><link rel=stylesheet href=/policy-operator/css/style.css><link rel=icon type=image/svg+xml href=/policy-operator/img/logo.svg><script>(function(){var e=localStorage.getItem("theme");e&&document.documentElement.setAttribute("data-theme",e)})()</script></head><body class=page-doc><nav class=navbar role=navigation aria-label="Main navigation"><div class="container navbar-inner"><a class=navbar-brand href=/policy-operator/><img src=/policy-operator/img/logo.svg alt="Azure Policy Operator logo" class=navbar-logo>
+<span>Azure Policy Operator</span>
+</a><button class=theme-toggle id=theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode">
+<svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+<svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+</button>
+<button class=navbar-toggle id=navbar-toggle aria-controls=navbar-menu aria-expanded=false aria-label="Toggle navigation">
+<span></span><span></span><span></span></button><div class=navbar-menu id=navbar-menu role=menubar><a class=navbar-link href=/policy-operator/docs/ role=menuitem>Docs
+</a><a class=navbar-link href=/policy-operator/docs/api-reference/ role=menuitem>API Reference
+</a><a class="navbar-link external navbar-link--github" href=https://github.com/vimal-vijayan/policy-operator target=_blank rel="noopener noreferrer" aria-label=GitHub role=menuitem><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="18" height="18" style="vertical-align:-3px"><path d="M8 0C3.58.0.0 3.58.0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38.0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95.0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12.0.0.67-.21 2.2.82a7.66 7.66.0 012-.27c.68.0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15.0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48.0 1.07-.01 1.93-.01 2.2.0.21.15.46.55.38A8.013 8.013.0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a></div></div></nav><div class=doc-wrap><aside class=doc-sidebar id=doc-sidebar aria-label="Documentation navigation"><div class=doc-sidebar-inner id=doc-sidebar-inner><div class=sidebar-section><a class=sidebar-link href=/policy-operator/docs/introduction/>Introduction</a>
+<a class=sidebar-link href=/policy-operator/docs/getting-started/>Getting Started</a>
+<a class=sidebar-link href=/policy-operator/docs/api-reference/>API Reference</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-definitions/>Policy Definitions</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-initiatives/>Policy Initiatives</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-assignments/>Policy Assignments</a>
+<a class=sidebar-link href=/policy-operator/docs/policy-exemptions/>Policy Exemptions</a>
+<a class="sidebar-link active" href=/policy-operator/docs/gitops-argocd/>GitOps with Argo CD</a></div></div></aside><div class=doc-main><article class=doc-content><header class=doc-header><nav class=breadcrumb aria-label=Breadcrumb><a href=/policy-operator/>Home</a>
+<span class=breadcrumb-sep aria-hidden=true>/</span>
+<a href=/policy-operator/>Azure Policy Operator</a>
+<span class=breadcrumb-sep aria-hidden=true>/</span>
+<a href=/policy-operator/docs/>Documentation</a>
+<span class=breadcrumb-sep aria-hidden=true>/</span>
+<span class=breadcrumb-current>GitOps with Argo CD</span></nav><h1 class=doc-title>GitOps with Argo CD</h1><p class=doc-subtitle>Deploy and lifecycle-manage Azure Policy manifests through pull requests, code review, and Argo CD sync loops.</p><div class=doc-meta><span>6 min read</span></div></header><div class=doc-body><blockquote><p><strong>Note:</strong> The architecture and Argo CD deployment model described on this page is a reference design. Actual implementation will vary based on your organisation&rsquo;s specific requirements, tooling, and platform constraints. Treat this as a starting point, not a prescriptive standard.</p></blockquote><p>GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Azure Policy Operator, every Azure Policy definition, assignment, exemption, and remediation becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.</p><h2 id=why-gitops-for-azure-governance>Why GitOps for Azure governance?</h2><table><thead><tr><th>Without GitOps</th><th>With GitOps</th></tr></thead><tbody><tr><td>Policies applied ad-hoc via portal or CLI</td><td>Every change goes through pull request + review</td></tr><tr><td>No record of who changed what, or when</td><td>Full audit trail in Git history</td></tr><tr><td>Drift between environments is invisible</td><td>Argo CD detects and optionally heals drift</td></tr><tr><td>Rollback means manually re-applying old config</td><td>Rollback is <code>git revert</code></td></tr><tr><td>Exemptions silently persist past their purpose</td><td>Expiry enforced in YAML, removed via PR</td></tr></tbody></table><hr><h2 id=repository-layout>Repository layout</h2><p>Separate <strong>definitions</strong> from <strong>assignments / exemptions / remediations</strong>. Definitions are global building blocks; the others are scoped to management-group subfolders, which enables per-group progressive rollouts.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-text data-lang=text><span style=display:flex><span>policies/
+</span></span><span style=display:flex><span>├── definitions/                         # global — synced by a dedicated App
+</span></span><span style=display:flex><span>│   ├── def-allowed-locations.yaml
+</span></span><span style=display:flex><span>│   ├── def-tag-enforcement.yaml
+</span></span><span style=display:flex><span>│   └── def-deny-public-ip.yaml
+</span></span><span style=display:flex><span>│
+</span></span><span style=display:flex><span>├── assignments/                         # scoped per management group
+</span></span><span style=display:flex><span>│   ├── landingzones/
+</span></span><span style=display:flex><span>│   │   ├── assign-allowed-locations.yaml
+</span></span><span style=display:flex><span>│   │   └── assign-required-tags.yaml
+</span></span><span style=display:flex><span>│   ├── migrations/
+</span></span><span style=display:flex><span>│   │   └── assign-migration-guardrails.yaml
+</span></span><span style=display:flex><span>│   └── management/
+</span></span><span style=display:flex><span>│       └── assign-management-baseline.yaml
+</span></span><span style=display:flex><span>│
+</span></span><span style=display:flex><span>└── exemptions/
+</span></span><span style=display:flex><span>    ├── landingzones/
+</span></span><span style=display:flex><span>    │   └── exempt-lz-app1-temp.yaml
+</span></span><span style=display:flex><span>    ├── migrations/
+</span></span><span style=display:flex><span>    │   └── exempt-mig-temp-window.yaml
+</span></span><span style=display:flex><span>    └── management/
+</span></span><span style=display:flex><span>        └── exempt-mgmt-breakglass.yaml
+</span></span></code></pre></div><blockquote><p><strong>Tip:</strong> Keep definitions in a flat folder. Their names are globally unique and don&rsquo;t need a management-group split. Everything else benefits from per-group isolation.</p></blockquote><hr><h2 id=argo-cd-application-model>Argo CD application model</h2><p>Use <strong>two Argo CD objects</strong> — one <code>Application</code> for definitions, and one <code>ApplicationSet</code> that auto-generates an <code>Application</code> per management-group subfolder.</p><h3 id=1-definitions-application>1. Definitions Application</h3><p>Definitions must be reconciled before assignments reference them. A standalone <code>Application</code> with <code>Automated</code> sync ensures they land first.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: argoproj.io/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: Application
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: policy-definitions
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>namespace</span>: argocd
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>project</span>: default
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>source</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>repoURL</span>: https://github.com/your-org/your-repo.git
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>targetRevision</span>: main
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>path</span>: policies/definitions
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>directory</span>:
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>recurse</span>: <span style=color:#ff79c6>false</span>          <span style=color:#6272a4># flat folder — no recursion needed</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>destination</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>server</span>: https://kubernetes.default.svc
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>namespace</span>: policy-operator-system
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>syncPolicy</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>automated</span>:
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>prune</span>: <span style=color:#ff79c6>true</span>             <span style=color:#6272a4># remove definitions deleted from Git</span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>selfHeal</span>: <span style=color:#ff79c6>true</span>          <span style=color:#6272a4># revert out-of-band changes</span>
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>syncOptions</span>:
+</span></span><span style=display:flex><span>      - CreateNamespace=true
+</span></span></code></pre></div><h3 id=2-applicationset--one-app-per-management-group-folder>2. ApplicationSet — one App per management-group folder</h3><p>The <code>ApplicationSet</code> scans every subfolder under <code>assignments</code>, <code>exemptions</code>, and <code>remediations</code> and creates a dedicated Argo CD <code>Application</code> for each one. This gives fine-grained sync status, per-group RBAC, and the ability to pause a single management group without affecting others.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: argoproj.io/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: ApplicationSet
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: policies-subfolders
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>namespace</span>: argocd
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>goTemplate</span>: <span style=color:#ff79c6>true</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>goTemplateOptions</span>:
+</span></span><span style=display:flex><span>    - missingkey=error
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>generators</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>git</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>repoURL</span>: https://github.com/your-org/your-repo.git
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>revision</span>: main
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>directories</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#ff79c6>path</span>: policies/assignments/*
+</span></span><span style=display:flex><span>          - <span style=color:#ff79c6>path</span>: policies/exemptions/*
+</span></span><span style=display:flex><span>          - <span style=color:#ff79c6>path</span>: policies/remediations/*
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>template</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>      <span style=color:#6272a4># Produces names like: assignments-landingzones, exemptions-management</span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>name</span>: <span style=color:#f1fa8c>&#39;{{ index .path.segments 1 }}-{{ .path.basename }}&#39;</span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>labels</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>category</span>: policy
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>type</span>:            <span style=color:#f1fa8c>&#39;{{ index .path.segments 1 }}&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>managementGroup</span>: <span style=color:#f1fa8c>&#39;{{ .path.basename }}&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>project</span>: default
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>source</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>repoURL</span>: https://github.com/your-org/your-repo.git
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>targetRevision</span>: main
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>path</span>: <span style=color:#f1fa8c>&#39;{{ .path.path }}&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>directory</span>:
+</span></span><span style=display:flex><span>          <span style=color:#ff79c6>recurse</span>: <span style=color:#ff79c6>true</span>       <span style=color:#6272a4># pick up any sub-subfolders</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>destination</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>server</span>: https://kubernetes.default.svc
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>namespace</span>: policy-operator-system
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>syncPolicy</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>automated</span>:
+</span></span><span style=display:flex><span>          <span style=color:#ff79c6>prune</span>: <span style=color:#ff79c6>true</span>
+</span></span><span style=display:flex><span>          <span style=color:#ff79c6>selfHeal</span>: <span style=color:#ff79c6>true</span>
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>syncOptions</span>:
+</span></span><span style=display:flex><span>          - CreateNamespace=true
+</span></span></code></pre></div><hr><h2 id=progressive-rollout-pattern>Progressive rollout pattern</h2><p>Because each management group is its own Argo CD <code>Application</code>, you control the blast radius of every change:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-fallback data-lang=fallback><span style=display:flex><span>1. Merge PR → auto-synced to landingzones  (lowest risk)
+</span></span><span style=display:flex><span>2. Review compliance dashboard
+</span></span><span style=display:flex><span>3. Manually sync migrations
+</span></span><span style=display:flex><span>4. Manually sync management  (highest blast radius)
+</span></span></code></pre></div><p>To hold a management group back from auto-sync, patch its generated Application:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#6272a4># Disable auto-sync for the management group during a freeze</span>
+</span></span><span style=display:flex><span>argocd app <span style=color:#8be9fd;font-style:italic>set</span> assignments-management --sync-policy none
+</span></span></code></pre></div><p>Re-enable when ready:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>argocd app <span style=color:#8be9fd;font-style:italic>set</span> assignments-management --sync-policy automated
+</span></span></code></pre></div><hr><h2 id=multi-environment-strategy>Multi-environment strategy</h2><p>Use <strong>branch-per-environment</strong> or <strong>folder-per-environment</strong> depending on how divergent your environments are.</p><h3 id=branch-per-environment-recommended-for-strong-isolation>Branch-per-environment (recommended for strong isolation)</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-fallback data-lang=fallback><span style=display:flex><span>main          → production cluster
+</span></span><span style=display:flex><span>staging       → staging cluster
+</span></span><span style=display:flex><span>dev           → dev cluster
+</span></span></code></pre></div><p>Point each Argo CD Application&rsquo;s <code>targetRevision</code> to the appropriate branch. Promote by raising a PR from <code>dev → staging → main</code>.</p><h3 id=folder-per-environment-recommended-for-shared-clusters>Folder-per-environment (recommended for shared clusters)</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-fallback data-lang=fallback><span style=display:flex><span>policies/
+</span></span><span style=display:flex><span>├── base/                # shared definitions
+</span></span><span style=display:flex><span>├── overlays/
+</span></span><span style=display:flex><span>│   ├── dev/
+</span></span><span style=display:flex><span>│   ├── staging/
+</span></span><span style=display:flex><span>│   └── production/
+</span></span></code></pre></div><p>Use Kustomize overlays to patch scope and effect per environment:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#6272a4># overlays/dev/kustomization.yaml</span>
+</span></span><span style=display:flex><span><span style=color:#ff79c6>resources</span>:
+</span></span><span style=display:flex><span>  - ../../base
+</span></span><span style=display:flex><span><span style=color:#ff79c6>patches</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#ff79c6>path</span>: patch-audit-only.yaml   <span style=color:#6272a4># override Deny → Audit in dev</span>
+</span></span></code></pre></div><hr><h2 id=drift-detection-and-self-healing>Drift detection and self-healing</h2><p>With <code>selfHeal: true</code>, Argo CD continuously compares the live cluster state against Git. If someone applies a manifest directly (bypassing Git), Argo CD reverts it within the next sync cycle (default: 3 minutes).</p><p>Check live drift at any time:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>argocd app diff assignments-landingzones
+</span></span></code></pre></div><p>View a full sync status summary:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>argocd app list -l <span style=color:#8be9fd;font-style:italic>category</span><span style=color:#ff79c6>=</span>policy
+</span></span></code></pre></div><hr><h2 id=secrets-and-credential-management>Secrets and credential management</h2><p>The Azure Policy Operator needs an Azure identity (Service Principal or Workload Identity) to call the ARM API. Keep credentials out of Git:</p><h3 id=option-a--kubernetes-secret-pre-created>Option A — Kubernetes Secret (pre-created)</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl create secret generic azure-policy-credentials <span style=color:#f1fa8c>\
+</span></span></span><span style=display:flex><span>  --namespace policy-operator-system <span style=color:#f1fa8c>\
+</span></span></span><span style=display:flex><span>  --from-literal<span style=color:#ff79c6>=</span><span style=color:#8be9fd;font-style:italic>clientId</span><span style=color:#ff79c6>=</span>&lt;CLIENT_ID&gt; <span style=color:#f1fa8c>\
+</span></span></span><span style=display:flex><span>  --from-literal<span style=color:#ff79c6>=</span><span style=color:#8be9fd;font-style:italic>clientSecret</span><span style=color:#ff79c6>=</span>&lt;CLIENT_SECRET&gt; <span style=color:#f1fa8c>\
+</span></span></span><span style=display:flex><span>  --from-literal<span style=color:#ff79c6>=</span><span style=color:#8be9fd;font-style:italic>tenantId</span><span style=color:#ff79c6>=</span>&lt;TENANT_ID&gt;
+</span></span></code></pre></div><p>Reference in your Helm values (not in Git):</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#6272a4># argocd/policy-operator-app.yaml — values passed via Argo CD UI/CLI</span>
+</span></span><span style=display:flex><span><span style=color:#ff79c6>helm</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>parameters</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: azure.existingSecret
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>value</span>: azure-policy-credentials
+</span></span></code></pre></div><h3 id=option-b--workload-identity-recommended-for-aks>Option B — Workload Identity (recommended for AKS)</h3><p>Annotate the operator&rsquo;s service account with the managed identity client ID. No secret required in the cluster:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>serviceAccount</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>annotations</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>azure.workload.identity/client-id</span>: <span style=color:#f1fa8c>&#34;&lt;MANAGED_IDENTITY_CLIENT_ID&gt;&#34;</span>
+</span></span></code></pre></div><h3 id=option-c--external-secrets-operator>Option C — External Secrets Operator</h3><p>Sync credentials from Azure Key Vault into a Kubernetes Secret automatically:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: external-secrets.io/v1beta1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: ExternalSecret
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: azure-policy-credentials
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>namespace</span>: policy-operator-system
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>refreshInterval</span>: 1h
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>secretStoreRef</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>name</span>: azure-keyvault
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>kind</span>: ClusterSecretStore
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>target</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>name</span>: azure-policy-credentials
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>data</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>secretKey</span>: clientSecret
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>remoteRef</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>key</span>: policy-operator-client-secret
+</span></span></code></pre></div><hr><h2 id=example-policy-manifests>Example policy manifests</h2><h3 id=definition--deny-public-ip>Definition — Deny public IP</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#6272a4># policies/definitions/def-deny-public-ip.yaml</span>
+</span></span><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyDefinition
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: def-deny-public-ip
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>displayName</span>: <span style=color:#f1fa8c>&#34;Deny public IP addresses&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>description</span>: <span style=color:#f1fa8c>&#34;Prevents creation of public IP resources across all managed scopes.&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyType</span>: Custom
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>mode</span>: All
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyRule</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>if</span>:
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>field</span>: <span style=color:#f1fa8c>&#34;type&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>equals</span>: <span style=color:#f1fa8c>&#34;Microsoft.Network/publicIPAddresses&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>then</span>:
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>effect</span>: Deny
+</span></span></code></pre></div><h3 id=assignment--landing-zones-scope>Assignment — Landing zones scope</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#6272a4># policies/assignments/landingzones/assign-deny-public-ip.yaml</span>
+</span></span><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyAssignment
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: assign-deny-public-ip-lz
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>displayName</span>: <span style=color:#f1fa8c>&#34;Deny public IPs — Landing Zones&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyDefinitionRef</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>name</span>: def-deny-public-ip
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>scope</span>: /providers/Microsoft.Management/managementGroups/landingzones
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>enforcementMode</span>: Default
+</span></span></code></pre></div><h3 id=time-bound-exemption>Time-bound exemption</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#6272a4># policies/exemptions/landingzones/exempt-lz-app1-temp.yaml</span>
+</span></span><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: policy.azure.com/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AzurePolicyExemption
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: exempt-lz-app1-public-ip
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>annotations</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>policy.azure.com/owner</span>: platform-team
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>policy.azure.com/ticket</span>: <span style=color:#f1fa8c>&#34;OPS-4821&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>policyAssignmentRef</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff79c6>name</span>: assign-deny-public-ip-lz
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>exemptionCategory</span>: Waiver
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>displayName</span>: <span style=color:#f1fa8c>&#34;Temporary waiver — App1 migration window&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>expiresOn</span>: <span style=color:#f1fa8c>&#34;2026-06-30T00:00:00Z&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>resourceSelectors</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: app1-resources
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>selectors</span>:
+</span></span><span style=display:flex><span>        - <span style=color:#ff79c6>kind</span>: ResourceGroup
+</span></span><span style=display:flex><span>          <span style=color:#ff79c6>in</span>:
+</span></span><span style=display:flex><span>            - app1-migration-rg
+</span></span></code></pre></div><hr><h2 id=recommended-argo-cd-project-setup>Recommended Argo CD project setup</h2><p>Isolate policy workloads into a dedicated Argo CD project with scoped permissions:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>apiVersion</span>: argoproj.io/v1alpha1
+</span></span><span style=display:flex><span><span style=color:#ff79c6>kind</span>: AppProject
+</span></span><span style=display:flex><span><span style=color:#ff79c6>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>name</span>: azure-policy
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>namespace</span>: argocd
+</span></span><span style=display:flex><span><span style=color:#ff79c6>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>description</span>: <span style=color:#f1fa8c>&#34;Azure Policy GitOps managed by Azure Policy Operator&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>sourceRepos</span>:
+</span></span><span style=display:flex><span>    - https://github.com/your-org/your-repo.git
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>destinations</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>namespace</span>: policy-operator-system
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>server</span>: https://kubernetes.default.svc
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>clusterResourceWhitelist</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>group</span>: policy.azure.com
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>kind</span>: AzurePolicyDefinition
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>group</span>: policy.azure.com
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>kind</span>: AzurePolicyAssignment
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>group</span>: policy.azure.com
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>kind</span>: AzurePolicyExemption
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>group</span>: policy.azure.com
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>kind</span>: AzurePolicyRemediation
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>roles</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: policy-admin
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>description</span>: Full access to policy applications
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>policies</span>:
+</span></span><span style=display:flex><span>        - p, proj:azure-policy:policy-admin, applications, *, azure-policy/*, allow
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: policy-viewer
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>description</span>: Read-only access
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>policies</span>:
+</span></span><span style=display:flex><span>        - p, proj:azure-policy:policy-viewer, applications, get, azure-policy/*, allow
+</span></span></code></pre></div></div><div class=doc-footer><nav class=doc-nav aria-label="Page navigation"><a class="doc-nav-card prev" href=/policy-operator/docs/policy-exemptions/><span class=doc-nav-label>← Previous</span>
+<span class=doc-nav-title>Policy Exemptions</span></a></nav></div></article><aside class=doc-toc aria-label="Table of contents"><nav aria-label="Table of contents"><p class=toc-label>On this page</p><nav id=TableOfContents><ul><li><a href=#why-gitops-for-azure-governance>Why GitOps for Azure governance?</a></li><li><a href=#repository-layout>Repository layout</a></li><li><a href=#argo-cd-application-model>Argo CD application model</a><ul><li><a href=#1-definitions-application>1. Definitions Application</a></li><li><a href=#2-applicationset--one-app-per-management-group-folder>2. ApplicationSet — one App per management-group folder</a></li></ul></li><li><a href=#progressive-rollout-pattern>Progressive rollout pattern</a></li><li><a href=#multi-environment-strategy>Multi-environment strategy</a><ul><li><a href=#branch-per-environment-recommended-for-strong-isolation>Branch-per-environment (recommended for strong isolation)</a></li><li><a href=#folder-per-environment-recommended-for-shared-clusters>Folder-per-environment (recommended for shared clusters)</a></li></ul></li><li><a href=#drift-detection-and-self-healing>Drift detection and self-healing</a></li><li><a href=#secrets-and-credential-management>Secrets and credential management</a><ul><li><a href=#option-a--kubernetes-secret-pre-created>Option A — Kubernetes Secret (pre-created)</a></li><li><a href=#option-b--workload-identity-recommended-for-aks>Option B — Workload Identity (recommended for AKS)</a></li><li><a href=#option-c--external-secrets-operator>Option C — External Secrets Operator</a></li></ul></li><li><a href=#example-policy-manifests>Example policy manifests</a><ul><li><a href=#definition--deny-public-ip>Definition — Deny public IP</a></li><li><a href=#assignment--landing-zones-scope>Assignment — Landing zones scope</a></li><li><a href=#time-bound-exemption>Time-bound exemption</a></li></ul></li><li><a href=#recommended-argo-cd-project-setup>Recommended Argo CD project setup</a></li></ul></nav></nav></aside></div></div><footer><div class=container><div class=footer-grid><div><div class=footer-brand><img src=/policy-operator/img/logo.svg alt="Azure Policy Operator logo" class=footer-logo>
+Azure Policy Operator</div><p class=footer-desc>Manage Azure Policy resources declaratively through Kubernetes custom resources.</p></div><div><p class=footer-col-title>Documentation</p><ul class=footer-links><li><a href=/policy-operator/docs/getting-started/>Getting Started</a></li><li><a href=/policy-operator/docs/api-reference/>API Reference</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/configuration/>Configuration</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/troubleshooting/>Troubleshooting</a></li></ul></div><div><p class=footer-col-title>Community</p><ul class=footer-links><li><a href=https://github.com/vimal-vijayan/policy-operator target=_blank rel=noopener class=footer-github-link><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="14" height="14" style="vertical-align:-2px;margin-right:.35em"><path d="M8 0C3.58.0.0 3.58.0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38.0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95.0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12.0.0.67-.21 2.2.82a7.66 7.66.0 012-.27c.68.0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15.0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48.0 1.07-.01 1.93-.01 2.2.0.21.15.46.55.38A8.013 8.013.0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/contributing/>Contributing</a></li><li><a href=https://vimal-vijayan.github.io/policy-operator/docs/changelog/>Changelog</a></li></ul></div></div><div class=footer-bottom><span>© 2026 Azure Policy Operator. Built with <a href=https://gohugo.io target=_blank rel=noopener style=color:inherit>Hugo</a>.</span>
+<a href=https://github.com/vimal-vijayan/policy-operator target=_blank rel=noopener style=color:inherit;display:inline-flex;align-items:center;gap:.35em><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="15" height="15"><path d="M8 0C3.58.0.0 3.58.0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38.0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95.0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12.0.0.67-.21 2.2.82a7.66 7.66.0 012-.27c.68.0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15.0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48.0 1.07-.01 1.93-.01 2.2.0.21.15.46.55.38A8.013 8.013.0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub →</a></div></div></footer><img class="cat-decor cat-1" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-2" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-3" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-4" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-5" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true>
+<img class="cat-decor cat-6" src=/policy-operator/img/cat-walk.svg alt aria-hidden=true><div class="dog-decor dog-pug" aria-hidden=true><img src=/policy-operator/img/pug-caricature.svg alt width=300 height=400></div><div class="dog-decor dog-labrador" aria-hidden=true><img src=/policy-operator/img/labrador-caricature.svg alt width=300 height=400></div><script src=/policy-operator/js/main.js defer></script></body></html>

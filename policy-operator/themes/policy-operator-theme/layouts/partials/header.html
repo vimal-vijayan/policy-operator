@@ -1,7 +1,7 @@
 <nav class="navbar" role="navigation" aria-label="Main navigation">
   <div class="container navbar-inner">
 
-    <a class="navbar-brand" href="{{ .Site.BaseURL }}">
+    <a class="navbar-brand" href="{{ partial "link.html" (dict "url" "/") }}">
       <img src="{{ "img/logo.svg" | relURL }}" alt="{{ .Site.Title }} logo" class="navbar-logo">
       <span>{{ .Site.Title }}</span>
     </a>
@@ -28,7 +28,7 @@
         {{ $external := hasPrefix .URL "http" }}
         {{ $isGitHub := eq .Name "GitHub" }}
         <a class="navbar-link{{ if $.IsMenuCurrent "main" . }} active{{ end }}{{ if $external }} external{{ end }}{{ if $isGitHub }} navbar-link--github{{ end }}"
-           href="{{ .URL }}"
+           href="{{ if $external }}{{ .URL }}{{ else }}{{ partial "link.html" (dict "url" .URL) }}{{ end }}"
            {{ if $external }}target="_blank" rel="noopener noreferrer"{{ end }}
            {{ if $isGitHub }}aria-label="GitHub"{{ end }}
            role="menuitem">

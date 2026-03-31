@@ -1,0 +1,19 @@
+{{- $url := .url -}}
+{{- if not $url -}}
+  {{- "" -}}
+{{- else if or (hasPrefix $url "http://") (hasPrefix $url "https://") -}}
+  {{- $url -}}
+{{- else if hasPrefix $url site.Home.RelPermalink -}}
+  {{- $url -}}
+{{- else -}}
+  {{- with site.GetPage $url -}}
+    {{- .RelPermalink -}}
+  {{- else -}}
+    {{- $path := strings.TrimPrefix "/" $url -}}
+    {{- if eq $path "" -}}
+      {{- site.BaseURL -}}
+    {{- else -}}
+      {{- printf "%s%s" site.BaseURL $path -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}

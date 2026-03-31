@@ -18,7 +18,7 @@
         {{/* Breadcrumbs */}}
         {{ if .Ancestors }}
           <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="{{ "/" | relURL }}">Home</a>
+            <a href="{{ partial "link.html" (dict "url" "/") }}">Home</a>
             {{ range .Ancestors.Reverse }}
               <span class="breadcrumb-sep" aria-hidden="true">/</span>
               <a href="{{ .RelPermalink }}">{{ .Title }}</a>
