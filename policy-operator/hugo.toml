@@ -1,4 +1,4 @@
-baseURL       = 'https://policy-operator.io/'
+baseURL       = 'https://vimal-vijayan.github.io/policy-operator/'
 languageCode  = 'en-us'
 title         = 'Azure Policy Operator'
 theme         = 'policy-operator-theme'
