@@ -17,9 +17,9 @@ const testDefName = "my-def"
 // fakeDefinitionsAPI is a manual fake for definitions.API.
 type fakeDefinitionsAPI struct {
 	createOrUpdateFn            func(ctx context.Context, name string, params armpolicy.Definition) (armpolicy.DefinitionsClientCreateOrUpdateResponse, error)
-	createOrUpdateAtMgmtGroupFn func(ctx context.Context, name, mgmtGroup string, params armpolicy.Definition) (armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse, error)
+	createOrUpdateAtMgmtGroupFn func(ctx context.Context, mgmtGroup, name string, params armpolicy.Definition) (armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse, error)
 	deleteFn                    func(ctx context.Context, name string) error
-	deleteAtMgmtGroupFn         func(ctx context.Context, name, mgmtGroup string) error
+	deleteAtMgmtGroupFn         func(ctx context.Context, mgmtGroup, name string) error
 }
 
 func (f *fakeDefinitionsAPI) CreateOrUpdate(ctx context.Context, name string, params armpolicy.Definition, _ *armpolicy.DefinitionsClientCreateOrUpdateOptions) (armpolicy.DefinitionsClientCreateOrUpdateResponse, error) {
@@ -29,9 +29,9 @@ func (f *fakeDefinitionsAPI) CreateOrUpdate(ctx context.Context, name string, pa
 	return armpolicy.DefinitionsClientCreateOrUpdateResponse{}, nil
 }
 
-func (f *fakeDefinitionsAPI) CreateOrUpdateAtManagementGroup(ctx context.Context, name, mgmtGroup string, params armpolicy.Definition, _ *armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupOptions) (armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
+func (f *fakeDefinitionsAPI) CreateOrUpdateAtManagementGroup(ctx context.Context, mgmtGroup, name string, params armpolicy.Definition, _ *armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupOptions) (armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
 	if f.createOrUpdateAtMgmtGroupFn != nil {
-		return f.createOrUpdateAtMgmtGroupFn(ctx, name, mgmtGroup, params)
+		return f.createOrUpdateAtMgmtGroupFn(ctx, mgmtGroup, name, params)
 	}
 	return armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse{}, nil
 }
@@ -43,9 +43,9 @@ func (f *fakeDefinitionsAPI) Delete(ctx context.Context, name string, _ *armpoli
 	return armpolicy.DefinitionsClientDeleteResponse{}, nil
 }
 
-func (f *fakeDefinitionsAPI) DeleteAtManagementGroup(ctx context.Context, name, mgmtGroup string, _ *armpolicy.DefinitionsClientDeleteAtManagementGroupOptions) (armpolicy.DefinitionsClientDeleteAtManagementGroupResponse, error) {
+func (f *fakeDefinitionsAPI) DeleteAtManagementGroup(ctx context.Context, mgmtGroup, name string, _ *armpolicy.DefinitionsClientDeleteAtManagementGroupOptions) (armpolicy.DefinitionsClientDeleteAtManagementGroupResponse, error) {
 	if f.deleteAtMgmtGroupFn != nil {
-		return armpolicy.DefinitionsClientDeleteAtManagementGroupResponse{}, f.deleteAtMgmtGroupFn(ctx, name, mgmtGroup)
+		return armpolicy.DefinitionsClientDeleteAtManagementGroupResponse{}, f.deleteAtMgmtGroupFn(ctx, mgmtGroup, name)
 	}
 	return armpolicy.DefinitionsClientDeleteAtManagementGroupResponse{}, nil
 }
@@ -291,9 +291,11 @@ func TestCreateOrUpdate_ManagementGroupScope_CallsManagementGroupAPI(t *testing.
 	ctx := context.Background()
 
 	var gotMgmtGroup string
+	var gotName string
 	api := &fakeDefinitionsAPI{
-		createOrUpdateAtMgmtGroupFn: func(_ context.Context, _, mgmtGroup string, _ armpolicy.Definition) (armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
+		createOrUpdateAtMgmtGroupFn: func(_ context.Context, mgmtGroup, name string, _ armpolicy.Definition) (armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
 			gotMgmtGroup = mgmtGroup
+			gotName = name
 			return armpolicy.DefinitionsClientCreateOrUpdateAtManagementGroupResponse{
 				Definition: armpolicy.Definition{ID: ptr(fakeID)},
 			}, nil
@@ -315,6 +317,9 @@ func TestCreateOrUpdate_ManagementGroupScope_CallsManagementGroupAPI(t *testing.
 	}
 	if gotMgmtGroup != "mg1" {
 		t.Fatalf("expected management group %q, got %q", "mg1", gotMgmtGroup)
+	}
+	if gotName != testDefName {
+		t.Fatalf("expected policy name %q, got %q", testDefName, gotName)
 	}
 }
 
@@ -411,7 +416,7 @@ func TestDelete_ManagementGroupScope_CallsDeleteAtManagementGroup(t *testing.T) 
 
 	var gotName, gotMgmtGroup string
 	api := &fakeDefinitionsAPI{
-		deleteAtMgmtGroupFn: func(_ context.Context, name, mgmtGroup string) error {
+		deleteAtMgmtGroupFn: func(_ context.Context, mgmtGroup, name string) error {
 			gotName = name
 			gotMgmtGroup = mgmtGroup
 			return nil

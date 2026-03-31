@@ -77,7 +77,7 @@ func (s *Service) CreateOrUpdate(ctx context.Context, def *governancev1alpha1.Az
 
 	if spec.ManagementGroupID != "" {
 		logger.Info("Creating/updating policy definition at management group scope", "name", policyName, "managementGroupID", spec.ManagementGroupID)
-		resp, err := s.factory.Definitions.CreateOrUpdateAtManagementGroup(ctx, policyName, spec.ManagementGroupID, params, nil)
+		resp, err := s.factory.Definitions.CreateOrUpdateAtManagementGroup(ctx, spec.ManagementGroupID, policyName, params, nil)
 		if err != nil {
 			return "", err
 		}
@@ -110,7 +110,7 @@ func (s *Service) Import(ctx context.Context, importID string, def *governancev1
 
 	var props *armpolicy.DefinitionProperties
 	if managementGroupID != "" {
-		resp, err := s.factory.Definitions.GetAtManagementGroup(ctx, defName, managementGroupID, nil)
+		resp, err := s.factory.Definitions.GetAtManagementGroup(ctx, managementGroupID, defName, nil)
 		if err != nil {
 			return nil, fmt.Errorf("fetching policy definition %q: %w", importID, err)
 		}
@@ -182,7 +182,7 @@ func (s *Service) Delete(ctx context.Context, def *governancev1alpha1.AzurePolic
 
 	if def.Spec.ManagementGroupID != "" {
 		logger.Info("Deleting policy definition at management group scope", "name", policyName, "managementGroupID", def.Spec.ManagementGroupID)
-		_, err := s.factory.Definitions.DeleteAtManagementGroup(ctx, policyName, def.Spec.ManagementGroupID, nil)
+		_, err := s.factory.Definitions.DeleteAtManagementGroup(ctx, def.Spec.ManagementGroupID, policyName, nil)
 		return err
 	}
 
