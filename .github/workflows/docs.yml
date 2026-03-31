@@ -42,7 +42,7 @@ jobs:
 
       - name: Build
         working-directory: policy-operator
-        run: hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+        run: hugo --minify --baseURL "https://vimal-vijayan.github.io/policy-operator/"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
