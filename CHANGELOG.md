@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0](https://github.com/vimal-vijayan/policy-operator/compare/policy-operator-v0.1.0...policy-operator-v0.2.0) (2026-04-01)
+## 0.1.0 (2026-04-01)
 
 
 ### Features
