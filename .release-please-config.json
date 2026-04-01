@@ -3,7 +3,8 @@
   "packages": {
     ".": {
       "release-type": "go",
-      "include-v-in-tag": true
+      "include-v-in-tag": true,
+      "initialVersion": "0.1.0"
     }
   }
 }
