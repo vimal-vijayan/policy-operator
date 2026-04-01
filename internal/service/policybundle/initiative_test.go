@@ -19,9 +19,9 @@ const auditEffect = "Audit"
 // fakeInitiativesAPI implements initiatives.API using in-memory functions.
 type fakeInitiativesAPI struct {
 	createOrUpdateFn            func(ctx context.Context, name string, params armpolicy.SetDefinition) (armpolicy.SetDefinitionsClientCreateOrUpdateResponse, error)
-	createOrUpdateAtMgmtGroupFn func(ctx context.Context, name, mgmtGroup string, params armpolicy.SetDefinition) (armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse, error)
+	createOrUpdateAtMgmtGroupFn func(ctx context.Context, mgmtGroup, name string, params armpolicy.SetDefinition) (armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse, error)
 	deleteFn                    func(ctx context.Context, name string) error
-	deleteAtMgmtGroupFn         func(ctx context.Context, name, mgmtGroup string) error
+	deleteAtMgmtGroupFn         func(ctx context.Context, mgmtGroup, name string) error
 }
 
 func (f *fakeInitiativesAPI) CreateOrUpdate(ctx context.Context, name string, params armpolicy.SetDefinition, _ *armpolicy.SetDefinitionsClientCreateOrUpdateOptions) (armpolicy.SetDefinitionsClientCreateOrUpdateResponse, error) {
@@ -31,9 +31,9 @@ func (f *fakeInitiativesAPI) CreateOrUpdate(ctx context.Context, name string, pa
 	return armpolicy.SetDefinitionsClientCreateOrUpdateResponse{}, nil
 }
 
-func (f *fakeInitiativesAPI) CreateOrUpdateAtManagementGroup(ctx context.Context, name, mgmtGroup string, params armpolicy.SetDefinition, _ *armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupOptions) (armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
+func (f *fakeInitiativesAPI) CreateOrUpdateAtManagementGroup(ctx context.Context, mgmtGroup, name string, params armpolicy.SetDefinition, _ *armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupOptions) (armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
 	if f.createOrUpdateAtMgmtGroupFn != nil {
-		return f.createOrUpdateAtMgmtGroupFn(ctx, name, mgmtGroup, params)
+		return f.createOrUpdateAtMgmtGroupFn(ctx, mgmtGroup, name, params)
 	}
 	return armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse{}, nil
 }
@@ -45,9 +45,9 @@ func (f *fakeInitiativesAPI) Delete(ctx context.Context, name string, _ *armpoli
 	return armpolicy.SetDefinitionsClientDeleteResponse{}, nil
 }
 
-func (f *fakeInitiativesAPI) DeleteAtManagementGroup(ctx context.Context, name, mgmtGroup string, _ *armpolicy.SetDefinitionsClientDeleteAtManagementGroupOptions) (armpolicy.SetDefinitionsClientDeleteAtManagementGroupResponse, error) {
+func (f *fakeInitiativesAPI) DeleteAtManagementGroup(ctx context.Context, mgmtGroup, name string, _ *armpolicy.SetDefinitionsClientDeleteAtManagementGroupOptions) (armpolicy.SetDefinitionsClientDeleteAtManagementGroupResponse, error) {
 	if f.deleteAtMgmtGroupFn != nil {
-		return armpolicy.SetDefinitionsClientDeleteAtManagementGroupResponse{}, f.deleteAtMgmtGroupFn(ctx, name, mgmtGroup)
+		return armpolicy.SetDefinitionsClientDeleteAtManagementGroupResponse{}, f.deleteAtMgmtGroupFn(ctx, mgmtGroup, name)
 	}
 	return armpolicy.SetDefinitionsClientDeleteAtManagementGroupResponse{}, nil
 }
@@ -102,6 +102,7 @@ func TestCreateOrUpdate_SubscriptionScope_ReturnsInitiativeID(t *testing.T) {
 	if id != fakeID {
 		t.Fatalf("expected ID %q, got %q", fakeID, id)
 	}
+	//nolint:goconst // Keep the expected name literal local to this assertion for test readability.
 	if gotName != "my-initiative" {
 		t.Fatalf("expected name %q, got %q", "my-initiative", gotName)
 	}
@@ -118,6 +119,7 @@ func TestCreateOrUpdate_ManagementGroupScope_CallsManagementGroupAPI(t *testing.
 	ctx := context.Background()
 
 	var gotMgmtGroup string
+	var gotName string
 	subCalled := false
 
 	api := &fakeInitiativesAPI{
@@ -125,8 +127,9 @@ func TestCreateOrUpdate_ManagementGroupScope_CallsManagementGroupAPI(t *testing.
 			subCalled = true
 			return armpolicy.SetDefinitionsClientCreateOrUpdateResponse{}, nil
 		},
-		createOrUpdateAtMgmtGroupFn: func(_ context.Context, _, mgmtGroup string, _ armpolicy.SetDefinition) (armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
+		createOrUpdateAtMgmtGroupFn: func(_ context.Context, mgmtGroup, name string, _ armpolicy.SetDefinition) (armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse, error) {
 			gotMgmtGroup = mgmtGroup
+			gotName = name
 			return armpolicy.SetDefinitionsClientCreateOrUpdateAtManagementGroupResponse{
 				SetDefinition: armpolicy.SetDefinition{ID: to.Ptr(fakeID)},
 			}, nil
@@ -147,6 +150,9 @@ func TestCreateOrUpdate_ManagementGroupScope_CallsManagementGroupAPI(t *testing.
 	}
 	if gotMgmtGroup != "mg1" {
 		t.Fatalf("expected management group %q, got %q", "mg1", gotMgmtGroup)
+	}
+	if gotName != "my-initiative" {
+		t.Fatalf("expected initiative name %q, got %q", "my-initiative", gotName)
 	}
 	if subCalled {
 		t.Fatalf("expected subscription-scope API NOT to be called")
@@ -396,7 +402,7 @@ func TestDelete_ManagementGroupScope_CallsManagementGroupAPI(t *testing.T) {
 			subCalled = true
 			return nil
 		},
-		deleteAtMgmtGroupFn: func(_ context.Context, name, mgmtGroup string) error {
+		deleteAtMgmtGroupFn: func(_ context.Context, mgmtGroup, name string) error {
 			deletedName = name
 			deletedMgmtGroup = mgmtGroup
 			return nil

@@ -29,4 +29,6 @@ go.work
 
 
 # Hugo build output
+policy-operator/public/
+policy-operator/public/**/*
 public/

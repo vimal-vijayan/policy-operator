@@ -61,7 +61,7 @@ func (s *Service) CreateOrUpdate(ctx context.Context, initiative *governancev1al
 
 	if spec.ManagementGroupID != "" {
 		logger.Info("Creating/updating policy initiative at management group scope", "name", initiativeName, "managementGroupID", spec.ManagementGroupID)
-		resp, err := s.factory.Initiatives.CreateOrUpdateAtManagementGroup(ctx, initiativeName, spec.ManagementGroupID, params, nil)
+		resp, err := s.factory.Initiatives.CreateOrUpdateAtManagementGroup(ctx, spec.ManagementGroupID, initiativeName, params, nil)
 		if err != nil {
 			return "", err
 		}
@@ -131,7 +131,7 @@ func (s *Service) Import(ctx context.Context, importID string, initiative *gover
 
 func (s *Service) getInitiativeProperties(ctx context.Context, importID, initiativeName, managementGroupID string) (*armpolicy.SetDefinitionProperties, error) {
 	if managementGroupID != "" {
-		resp, err := s.factory.Initiatives.GetAtManagementGroup(ctx, initiativeName, managementGroupID, nil)
+		resp, err := s.factory.Initiatives.GetAtManagementGroup(ctx, managementGroupID, initiativeName, nil)
 		if err != nil {
 			return nil, fmt.Errorf("fetching policy set definition %q: %w", importID, err)
 		}
@@ -188,7 +188,7 @@ func (s *Service) Delete(ctx context.Context, initiative *governancev1alpha1.Azu
 
 	if initiative.Spec.ManagementGroupID != "" {
 		logger.Info("Deleting policy initiative at management group scope", "name", initiativeName, "managementGroupID", initiative.Spec.ManagementGroupID)
-		_, err := s.factory.Initiatives.DeleteAtManagementGroup(ctx, initiativeName, initiative.Spec.ManagementGroupID, nil)
+		_, err := s.factory.Initiatives.DeleteAtManagementGroup(ctx, initiative.Spec.ManagementGroupID, initiativeName, nil)
 		return err
 	}
 

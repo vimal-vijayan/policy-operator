@@ -9,7 +9,8 @@ spec:
   displayName: "Policy operator: Require Cost Center tag on Resource Groups"
   description: "Enforces that all resource groups have a CostCenter tag."
   policyDefinitionRef: require-tag-on-resources
-  scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+  # scope: "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018"
+  scope: "/providers/Microsoft.Management/managementGroups/essity-migration"
   enforcementMode: Default
   notScopes:
     - "/subscriptions/f2024049-e6cb-4489-9270-6d0d6cd65018/resourceGroups/rg-taj"

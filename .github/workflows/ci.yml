@@ -6,12 +6,15 @@ on:
       - "feat/**"
   pull_request:
     branches:
+      - "main"
       - "feat/**"
 
 jobs:
   test-and-build:
     name: Test and Build
     runs-on: ubuntu-latest
+    env:
+      IMG: policy-controller:ci
 
     steps:
       - name: Checkout code
@@ -37,3 +40,15 @@ jobs:
 
       - name: Build
         run: make build
+
+      - name: Docker build
+        run: make docker-build IMG=${IMG}
+
+      - name: Docker scan
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          image-ref: ${{ env.IMG }}
+          format: table
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH

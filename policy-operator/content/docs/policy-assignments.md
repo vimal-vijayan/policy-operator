@@ -389,6 +389,34 @@ spec:
     - "/providers/Microsoft.Management/managementGroups/sandbox-management-group"
 ```
 
+### Assign a CR-referenced policy at management group scope with notScopes
+
+Assign the `require-tag-on-resources` definition across an entire management group, pass the `tagName` parameter, and exclude a specific subscription from evaluation.
+
+```yaml
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyAssignment
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: require-tags-on-rgs
+spec:
+  displayName: "Require CostCenter tag on Resource Groups"
+  description: "Enforces that all resource groups have a CostCenter tag."
+  policyDefinitionRef: require-tag-on-resources
+  scope: "/providers/Microsoft.Management/managementGroups/platform-management-group"
+  enforcementMode: Default
+  notScopes:
+    - "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-legacy"
+  parameters:
+    tagName:
+      value: "CostCenter"
+  metadata:
+    assignedBy: "platform-team"
+    category: "Tags"
+```
+
 ### Assignment with SystemAssigned identity for deployIfNotExists remediation
 
 ```yaml

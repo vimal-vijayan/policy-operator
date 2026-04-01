@@ -26,4 +26,5 @@ spec:
       exists: "false"
     then:
       effect: "deny"
-  subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"
+  # subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"
+  managementGroupId: "essity-migration"

@@ -268,6 +268,42 @@ spec:
   subscriptionId: "00000000-0000-0000-0000-000000000000"
 ```
 
+### Parameterized tag enforcement at management group scope
+
+Deny resources missing a configurable tag across all subscriptions under a management group. The `tagName` parameter lets you reuse the same definition for any tag key.
+
+```yaml
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyDefinition
+metadata:
+  name: require-tag-on-resources
+  labels:
+    app.kubernetes.io/name: policy-operator
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  displayName: "Require a tag on resources"
+  description: "Enforces the existence of a required tag on all resources."
+  policyType: Custom
+  mode: Indexed
+  version: "1.0.0"
+  metadata:
+    category: "Tags"
+    version: "1.0.0"
+  parameters:
+    tagName:
+      type: String
+      metadata:
+        displayName: "Tag Name"
+        description: "Name of the tag that must exist on the resource."
+  policyRule:
+    if:
+      field: "[concat('tags[', parameters('tagName'), ']')]"
+      exists: "false"
+    then:
+      effect: "deny"
+  managementGroupId: "platform-management-group"
+```
+
 ### Audit VMs with public IPs (no parameters)
 
 ```yaml
