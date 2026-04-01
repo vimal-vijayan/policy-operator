@@ -45,7 +45,10 @@ jobs:
         run: make docker-build IMG=${IMG}
 
       - name: Docker scan
-        uses: docker/scout-action@v1
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
-          command: quickview
-          image: local://${{ env.IMG }}
+          image-ref: ${{ env.IMG }}
+          format: table
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
