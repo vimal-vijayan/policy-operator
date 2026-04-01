@@ -3,7 +3,6 @@
   "packages": {
     ".": {
       "release-type": "go",
-      "package-name": "policy-operator",
       "include-v-in-tag": true
     }
   }
