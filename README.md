@@ -1,100 +1,161 @@
 # policy-operator
-// TODO(user): Add simple overview of use/purpose
+
+A Kubernetes Operator built with [Kubebuilder](https://book.kubebuilder.io/) that manages **Azure Policy resources** through Kubernetes Custom Resources.
+
+Platform teams can define Azure governance policies as Kubernetes manifests, and the operator translates them into Azure Policy API calls via the Azure Resource Manager (ARM) REST API.
+
+## Supported Resources
+
+| Kind | Azure Resource |
+|---|---|
+| `AzurePolicyDefinition` | Policy Definition |
+| `AzurePolicyInitiative` | Policy Set Definition |
+| `AzurePolicyAssignment` | Policy Assignment |
+| `AzurePolicyExemption` | Policy Exemption |
+| `AzurePolicyRemediation` | Policy Remediation |
+
+All resources belong to the `governance.platform.io/v1alpha1` API group.
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+
+The operator watches Custom Resources in a Kubernetes cluster and reconciles them against the Azure Policy API. Each CR maps closely to the Azure Policy REST API model, with additional conveniences such as:
+
+- **Cross-resource references** — use `policyDefinitionRef` or `policyAssignmentRef` to reference other CRs by name instead of hardcoding Azure resource IDs.
+- **Managed identity support** — configure `SystemAssigned` or `UserAssigned` identities with automatic role assignments for `deployIfNotExists`/`modify` policies.
+- **Inline exemptions** — define exemptions directly on an `AzurePolicyAssignment` without creating a separate `AzurePolicyExemption` CR.
+- **Semver versioning** — set `spec.version` on definitions and initiatives; the operator injects it into Azure Policy metadata automatically.
+- **Flexible policy rule input** — supply `policyRule` as a structured YAML object or `policyRuleJson` as a raw JSON string.
 
 ## Getting Started
 
 ### Prerequisites
-- go version v1.22.0+
-- docker version 17.03+.
-- kubectl version v1.11.3+.
-- Access to a Kubernetes v1.11.3+ cluster.
 
-### To Deploy on the cluster
-**Build and push your image to the location specified by `IMG`:**
+- go v1.22.0+
+- docker 17.03+
+- kubectl v1.11.3+
+- Access to a Kubernetes v1.11.3+ cluster
+- An Azure subscription or management group with sufficient permissions to create policy resources
+
+### Quick Example
+
+**Define a policy:**
+
+```yaml
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyDefinition
+metadata:
+  name: require-tag-on-resources
+spec:
+  displayName: "Require a tag on resources"
+  description: "Enforces the existence of a required tag on all resources."
+  policyType: Custom
+  mode: Indexed
+  version: "1.0.0"
+  parameters:
+    tagName:
+      type: String
+      metadata:
+        displayName: "Tag Name"
+        description: "Name of the tag that must exist on the resource."
+  policyRule:
+    if:
+      field: "[concat('tags[', parameters('tagName'), ']')]"
+      exists: "false"
+    then:
+      effect: "deny"
+  managementGroupId: "my-management-group"
+```
+
+**Assign the policy:**
+
+```yaml
+apiVersion: governance.platform.io/v1alpha1
+kind: AzurePolicyAssignment
+metadata:
+  name: require-tags-on-rgs
+spec:
+  displayName: "Require CostCenter tag on Resource Groups"
+  policyDefinitionRef: require-tag-on-resources
+  scope: "/providers/Microsoft.Management/managementGroups/my-management-group"
+  enforcementMode: Default
+  parameters:
+    tagName: "CostCenter"
+```
+
+## Deploy
+
+### Build and push the operator image
 
 ```sh
 make docker-build docker-push IMG=<some-registry>/policy-operator:tag
 ```
 
-**NOTE:** This image ought to be published in the personal registry you specified.
-And it is required to have access to pull the image from the working environment.
-Make sure you have the proper permission to the registry if the above commands don’t work.
-
-**Install the CRDs into the cluster:**
+### Install CRDs into the cluster
 
 ```sh
 make install
 ```
 
-**Deploy the Manager to the cluster with the image specified by `IMG`:**
+### Deploy the operator
 
 ```sh
 make deploy IMG=<some-registry>/policy-operator:tag
 ```
 
-> **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
-privileges or be logged in as admin.
+> **NOTE**: If you encounter RBAC errors, you may need cluster-admin privileges.
 
-**Create instances of your solution**
-You can apply the samples (examples) from the config/sample:
+### Apply sample resources
 
 ```sh
 kubectl apply -k config/samples/
 ```
 
->**NOTE**: Ensure that the samples has default values to test it out.
-
-### To Uninstall
-**Delete the instances (CRs) from the cluster:**
+## Uninstall
 
 ```sh
+# Delete sample CRs
 kubectl delete -k config/samples/
-```
 
-**Delete the APIs(CRDs) from the cluster:**
-
-```sh
+# Remove CRDs
 make uninstall
-```
 
-**UnDeploy the controller from the cluster:**
-
-```sh
+# Remove the operator
 make undeploy
 ```
 
-## Project Distribution
+## Distribution
 
-Following are the steps to build the installer and distribute this project to users.
-
-1. Build the installer for the image built and published in the registry:
+Build a single `install.yaml` bundle for distribution:
 
 ```sh
 make build-installer IMG=<some-registry>/policy-operator:tag
 ```
 
-NOTE: The makefile target mentioned above generates an 'install.yaml'
-file in the dist directory. This file contains all the resources built
-with Kustomize, which are necessary to install this project without
-its dependencies.
-
-2. Using the installer
-
-Users can just run kubectl apply -f <URL for YAML BUNDLE> to install the project, i.e.:
+This generates `dist/install.yaml` containing all resources built with Kustomize. Users can then install without cloning the repo:
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/policy-operator/<tag or branch>/dist/install.yaml
+kubectl apply -f https://raw.githubusercontent.com/<org>/policy-operator/<tag>/dist/install.yaml
 ```
 
+## Development
+
+```sh
+# Run locally against the cluster in your current kubeconfig context
+make run
+
+# Run tests
+make test
+
+# Format and lint
+go fmt ./...
+go vet ./...
+```
+
+Run `make help` for all available targets.
+
 ## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
 
-**NOTE:** Run `make help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+Please open an issue or pull request. Ensure all code passes `go fmt` and `go vet` before submitting.
 
 ## License
 
@@ -111,5 +172,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-# policy-operator
