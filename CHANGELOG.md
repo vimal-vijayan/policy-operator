@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/vimal-vijayan/policy-operator/compare/v0.2.1...v0.2.2) (2026-04-06)
+
+
+### Bug Fixes
+
+* update CI workflows to ignore changes in workflow files and set chart version from git tag ([9ea7306](https://github.com/vimal-vijayan/policy-operator/commit/9ea7306806a4b8b0a2020d0fed7368c3692144b5))
+
 ## [0.2.1](https://github.com/vimal-vijayan/policy-operator/compare/v0.2.0...v0.2.1) (2026-04-06)
 
 
