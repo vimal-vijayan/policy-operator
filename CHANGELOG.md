@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/vimal-vijayan/policy-operator/compare/v0.2.0...v0.2.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* publish helm chart to repo-scoped ghcr path ([#14](https://github.com/vimal-vijayan/policy-operator/issues/14)) ([e4eb4eb](https://github.com/vimal-vijayan/policy-operator/commit/e4eb4eb7038d63b8510f6deafcb232feeeac8eb8))
+
 ## [0.2.0](https://github.com/vimal-vijayan/policy-operator/compare/v0.1.0...v0.2.0) (2026-04-06)
 
 
