@@ -12,6 +12,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
+  CHART_REGISTRY_PATH: ${{ github.repository }}/charts
   CHART_NAME: policy-operator
   CHART_PATH: ./helm/policy-operator
 
@@ -43,4 +44,4 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u "${{ github.actor }}" --password-stdin
 
       - name: Push chart to GHCR
-        run: helm push .cr-release-packages/${{ env.CHART_NAME }}-*.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+        run: helm push .cr-release-packages/${{ env.CHART_NAME }}-*.tgz oci://${{ env.REGISTRY }}/${{ env.CHART_REGISTRY_PATH }}
