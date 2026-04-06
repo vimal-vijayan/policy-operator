@@ -1,0 +1,16 @@
+apiVersion: v2
+name: policy-operator
+description: Kubernetes Operator for managing Azure Policy resources through Custom Resources
+type: application
+version: 0.1.1
+appVersion: "0.1.1"
+keywords:
+  - azure
+  - policy
+  - operator
+  - kubernetes
+home: https://github.com/vimal-vijayan/policy-operator
+sources:
+  - https://github.com/vimal-vijayan/policy-operator
+maintainers:
+  - name: vimalvi

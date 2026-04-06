@@ -1,0 +1,106 @@
+# Default values for policy-operator.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/vimal-vijayan/policy-operator
+  tag: "0.1.1"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Namespace configuration
+namespace:
+  create: true
+  name: policy-operator-system
+
+serviceAccount:
+  create: true
+  # Name of the ServiceAccount. Defaults to <fullname>-controller-manager if empty.
+  name: ""
+  annotations: {}
+
+# -----------------------------------------------------------------
+# Authentication configuration
+# -----------------------------------------------------------------
+# Two modes are supported:
+#
+#   workloadIdentity  – Recommended for AKS clusters with OIDC Issuer +
+#                       Azure Workload Identity enabled.
+#                       No secrets are stored in the cluster.
+#
+#   envVars           – Authenticates using an Azure Service Principal
+#                       whose credentials are supplied via a ConfigMap
+#                       (non-sensitive) and a Secret (client secret).
+# -----------------------------------------------------------------
+auth:
+  # Choose "workloadIdentity" or "envVars"
+  method: workloadIdentity
+
+  # ---------------------------------------------------------------
+  # Workload Identity settings (auth.method = workloadIdentity)
+  # ---------------------------------------------------------------
+  workloadIdentity:
+    # Azure AD application (service principal) client ID federated
+    # with the AKS cluster's OIDC issuer.
+    clientId: ""
+    # Azure AD tenant ID
+    tenantId: ""
+    # Azure subscription ID used by the operator
+    subscriptionId: ""
+
+  # ---------------------------------------------------------------
+  # Environment variable settings (auth.method = envVars)
+  # ---------------------------------------------------------------
+  envVars:
+    # -- ConfigMap --
+    # Set createConfigMap: true to let the chart create a ConfigMap
+    # from the values below.  Set false to reference an existing one.
+    createConfigMap: true
+    configMapName: ""   # Defaults to <fullname>-azure-config when empty
+
+    # Non-sensitive Azure credentials stored in the ConfigMap
+    clientId: ""         # AZURE_CLIENT_ID
+    tenantId: ""         # AZURE_TENANT_ID
+    subscriptionId: ""   # AZURE_SUBSCRIPTION_ID
+
+    # -- Secret --
+    # Set createSecret: true to let the chart create a Secret from
+    # clientSecret below.  Set false to reference an existing one.
+    createSecret: true
+    secretName: ""       # Defaults to <fullname>-azure-secret when empty
+
+    # Azure service principal client secret (sensitive)
+    clientSecret: ""     # AZURE_CLIENT_SECRET
+
+# Operator resource limits and requests
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# Leader election (recommended in multi-replica setups)
+leaderElection:
+  enabled: true
+
+# Metrics endpoint
+metrics:
+  enabled: true
+  port: 8443
+  secure: true
+
+# Health probe port
+healthProbe:
+  port: 8081
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

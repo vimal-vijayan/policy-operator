@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "policy-operator.fullname" . }}-controller-manager
+  namespace: {{ include "policy-operator.namespace" . }}
+  labels:
+    control-plane: controller-manager
+    {{- include "policy-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+      {{- include "policy-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        control-plane: controller-manager
+        {{- include "policy-operator.selectorLabels" . | nindent 8 }}
+        {{- if eq .Values.auth.method "workloadIdentity" }}
+        azure.workload.identity/use: "true"
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "policy-operator.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: manager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - /manager
+        args:
+        - --health-probe-bind-address=:{{ .Values.healthProbe.port }}
+        {{- if .Values.leaderElection.enabled }}
+        - --leader-elect
+        {{- end }}
+        {{- if .Values.metrics.enabled }}
+        - --metrics-bind-address=:{{ .Values.metrics.port }}
+        {{- if .Values.metrics.secure }}
+        - --metrics-secure=true
+        {{- else }}
+        - --metrics-secure=false
+        {{- end }}
+        {{- end }}
+        env:
+        {{- if eq .Values.auth.method "workloadIdentity" }}
+        # Workload Identity: subscription ID is the only env var needed here;
+        # AZURE_CLIENT_ID and AZURE_TENANT_ID are injected automatically by the
+        # Azure Workload Identity mutating webhook via the pod label.
+        - name: AZURE_SUBSCRIPTION_ID
+          value: {{ .Values.auth.workloadIdentity.subscriptionId | quote }}
+        {{- else if eq .Values.auth.method "envVars" }}
+        # Service Principal credentials sourced from ConfigMap and Secret
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "policy-operator.configMapName" . }}
+              key: AZURE_CLIENT_ID
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "policy-operator.configMapName" . }}
+              key: AZURE_TENANT_ID
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "policy-operator.configMapName" . }}
+              key: AZURE_SUBSCRIPTION_ID
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "policy-operator.secretName" . }}
+              key: AZURE_CLIENT_SECRET
+        {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.healthProbe.port }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: {{ .Values.healthProbe.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

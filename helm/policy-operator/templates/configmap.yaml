@@ -1,0 +1,13 @@
+{{- if and (eq .Values.auth.method "envVars") .Values.auth.envVars.createConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "policy-operator.configMapName" . }}
+  namespace: {{ include "policy-operator.namespace" . }}
+  labels:
+    {{- include "policy-operator.labels" . | nindent 4 }}
+data:
+  AZURE_CLIENT_ID: {{ .Values.auth.envVars.clientId | quote }}
+  AZURE_TENANT_ID: {{ .Values.auth.envVars.tenantId | quote }}
+  AZURE_SUBSCRIPTION_ID: {{ .Values.auth.envVars.subscriptionId | quote }}
+{{- end }}

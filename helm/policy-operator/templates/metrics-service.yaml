@@ -1,0 +1,19 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "policy-operator.fullname" . }}-metrics-service
+  namespace: {{ include "policy-operator.namespace" . }}
+  labels:
+    control-plane: controller-manager
+    {{- include "policy-operator.labels" . | nindent 4 }}
+spec:
+  ports:
+  - name: {{ if .Values.metrics.secure }}https{{ else }}http{{ end }}
+    port: {{ .Values.metrics.port }}
+    protocol: TCP
+    targetPort: {{ .Values.metrics.port }}
+  selector:
+    control-plane: controller-manager
+    {{- include "policy-operator.selectorLabels" . | nindent 4 }}
+{{- end }}
