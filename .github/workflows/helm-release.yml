@@ -1,0 +1,46 @@
+name: Helm Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  CHART_NAME: policy-operator
+  CHART_PATH: ./helm/policy-operator
+
+jobs:
+  package-and-publish:
+    name: Package and Publish Helm Chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint chart
+        run: helm lint ${{ env.CHART_PATH }}
+
+      - name: Package chart
+        run: helm package ${{ env.CHART_PATH }} --destination .cr-release-packages
+
+      - name: Upload packaged chart artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart
+          path: .cr-release-packages/*.tgz
+
+      - name: Log in to GHCR for Helm OCI push
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u "${{ github.actor }}" --password-stdin
+
+      - name: Push chart to GHCR
+        run: helm push .cr-release-packages/${{ env.CHART_NAME }}-*.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts

@@ -1,0 +1,207 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.1
+  name: azurepolicyexemptions.governance.platform.io
+spec:
+  group: governance.platform.io
+  names:
+    kind: AzurePolicyExemption
+    listKind: AzurePolicyExemptionList
+    plural: azurepolicyexemptions
+    singular: azurepolicyexemption
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.scope
+      name: Scope
+      type: string
+    - jsonPath: .spec.exemptionCategory
+      name: Category
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: AzurePolicyExemption is the Schema for the azurepolicyexemptions
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AzurePolicyExemptionSpec defines the desired state of AzurePolicyExemption
+            properties:
+              description:
+                description: Description is a human-readable description of the policy
+                  exemption.
+                type: string
+              displayName:
+                description: DisplayName is the display name of the policy exemption.
+                type: string
+              exemptionCategory:
+                default: Waiver
+                description: ExemptionCategory is the category of the exemption.
+                enum:
+                - Waiver
+                - Mitigated
+                type: string
+              expiresOn:
+                description: ExpiresOn is the expiration date and time (UTC ISO 8601)
+                  of the exemption.
+                type: string
+              policyAssignmentId:
+                description: PolicyAssignmentID is the Azure resource ID of the policy
+                  assignment being exempted.
+                type: string
+              policyAssignmentRef:
+                description: |-
+                  PolicyAssignmentRef is a reference to the AzurePolicyAssignment custom resource being exempted. Either PolicyAssignmentID or PolicyAssignmentRef must be specified.
+                  the operator will use the reference to look up the policy assignment and populate the PolicyAssignmentID if not already set.
+                  mutually exclusive with PolicyAssignmentID
+                type: string
+              resourceSelectors:
+                description: ResourceSelectors selects resources within the scope
+                  to apply the exemption to.
+                items:
+                  description: ResourceSelectorSpec defines a named resource selector
+                    with one or more selector expressions.
+                  properties:
+                    name:
+                      description: Name is the name of the resource selector.
+                      type: string
+                    selectors:
+                      description: Selectors is the list of selector expressions.
+                      items:
+                        description: SelectorSpec defines a single selector expression
+                          for resource filtering.
+                        properties:
+                          operator:
+                            description: Operator is the filter operator.
+                            enum:
+                            - In
+                            - notIn
+                            type: string
+                          property:
+                            description: Property is the selector kind used to filter
+                              resources.
+                            enum:
+                            - resourceType
+                            - resourceLocation
+                            - resourceWithoutLocation
+                            - userPrincipalId
+                            - groupPrincipalId
+                            type: string
+                          values:
+                            description: Values is the list of values to filter on.
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - operator
+                        - property
+                        - values
+                        type: object
+                      type: array
+                  required:
+                  - name
+                  type: object
+                type: array
+              scope:
+                description: Scope is the Azure resource scope at which the exemption
+                  applies.
+                type: string
+            required:
+            - displayName
+            - scope
+            type: object
+          status:
+            description: AzurePolicyExemptionStatus defines the observed state of
+              AzurePolicyExemption
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations
+                  of the resource state.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              exemptionId:
+                description: ExemptionID is the Azure resource ID of the created policy
+                  exemption.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

@@ -1,0 +1,418 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.1
+  name: azurepolicyassignments.governance.platform.io
+spec:
+  group: governance.platform.io
+  names:
+    kind: AzurePolicyAssignment
+    listKind: AzurePolicyAssignmentList
+    plural: azurepolicyassignments
+    singular: azurepolicyassignment
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.scope
+      name: Scope
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Status
+      type: string
+    - jsonPath: .status.assignmentId
+      name: AssignmentID
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: AzurePolicyAssignment is the Schema for the azurepolicyassignments
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AzurePolicyAssignmentSpec defines the desired state of AzurePolicyAssignment
+            properties:
+              description:
+                description: Description is a human-readable description of the policy
+                  assignment.
+                type: string
+              displayName:
+                description: DisplayName is the display name of the policy assignment.
+                type: string
+              enforcementMode:
+                default: Default
+                description: EnforcementMode controls whether the policy is enforced.
+                enum:
+                - Default
+                - DoNotEnforce
+                type: string
+              exemptions:
+                description: Exemptions is an optional list of inline exemptions to
+                  create for this assignment.
+                items:
+                  description: AssignmentExemptionSpec defines an inline exemption
+                    scoped to a policy assignment.
+                  properties:
+                    description:
+                      description: Description is a human-readable description of
+                        the exemption.
+                      type: string
+                    displayName:
+                      description: DisplayName is the display name of the exemption.
+                      type: string
+                    exemptionCategory:
+                      default: Waiver
+                      description: ExemptionCategory is the category of the exemption.
+                      enum:
+                      - Waiver
+                      - Mitigated
+                      type: string
+                    expiresOn:
+                      description: ExpiresOn is the expiration date and time (UTC
+                        ISO 8601) of the exemption.
+                      type: string
+                    scope:
+                      description: Scope is the Azure resource scope at which the
+                        exemption applies.
+                      type: string
+                  required:
+                  - displayName
+                  - scope
+                  type: object
+                type: array
+              identity:
+                description: |-
+                  Identity configures the managed identity associated with the assignment.
+                  Required for policies with deployIfNotExists or modify effects.
+                properties:
+                  location:
+                    default: westeurope
+                    description: |-
+                      Required for SystemAssigned or UserAssigned identity types. The Azure region where the managed identity is created. This is needed to ensure the identity is created in the same region as the policy assignment, as required by Azure for policy assignments with deployIfNotExists or modify effects. If not specified, it defaults to "westeurope".
+                      Location is the Azure region where the managed identity is created.
+                    enum:
+                    - eastus
+                    - westus
+                    - westus2
+                    - eastus2
+                    - northeurope
+                    - westeurope
+                    - southeastasia
+                    - eastasia
+                    - australiaeast
+                    - australiasoutheast
+                    - brazilsouth
+                    - canadacentral
+                    - canadaeast
+                    - centralindia
+                    - southindia
+                    - westindia
+                    - japaneast
+                    - japanwest
+                    - koreacentral
+                    - koreasouth
+                    - southafricanorth
+                    - uaenorth
+                    - uksouth
+                    - ukwest
+                    - centralus
+                    - southcentralus
+                    - northcentralus
+                    - westcentralus
+                    type: string
+                  permissions:
+                    description: Permissions is an optional list of role assignments
+                      to create for the managed identity.
+                    items:
+                      description: |-
+                        IdentityPermission defines a role assignment to grant to the managed identity.
+                        Either Role or RoleDefinitionID must be specified.
+                      properties:
+                        role:
+                          description: |-
+                            Role is the built-in Azure role name (e.g. "Contributor", "Reader").
+                            The operator will resolve this to a roleDefinitionId via the Azure API.
+                            Mutually exclusive with RoleDefinitionID.
+                          type: string
+                        roleDefinitionId:
+                          description: |-
+                            RoleDefinitionID is the full Azure resource ID of the role definition.
+                            Mutually exclusive with Role.
+                          type: string
+                        scope:
+                          description: Scope is the Azure resource scope at which
+                            the role assignment is created.
+                          type: string
+                      required:
+                      - scope
+                      type: object
+                      x-kubernetes-validations:
+                      - message: Either role or roleDefinitionId must be specified
+                          in a permission entry.
+                        rule: (has(self.role) && self.role != "") || (has(self.roleDefinitionId)
+                          && self.roleDefinitionId != "")
+                    type: array
+                  type:
+                    default: None
+                    description: Type is the identity type.
+                    enum:
+                    - SystemAssigned
+                    - UserAssigned
+                    - None
+                    type: string
+                  userAssignedIdentityId:
+                    description: |-
+                      UserAssignedIdentityID is the resource ID of the user-assigned managed identity.
+                      Required when Type is UserAssigned.
+                    type: string
+                required:
+                - type
+                type: object
+              metadata:
+                description: Metadata is additional metadata for the assignment as
+                  a raw JSON object.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              nonComplianceMessages:
+                description: NonComplianceMessages is the messages to display when
+                  the policy assignment is not compliant.
+                properties:
+                  default:
+                    description: Default is the fallback non-compliance message used
+                      when no per-policy message matches.
+                    type: string
+                  perPolicy:
+                    description: PerPolicy defines non-compliance messages for specific
+                      policy references in an initiative.
+                    items:
+                      description: AssignmentNonComplianceMessagePerPolicy defines
+                        a non-compliance message for a specific policy within an initiative.
+                      properties:
+                        message:
+                          description: Message is the non-compliance message for the
+                            referenced policy.
+                          type: string
+                        policyReferenceId:
+                          description: PolicyReferenceID is the policy definition
+                            reference ID from the initiative.
+                          type: string
+                      required:
+                      - message
+                      - policyReferenceId
+                      type: object
+                    type: array
+                type: object
+              notScopes:
+                description: NotScopes is a list of resource scopes excluded from
+                  the assignment.
+                items:
+                  type: string
+                type: array
+              parameters:
+                description: Parameters are the parameter values for the assigned
+                  policy definition or initiative.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              policyDefinitionId:
+                description: |-
+                  PolicyDefinitionID is the Azure resource ID of the policy definition or initiative to assign.
+                  Mutually exclusive with policyDefinitionRef.
+                type: string
+              policyDefinitionRef:
+                description: |-
+                  PolicyDefinitionRef is the name of an AzurePolicyDefinition CR in the same namespace.
+                  The operator resolves this reference and uses the policyDefinitionId from its status.
+                  Mutually exclusive with policyDefinitionId.
+                type: string
+              resourceSelectors:
+                description: ResourceSelectors is the resource selector list to filter
+                  policies by resource properties.
+                items:
+                  description: ResourceSelectorSpec defines a named resource selector
+                    with one or more selector expressions.
+                  properties:
+                    name:
+                      description: Name is the name of the resource selector.
+                      type: string
+                    selectors:
+                      description: Selectors is the list of selector expressions.
+                      items:
+                        description: SelectorSpec defines a single selector expression
+                          for resource filtering.
+                        properties:
+                          operator:
+                            description: Operator is the filter operator.
+                            enum:
+                            - In
+                            - notIn
+                            type: string
+                          property:
+                            description: Property is the selector kind used to filter
+                              resources.
+                            enum:
+                            - resourceType
+                            - resourceLocation
+                            - resourceWithoutLocation
+                            - userPrincipalId
+                            - groupPrincipalId
+                            type: string
+                          values:
+                            description: Values is the list of values to filter on.
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - operator
+                        - property
+                        - values
+                        type: object
+                      type: array
+                  required:
+                  - name
+                  type: object
+                type: array
+              scope:
+                description: |-
+                  Scope is the Azure resource scope at which the assignment applies.
+                  Examples: /subscriptions/{subId}, /subscriptions/{subId}/resourceGroups/{rg},
+                  /providers/Microsoft.Management/managementGroups/{mgId}
+                type: string
+            required:
+            - displayName
+            - scope
+            type: object
+            x-kubernetes-validations:
+            - message: Exactly one of policyDefinitionRef or policyDefinitionId must
+                be specified.
+              rule: (has(self.policyDefinitionRef) && self.policyDefinitionRef !=
+                "") != (has(self.policyDefinitionId) && self.policyDefinitionId !=
+                "")
+          status:
+            description: AzurePolicyAssignmentStatus defines the observed state of
+              AzurePolicyAssignment
+            properties:
+              assignedLocation:
+                description: |-
+                  AssignedLocation is the Azure location set on the policy assignment (required when using managed identity).
+                  Persisted so it can be preserved on updates even if identity is removed from the spec.
+                type: string
+              assignmentId:
+                description: AssignmentID is the Azure resource ID of the created
+                  policy assignment.
+                type: string
+              conditions:
+                description: Conditions represent the latest available observations
+                  of the resource state.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              exemptions:
+                description: Exemptions tracks the Azure resource IDs of inline exemptions
+                  created for this assignment.
+                items:
+                  description: AssignmentExemptionStatus tracks an inline exemption
+                    created in Azure for a policy assignment.
+                  properties:
+                    displayName:
+                      description: DisplayName matches the exemption spec entry.
+                      type: string
+                    exemptionId:
+                      description: ExemptionID is the Azure resource ID of the created
+                        exemption.
+                      type: string
+                    scope:
+                      description: Scope is the Azure resource scope of the exemption,
+                        stored for deletion.
+                      type: string
+                  required:
+                  - displayName
+                  - exemptionId
+                  - scope
+                  type: object
+                type: array
+              miPrincipalId:
+                description: MIPrincipalID is the principal ID of the managed identity
+                  associated with the assignment, if any.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
