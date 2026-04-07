@@ -7,6 +7,9 @@ on:
     paths-ignore:
       - "README.md"
       - ".github/workflows/*"
+      - "config/samples/*"
+      - "docs/*"
+      - "argocd/*"
   pull_request:
     branches:
       - "main"

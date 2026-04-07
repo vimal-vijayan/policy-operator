@@ -6,7 +6,7 @@ weight: 50
 
 > **Note:** The architecture and Argo CD deployment model described on this page is a reference design. Actual implementation will vary based on your organisation's specific requirements, tooling, and platform constraints. Treat this as a starting point, not a prescriptive standard.
 
-GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Azure Policy Operator, every Azure Policy definition, assignment, exemption, and remediation becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.
+GitOps treats your Git repository as the single source of truth for cluster state. When combined with the Azure Policy Operator, every Azure Policy definition, assignment, and exemption becomes a versioned, reviewable, auditable Kubernetes manifest — and Argo CD keeps Azure in sync automatically.
 
 ## Why GitOps for Azure governance?
 
@@ -22,7 +22,7 @@ GitOps treats your Git repository as the single source of truth for cluster stat
 
 ## Repository layout
 
-Separate **definitions** from **assignments / exemptions / remediations**. Definitions are global building blocks; the others are scoped to management-group subfolders, which enables per-group progressive rollouts.
+Separate **definitions** from **assignments / exemptions**. Definitions are global building blocks; the others are scoped to management-group subfolders, which enables per-group progressive rollouts.
 
 ```text
 policies/
@@ -56,9 +56,56 @@ policies/
 
 ## Argo CD application model
 
-Use **two Argo CD objects** — one `Application` for definitions, and one `ApplicationSet` that auto-generates an `Application` per management-group subfolder.
+Use **three Argo CD objects** — one `Application` to install the operator via Helm, one `Application` for policy definitions, and one `ApplicationSet` that auto-generates an `Application` per management-group subfolder.
 
-### 1. Definitions Application
+### 1. Operator Installation Application
+
+Install the policy operator from its Helm chart using a dedicated Argo CD `Application`.
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policy-operator-system
+  namespace: argocd
+spec:
+  project: azure-policy-operator
+  source:
+    repoURL: ghcr.io/your-org/policy-operator/charts
+    chart: policy-operator
+    targetRevision: <CHART_VERSION>
+    helm:
+      releaseName: policy-operator
+      valuesObject:
+        namespace:
+          create: true
+          name: policy-operator-system
+        image:
+          tag: "<IMAGE_TAG>"
+        auth:
+          method: workloadIdentity
+          workloadIdentity:
+            clientId: "<MANAGED_IDENTITY_CLIENT_ID>"
+            tenantId: "<AZURE_TENANT_ID>"
+            subscriptionId: "<AZURE_SUBSCRIPTION_ID>"
+        serviceAccount:
+          # Entra federated credential subject must match this service account
+          # exactly: system:serviceaccount:policy-operator-system:sa-policy-operator
+          name: sa-policy-operator
+          annotations:
+            azure.workload.identity/client-id: "<MANAGED_IDENTITY_CLIENT_ID>"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: policy-operator-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+### 2. Definitions Application
 
 Definitions must be reconciled before assignments reference them. A standalone `Application` with `Automated` sync ensures they land first.
 
@@ -66,39 +113,36 @@ Definitions must be reconciled before assignments reference them. A standalone `
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: policy-definitions
+  name: apo-policy-definitions
   namespace: argocd
 spec:
-  project: default
-
+  project: azure-policy-operator
   source:
-    repoURL: https://github.com/your-org/your-repo.git
+    repoURL: https://your-org/your-repo.git
     targetRevision: main
     path: policies/definitions
     directory:
-      recurse: false          # flat folder — no recursion needed
-
+      recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: policy-operator-system
-
   syncPolicy:
     automated:
-      prune: true             # remove definitions deleted from Git
-      selfHeal: true          # revert out-of-band changes
+      prune: true
+      selfHeal: true
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=false
 ```
 
-### 2. ApplicationSet — one App per management-group folder
+### 3. ApplicationSet — one App per management-group folder
 
-The `ApplicationSet` scans every subfolder under `assignments`, `exemptions`, and `remediations` and creates a dedicated Argo CD `Application` for each one. This gives fine-grained sync status, per-group RBAC, and the ability to pause a single management group without affecting others.
+The `ApplicationSet` scans every subfolder under `assignments` and `exemptions` and creates a dedicated Argo CD `Application` for each one. This gives fine-grained sync status, per-group RBAC, and the ability to pause a single management group without affecting others.
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: policies-subfolders
+  name: azure-policy-operator
   namespace: argocd
 spec:
   goTemplate: true
@@ -107,31 +151,26 @@ spec:
 
   generators:
     - git:
-        repoURL: https://github.com/your-org/your-repo.git
+        repoURL: https://your-org/your-repo.git
         revision: main
         directories:
           - path: policies/assignments/*
           - path: policies/exemptions/*
-          - path: policies/remediations/*
 
   template:
     metadata:
-      # Produces names like: assignments-landingzones, exemptions-management
-      name: '{{ index .path.segments 1 }}-{{ .path.basename }}'
-      labels:
-        category: policy
-        type:            '{{ index .path.segments 1 }}'
-        managementGroup: '{{ .path.basename }}'
+      # Produces names like: policies-assignments-landingzones
+      name: '{{ if ge (len .path.segments) 4 }}{{ join "-" (slice .path.segments 1 4) }}{{ else }}{{ join "-" (slice .path.segments 1) }}{{ end }}'
 
     spec:
-      project: default
+      project: azure-policy-operator
 
       source:
-        repoURL: https://github.com/your-org/your-repo.git
+        repoURL: https://your-org/your-repo.git
         targetRevision: main
         path: '{{ .path.path }}'
         directory:
-          recurse: true       # pick up any sub-subfolders
+          recurse: true
 
       destination:
         server: https://kubernetes.default.svc
@@ -409,9 +448,6 @@ spec:
       kind: AzurePolicyAssignment
     - group: policy.azure.com
       kind: AzurePolicyExemption
-    - group: policy.azure.com
-      kind: AzurePolicyRemediation
-
   roles:
     - name: policy-admin
       description: Full access to policy applications
