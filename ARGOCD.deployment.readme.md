@@ -64,8 +64,9 @@ spec:
 
   template:
     metadata:
-      # Examples: assignments-landingzones, exemptions-management
-      name: '{{ index .path.segments 1 }}-{{ .path.basename }}'
+      # Examples: assignments-landingzones, assignments-landingzones-corp, exemptions-management
+      # Deeper paths are capped at three segments after 'policies'.
+      name: '{{ if ge (len .path.segments) 4 }}{{ join "-" (slice .path.segments 1 4) }}{{ else }}{{ join "-" (slice .path.segments 1) }}{{ end }}'
       labels:
         category: policy
         type: '{{ index .path.segments 1 }}'

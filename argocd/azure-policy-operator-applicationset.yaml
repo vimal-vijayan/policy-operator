@@ -9,20 +9,22 @@ spec:
     - missingkey=error
   generators:
     - git:
-        repoURL: https://github.com/your-org/your-repo.git
-        revision: main
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        revision: feat/policy-ops
         directories:
-          - path: path/to/placeholder-one/*
-          - path: path/to/placeholder-two/*
+          - path: policies/assignments/*
+          - path: policies/exemptions/*
   template:
     metadata:
-      name: 'apo-{{ .path.basename }}'
+      name: '{{ if ge (len .path.segments) 4 }}{{ join "-" (slice .path.segments 1 4) }}{{ else }}{{ join "-" (slice .path.segments 1) }}{{ end }}'
     spec:
       project: azure-policy-operator
       source:
-        repoURL: https://github.com/your-org/your-repo.git
-        targetRevision: main
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        targetRevision: feat/policy-ops
         path: '{{ .path.path }}'
+        directory:
+          recurse: true
       destination:
         server: https://kubernetes.default.svc
         namespace: policy-operator-system
