@@ -258,9 +258,38 @@ Annotate the operator's service account with the managed identity client ID. No 
 
 ```yaml
 serviceAccount:
+  name: sa-policy-operator
   annotations:
     azure.workload.identity/client-id: "<MANAGED_IDENTITY_CLIENT_ID>"
 ```
+
+Create a federated identity credential on the same user-assigned managed identity or app registration that matches the cluster OIDC issuer and the service account subject exactly:
+
+```text
+issuer:   <AKS_OIDC_ISSUER_URL>
+subject:  system:serviceaccount:policy-operator-system:sa-policy-operator
+audience: api://AzureADTokenExchange
+```
+
+You can retrieve the issuer from AKS and create the credential with the Azure CLI:
+
+```bash
+AKS_OIDC_ISSUER=$(az aks show \
+  --resource-group <AKS_RESOURCE_GROUP> \
+  --name <AKS_CLUSTER_NAME> \
+  --query oidcIssuerProfile.issuerUrl \
+  -o tsv)
+
+az identity federated-credential create \
+  --resource-group <IDENTITY_RESOURCE_GROUP> \
+  --identity-name <MANAGED_IDENTITY_NAME> \
+  --name policy-operator-sa-policy-operator \
+  --issuer "$AKS_OIDC_ISSUER" \
+  --subject system:serviceaccount:policy-operator-system:sa-policy-operator \
+  --audiences api://AzureADTokenExchange
+```
+
+If you are using an app registration instead of a user-assigned managed identity, create the same federated credential on that application and keep the subject, issuer, and audience unchanged.
 
 ### Option C — External Secrets Operator
 
