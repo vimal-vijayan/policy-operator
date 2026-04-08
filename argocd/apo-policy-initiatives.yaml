@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: apo-policy-definitions
+  name: apo-policy-initiatives
   namespace: argocd
 spec:
   project: azure-policy-operator
   source:
     repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
     targetRevision: feat/policy-ops
-    path: definitions/
+    path: initiatives/
     directory:
       recurse: true
   destination:

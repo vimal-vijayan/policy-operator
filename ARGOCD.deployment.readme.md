@@ -1,6 +1,6 @@
 # Argo CD Deployment for Azure Policy Manifests
 
-This guide shows a recommended repository layout and an `ApplicationSet` that creates one Argo CD `Application` per management-group subfolder for:
+This guide shows a recommended repository layout and an `ApplicationSet` that creates one Argo CD `Application` per declared app-root folder for:
 
 - assignments
 - exemptions
@@ -38,9 +38,45 @@ policies/
         └── rem-mgmt-baseline-fix.yaml
 ```
 
-## ApplicationSet (Per Subfolder App)
+## ApplicationSet (Depth-Based Apps)
 
-This ApplicationSet scans all subfolders under assignments, exemptions, and remediations and creates one application for each folder.
+If you do not want marker files in the policy repository, use a depth-based split instead:
+
+```text
+assignments/
+└── essity/
+  ├── direct-file.yaml                     -> assi-essity
+  ├── essity-migration/
+  │   ├── direct-file.yaml                 -> assi-essity-migration
+  │   └── sandbox/
+  │       └── nested-file.yaml             -> assi-essity-migration-sandbox
+  ├── landingzones/
+  │   ├── direct-file.yaml                 -> assi-landingzones
+  │   ├── corporate/
+  │   │   └── nested-file.yaml             -> assi-landingzones-corporate
+  │   └── online/
+  │       └── nested-file.yaml             -> assi-landingzones-online
+  ├── platform/
+  │   ├── direct-file.yaml                 -> assi-platform
+  │   ├── connectivity/
+  │   ├── identity/
+  │   ├── management/
+  │   └── security/
+  └── sandboxes/
+```
+
+This model uses three layers:
+
+- `assignments/*` and `exemptions/*`: one app per top-level folder, `recurse: false`
+- `assignments/*/*` and `exemptions/*/*`: one app per second-level folder, `recurse: false`
+- `assignments/*/*/*` and `exemptions/*/*/*`: one app per third-level folder, `recurse: true`
+
+That gives you:
+
+- `assi-essity` for YAML directly under `assignments/essity`
+- `assi-landingzones` for YAML directly under `assignments/essity/landingzones`
+- `assi-landingzones-corporate` for everything under `assignments/essity/landingzones/corporate`
+- `assi-landingzones-online` for everything under `assignments/essity/landingzones/online`
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -57,45 +93,39 @@ spec:
     - git:
         repoURL: https://github.com/your-org/your-repo.git
         revision: main
-        directories:
-          - path: policies/assignments/*
-          - path: policies/exemptions/*
-          - path: policies/remediations/*
+        files:
+          - path: policies/assignments/**/.argocd-root.yaml
+          - path: policies/exemptions/**/.argocd-root.yaml
+          - path: policies/remediations/**/.argocd-root.yaml
+      template:
+        metadata:
+          name: '{{ .appName }}'
+          labels:
+            directories:
+              - path: assignments/*
 
-  template:
-    metadata:
-      # Examples: assignments-landingzones, assignments-landingzones-corp, exemptions-management
-      # Deeper paths are capped at three segments after 'policies'.
-      name: '{{ if ge (len .path.segments) 4 }}{{ join "-" (slice .path.segments 1 4) }}{{ else }}{{ join "-" (slice .path.segments 1) }}{{ end }}'
-      labels:
-        category: policy
-        type: '{{ index .path.segments 1 }}'
-        managementGroup: '{{ .path.basename }}'
+        spec:
+              name: 'assi-{{ .path.basename }}'
+            directory:
+              recurse: false
 
-    spec:
-      project: default
-      source:
+          destination:
+            server: https://kubernetes.default.svc
+            namespace: policy-operator-system
+                path: '{{ .path.path }}'
+          syncPolicy:
+            automated:
+              prune: true
+              selfHeal: true
+            syncOptions:
+              - CreateNamespace=true
+
+    - git:
         repoURL: https://github.com/your-org/your-repo.git
-        targetRevision: main
-        path: '{{ .path.path }}'
-        directory:
-          recurse: true
-
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: policy-operator-system
-
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - CreateNamespace=true
-```
-
+        # Add equivalent second-level and third-level generators as needed.
 ## Recommended Argo CD App Split
 
-- Keep `policies/definitions` in a separate `Application`.
+    Tradeoff: this avoids marker files, but it can create empty apps for folders that exist only to group child folders and have no direct YAML manifests.
 - Use the `ApplicationSet` above for assignments, exemptions, and remediations.
 
-This keeps definitions synchronized first and makes operational ownership cleaner by management-group folder.
+This keeps definitions synchronized first and makes operational ownership cleaner by declared app-root folder.
