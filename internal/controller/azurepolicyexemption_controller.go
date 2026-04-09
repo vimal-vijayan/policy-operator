@@ -20,10 +20,12 @@ import (
 	"context"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -43,8 +45,9 @@ type ExemptionService interface {
 // AzurePolicyExemptionReconciler reconciles a AzurePolicyExemption object
 type AzurePolicyExemptionReconciler struct {
 	client.Client
-	Scheme  *runtime.Scheme
-	Service ExemptionService
+	Scheme   *runtime.Scheme
+	Service  ExemptionService
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyexemptions,verbs=get;list;watch;create;update;patch;delete
@@ -66,11 +69,17 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 
 			if exemption.Status.ExemptionID != "" {
 				if err := r.Service.Delete(ctx, exemption.Spec.Scope, exemption.Status.ExemptionID); err != nil {
+					if r.Recorder != nil {
+						r.Recorder.Eventf(exemption, corev1.EventTypeWarning, "PolicyExemptionDeleteFailed", "Failed deleting policy exemption %q: %v", exemption.Status.ExemptionID, err)
+					}
 					r.setCondition(exemption, metav1.ConditionFalse, "DeleteFailed", err.Error())
 					if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
 						logger.Error(statusErr, FailedStatusError)
 					}
 					return ctrl.Result{}, err
+				}
+				if r.Recorder != nil {
+					r.Recorder.Eventf(exemption, corev1.EventTypeNormal, "PolicyExemptionDeleted", "Deleted policy exemption %q", exemption.Status.ExemptionID)
 				}
 			}
 
@@ -115,9 +124,13 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	// Create or update the Azure Policy Exemption
+	wasCreated := exemption.Status.ExemptionID == ""
 	exemptionID, err := r.Service.CreateOrUpdate(ctx, exemption)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy exemption")
+		if r.Recorder != nil {
+			r.Recorder.Eventf(exemption, corev1.EventTypeWarning, "PolicyExemptionReconcileFailed", "Failed creating/updating policy exemption: %v", err)
+		}
 		r.setCondition(exemption, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, exemption); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
@@ -126,6 +139,13 @@ func (r *AzurePolicyExemptionReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	exemption.Status.ExemptionID = exemptionID
+	if r.Recorder != nil {
+		if wasCreated {
+			r.Recorder.Eventf(exemption, corev1.EventTypeNormal, "PolicyExemptionCreated", "Created policy exemption %q", exemptionID)
+		} else {
+			r.Recorder.Eventf(exemption, corev1.EventTypeNormal, "PolicyExemptionUpdated", "Updated policy exemption %q", exemptionID)
+		}
+	}
 	r.setCondition(exemption, metav1.ConditionTrue, "Reconciled", "Policy exemption successfully reconciled")
 	if err := r.Status().Update(ctx, exemption); err != nil {
 		logger.Error(err, FailedStatusError)
@@ -147,6 +167,8 @@ func (r *AzurePolicyExemptionReconciler) setCondition(exemption *governancev1alp
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *AzurePolicyExemptionReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Recorder = mgr.GetEventRecorderFor("azurepolicyexemption-controller")
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&governancev1alpha1.AzurePolicyExemption{}).
 		Complete(r)

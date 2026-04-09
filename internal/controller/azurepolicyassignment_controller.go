@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -185,7 +184,7 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 		r.setCondition(assignment, metav1.ConditionFalse, "ImportFailed", err.Error())
 		_ = r.Status().Update(ctx, assignment)
 		// This Requeue with backoff to handle transient import errors, but avoid tight looping on unrecoverable issues.
-		return ctrl.Result{RequeueAfter: 3 * time.Minute}, true, err
+		return ctrl.Result{RequeueAfter: FailedRequeueDuration}, true, err
 	}
 
 	assignment.Status.AssignmentID = importID
@@ -239,7 +238,7 @@ func (r *AzurePolicyAssignmentReconciler) reconcileCreateOrUpdate(ctx context.Co
 		if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
 		}
-		return ctrl.Result{}, err
+		return ctrl.Result{RequeueAfter: FailedRequeueDuration}, err
 	}
 
 	if r.Recorder != nil && assignment.Status.AssignmentID != "" {
@@ -253,7 +252,7 @@ func (r *AzurePolicyAssignmentReconciler) reconcileCreateOrUpdate(ctx context.Co
 	r.setCondition(assignment, metav1.ConditionTrue, "Reconciled", "Policy assignment successfully reconciled")
 	if err := r.Status().Update(ctx, assignment); err != nil {
 		logger.Error(err, FailedStatusError)
-		return ctrl.Result{}, err
+		return ctrl.Result{RequeueAfter: FailedRequeueDuration}, err
 	}
 
 	return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, nil

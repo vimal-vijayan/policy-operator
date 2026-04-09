@@ -22,10 +22,12 @@ import (
 	"strings"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -48,8 +50,9 @@ type InitiativeService interface {
 // AzurePolicyInitiativeReconciler reconciles a AzurePolicyInitiative object
 type AzurePolicyInitiativeReconciler struct {
 	client.Client
-	Scheme  *runtime.Scheme
-	Service InitiativeService
+	Scheme   *runtime.Scheme
+	Service  InitiativeService
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicyinitiatives,verbs=get;list;watch;create;update;patch;delete
@@ -105,11 +108,17 @@ func (r *AzurePolicyInitiativeReconciler) handleDeletion(ctx context.Context, in
 
 	if initiative.Status.InitiativeID != "" {
 		if err := r.Service.Delete(ctx, initiative); err != nil {
+			if r.Recorder != nil {
+				r.Recorder.Eventf(initiative, corev1.EventTypeWarning, "PolicyInitiativeDeleteFailed", "Failed deleting policy initiative %q: %v", initiative.Status.InitiativeID, err)
+			}
 			r.setCondition(initiative, metav1.ConditionFalse, "DeleteFailed", err.Error())
 			if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
 				logger.Error(statusErr, FailedStatusError)
 			}
 			return err
+		}
+		if r.Recorder != nil {
+			r.Recorder.Eventf(initiative, corev1.EventTypeNormal, "PolicyInitiativeDeleted", "Deleted policy initiative %q", initiative.Status.InitiativeID)
 		}
 	}
 
@@ -120,9 +129,13 @@ func (r *AzurePolicyInitiativeReconciler) handleDeletion(ctx context.Context, in
 func (r *AzurePolicyInitiativeReconciler) reconcileInitiative(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) error {
 	logger := log.FromContext(ctx)
 
+	wasCreated := initiative.Status.InitiativeID == ""
 	initiativeID, err := r.Service.CreateOrUpdate(ctx, initiative, resolvedIDs)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy initiative")
+		if r.Recorder != nil {
+			r.Recorder.Eventf(initiative, corev1.EventTypeWarning, "PolicyInitiativeReconcileFailed", "Failed creating/updating policy initiative: %v", err)
+		}
 		r.setCondition(initiative, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
@@ -132,6 +145,14 @@ func (r *AzurePolicyInitiativeReconciler) reconcileInitiative(ctx context.Contex
 
 	initiative.Status.InitiativeID = initiativeID
 	initiative.Status.AppliedVersion = initiative.Spec.Version
+
+	if r.Recorder != nil {
+		if wasCreated {
+			r.Recorder.Eventf(initiative, corev1.EventTypeNormal, "PolicyInitiativeCreated", "Created policy initiative %q", initiativeID)
+		} else {
+			r.Recorder.Eventf(initiative, corev1.EventTypeNormal, "PolicyInitiativeUpdated", "Updated policy initiative %q", initiativeID)
+		}
+	}
 
 	readyReason := "Reconciled"
 	readyMsg := "Policy initiative successfully reconciled"
@@ -175,10 +196,13 @@ func (r *AzurePolicyInitiativeReconciler) handleImport(ctx context.Context, init
 
 	driftFields, err := r.Service.Import(ctx, importID, initiative, resolvedIDs)
 	if err != nil {
+		if r.Recorder != nil {
+			r.Recorder.Eventf(initiative, corev1.EventTypeWarning, "PolicyInitiativeImportFailed", "Failed importing policy initiative %q: %v", importID, err)
+		}
 		r.setImportedCondition(initiative, metav1.ConditionFalse, "ImportFailed", err.Error())
 		r.setCondition(initiative, metav1.ConditionFalse, "ImportFailed", err.Error())
 		_ = r.Status().Update(ctx, initiative)
-		return ctrl.Result{RequeueAfter: 3 * time.Minute}, true, err
+		return ctrl.Result{RequeueAfter: FailedRequeueDuration}, true, err
 	}
 
 	initiative.Status.InitiativeID = importID
@@ -189,7 +213,7 @@ func (r *AzurePolicyInitiativeReconciler) handleImport(ctx context.Context, init
 		r.setCondition(initiative, metav1.ConditionTrue, "ObservedOnly", "Resource imported in observe-only mode. No changes applied to Azure.")
 		if err := r.Status().Update(ctx, initiative); err != nil {
 			logger.Error(err, FailedStatusError)
-			return ctrl.Result{}, true, err
+			return ctrl.Result{RequeueAfter: FailedRequeueDuration}, true, err
 		}
 		return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
 	}
@@ -267,6 +291,8 @@ func (r *AzurePolicyInitiativeReconciler) setDriftCondition(initiative *governan
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *AzurePolicyInitiativeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Recorder = mgr.GetEventRecorderFor("azurepolicyinitiative-controller")
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&governancev1alpha1.AzurePolicyInitiative{}).
 		Watches(

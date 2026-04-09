@@ -20,11 +20,12 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -47,8 +48,9 @@ type DefinitionService interface {
 // AzurePolicyDefinitionReconciler reconciles a AzurePolicyDefinition object
 type AzurePolicyDefinitionReconciler struct {
 	client.Client
-	Scheme  *runtime.Scheme
-	Service DefinitionService
+	Scheme   *runtime.Scheme
+	Service  DefinitionService
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=governance.platform.io,resources=azurepolicydefinitions,verbs=get;list;watch;create;update;patch;delete
@@ -97,11 +99,17 @@ func (r *AzurePolicyDefinitionReconciler) handleDeletion(ctx context.Context, po
 
 	if policyDef.Status.PolicyDefinitionID != "" {
 		if err := r.Service.Delete(ctx, policyDef); err != nil {
+			if r.Recorder != nil {
+				r.Recorder.Eventf(policyDef, corev1.EventTypeWarning, "PolicyDefinitionDeleteFailed", "Failed deleting policy definition %q: %v", policyDef.Status.PolicyDefinitionID, err)
+			}
 			r.setCondition(policyDef, metav1.ConditionFalse, "DeleteFailed", err.Error())
 			if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
 				logger.Error(statusErr, FailedStatusError)
 			}
 			return err
+		}
+		if r.Recorder != nil {
+			r.Recorder.Eventf(policyDef, corev1.EventTypeNormal, "PolicyDefinitionDeleted", "Deleted policy definition %q", policyDef.Status.PolicyDefinitionID)
 		}
 	}
 
@@ -112,9 +120,13 @@ func (r *AzurePolicyDefinitionReconciler) handleDeletion(ctx context.Context, po
 func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Context, policyDef *governancev1alpha1.AzurePolicyDefinition) error {
 	logger := log.FromContext(ctx)
 
+	wasCreated := policyDef.Status.PolicyDefinitionID == ""
 	policyDefinitionID, err := r.Service.CreateOrUpdate(ctx, policyDef)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy definition")
+		if r.Recorder != nil {
+			r.Recorder.Eventf(policyDef, corev1.EventTypeWarning, "PolicyDefinitionReconcileFailed", "Failed creating/updating policy definition: %v", err)
+		}
 		r.setCondition(policyDef, metav1.ConditionFalse, "ReconcileFailed", err.Error())
 		if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
 			logger.Error(statusErr, FailedStatusError)
@@ -124,6 +136,14 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 
 	policyDef.Status.PolicyDefinitionID = policyDefinitionID
 	policyDef.Status.AppliedVersion = policyDef.Spec.Version
+
+	if r.Recorder != nil {
+		if wasCreated {
+			r.Recorder.Eventf(policyDef, corev1.EventTypeNormal, "PolicyDefinitionCreated", "Created policy definition %q", policyDefinitionID)
+		} else {
+			r.Recorder.Eventf(policyDef, corev1.EventTypeNormal, "PolicyDefinitionUpdated", "Updated policy definition %q", policyDefinitionID)
+		}
+	}
 
 	readyReason := "Reconciled"
 	readyMsg := "Policy definition successfully reconciled"
@@ -170,10 +190,13 @@ func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def 
 
 	driftFields, err := r.Service.Import(ctx, importID, def)
 	if err != nil {
+		if r.Recorder != nil {
+			r.Recorder.Eventf(def, corev1.EventTypeWarning, "PolicyDefinitionImportFailed", "Failed importing policy definition %q: %v", importID, err)
+		}
 		r.setImportedCondition(def, metav1.ConditionFalse, "ImportFailed", err.Error())
 		r.setCondition(def, metav1.ConditionFalse, "ImportFailed", err.Error())
 		_ = r.Status().Update(ctx, def)
-		return ctrl.Result{RequeueAfter: 3 * time.Minute}, true, err
+		return ctrl.Result{RequeueAfter: FailedRequeueDuration}, true, err
 	}
 
 	def.Status.PolicyDefinitionID = importID
@@ -184,7 +207,7 @@ func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def 
 		r.setCondition(def, metav1.ConditionTrue, "ObservedOnly", "Resource imported in observe-only mode. No changes applied to Azure.")
 		if err := r.Status().Update(ctx, def); err != nil {
 			logger.Error(err, FailedStatusError)
-			return ctrl.Result{}, true, err
+			return ctrl.Result{RequeueAfter: FailedRequeueDuration}, true, err
 		}
 		return ctrl.Result{RequeueAfter: DefaultRequeueDuration}, true, nil
 	}
@@ -235,6 +258,8 @@ func (r *AzurePolicyDefinitionReconciler) setCondition(def *governancev1alpha1.A
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *AzurePolicyDefinitionReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Recorder = mgr.GetEventRecorderFor("azurepolicydefinition-controller")
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&governancev1alpha1.AzurePolicyDefinition{}).
 		Complete(r)
