@@ -30,6 +30,9 @@ spec:
       serviceAccountName: {{ include "policy-operator.serviceAccountName" . }}
       securityContext:
         runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
         seccompProfile:
           type: RuntimeDefault
       terminationGracePeriodSeconds: 10
@@ -84,6 +87,9 @@ spec:
         {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
           capabilities:
             drop:
             - ALL
