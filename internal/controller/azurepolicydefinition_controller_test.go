@@ -33,9 +33,17 @@ import (
 
 // fakePolicyDefinitionService is a test double for the DefinitionService interface.
 type fakePolicyDefinitionService struct {
+	getFn            func(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
 	createOrUpdateFn func(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
 	deleteFn         func(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error
 	importFn         func(ctx context.Context, importID string, def *governancev1alpha1.AzurePolicyDefinition) ([]string, error)
+}
+
+func (f *fakePolicyDefinitionService) Get(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error) {
+	if f.getFn != nil {
+		return f.getFn(ctx, def)
+	}
+	return "", nil
 }
 
 func (f *fakePolicyDefinitionService) CreateOrUpdate(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error) {

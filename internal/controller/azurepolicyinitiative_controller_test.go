@@ -33,9 +33,17 @@ import (
 
 // fakeInitiativeService is a test double for the InitiativeService interface.
 type fakeInitiativeService struct {
+	getFn            func(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) (string, error)
 	createOrUpdateFn func(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) (string, error)
 	deleteFn         func(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) error
 	importFn         func(ctx context.Context, importID string, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) ([]string, error)
+}
+
+func (f *fakeInitiativeService) Get(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) (string, error) {
+	if f.getFn != nil {
+		return f.getFn(ctx, initiative)
+	}
+	return "", nil
 }
 
 func (f *fakeInitiativeService) CreateOrUpdate(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) (string, error) {

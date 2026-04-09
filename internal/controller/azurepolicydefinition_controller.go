@@ -40,6 +40,7 @@ const (
 
 // DefinitionService is the interface for managing Azure Policy Definitions.
 type DefinitionService interface {
+	Get(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
 	CreateOrUpdate(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error)
 	Delete(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error
 	Import(ctx context.Context, importID string, def *governancev1alpha1.AzurePolicyDefinition) ([]string, error)
@@ -121,6 +122,13 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 	logger := log.FromContext(ctx)
 
 	wasCreated := policyDef.Status.PolicyDefinitionID == ""
+
+	if wasCreated {
+		if stop, err := r.checkExistingDefinition(ctx, policyDef); err != nil || stop {
+			return err
+		}
+	}
+
 	policyDefinitionID, err := r.Service.CreateOrUpdate(ctx, policyDef)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy definition")
@@ -153,6 +161,30 @@ func (r *AzurePolicyDefinitionReconciler) reconcileDefinition(ctx context.Contex
 	}
 	r.setCondition(policyDef, metav1.ConditionTrue, readyReason, readyMsg)
 	return r.Status().Update(ctx, policyDef)
+}
+
+// checkExistingDefinition returns (true, nil) if a definition with the same name already exists in
+// Azure, after emitting a warning event and setting a failed condition. Returns (false, nil) when
+// the name is free, or (false, err) on lookup failure.
+func (r *AzurePolicyDefinitionReconciler) checkExistingDefinition(ctx context.Context, policyDef *governancev1alpha1.AzurePolicyDefinition) (bool, error) {
+	logger := log.FromContext(ctx)
+	existingID, err := r.Service.Get(ctx, policyDef)
+	if err != nil {
+		logger.Error(err, "failed to check for existing policy definition")
+		return false, err
+	}
+	if existingID == "" {
+		return false, nil
+	}
+	msg := fmt.Sprintf("Policy definition with the same ID already exists in Azure (%s). Use a different name for this definition.", existingID)
+	if r.Recorder != nil {
+		r.Recorder.Event(policyDef, corev1.EventTypeWarning, "PolicyDefinitionAlreadyExists", msg)
+	}
+	r.setCondition(policyDef, metav1.ConditionFalse, "PolicyDefinitionAlreadyExists", msg)
+	if statusErr := r.Status().Update(ctx, policyDef); statusErr != nil {
+		logger.Error(statusErr, FailedStatusError)
+	}
+	return true, nil
 }
 
 func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (ctrl.Result, bool, error) {
