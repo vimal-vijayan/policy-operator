@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policy-operator-system
+  namespace: argocd
+spec:
+  project: azure-policy-operator
+  source:
+    repoURL: ghcr.io/vimal-vijayan/policy-operator/charts
+    chart: policy-operator
+    targetRevision: 0.2.2
+    path: helm/policy-operator
+    helm:
+      releaseName: policy-operator
+      valuesObject:
+        namespace:
+          create: true
+          name: policy-operator-system
+        image:
+          tag: "v0.2.2"
+        auth:
+          method: workloadIdentity
+          workloadIdentity:
+            clientId: "37abb3cd-c9b2-44fb-81da-bf621bdba980"
+            tenantId: "f101208c-39d3-4c8a-8cc7-ad896b25954f"
+            subscriptionId: "f2024049-e6cb-4489-9270-6d0d6cd65018"
+        serviceAccount:
+          # Entra federated credential subject must match this service account
+          # exactly: system:serviceaccount:policy-operator-system:sa-policy-operator
+          name: sa-sa-policy-operator
+          annotations:
+            azure.workload.identity/client-id: "37abb3cd-c9b2-44fb-81da-bf621bdba980"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: policy-operator-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -12,7 +12,6 @@ Platform teams can define Azure governance policies as Kubernetes manifests, and
 | `AzurePolicyInitiative` | Policy Set Definition |
 | `AzurePolicyAssignment` | Policy Assignment |
 | `AzurePolicyExemption` | Policy Exemption |
-| `AzurePolicyRemediation` | Policy Remediation |
 
 All resources belong to the `governance.platform.io/v1alpha1` API group.
 

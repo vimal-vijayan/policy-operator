@@ -14,7 +14,7 @@ The operator manages the following custom resources:
 | `AzurePolicyInitiative` | `policy.azure.com/v1alpha1` | Policy set definition |
 | `AzurePolicyAssignment` | `policy.azure.com/v1alpha1` | Policy / initiative assignment |
 | `AzurePolicyExemption` | `policy.azure.com/v1alpha1` | Policy exemption |
-| `AzurePolicyRemediation` | `policy.azure.com/v1alpha1` | Remediation task |
+| `AzurePolicyRemediation` | `policy.azure.com/v1alpha1` | Remediation task _(future enhancement)_ |
 
 ## AzurePolicyDefinition
 
@@ -85,17 +85,4 @@ spec:
 
 ## AzurePolicyRemediation
 
-```yaml
-apiVersion: policy.azure.com/v1alpha1
-kind: AzurePolicyRemediation
-metadata:
-  name: my-remediation
-spec:
-  scope: string
-  policyAssignmentId: string
-  policyDefinitionReferenceId: string  # For initiative assignments
-  resourceDiscoveryMode: ExistingNonCompliant | ReEvaluateCompliance
-  parallelDeployments: 10
-  failureThreshold:
-    percentage: 0.1
-```
+> **Future enhancement:** `AzurePolicyRemediation` support is planned but not yet implemented. The kind is reserved for a future release.

@@ -1,0 +1,124 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: azure-policy-operator
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        revision: feat/policy-ops
+        directories:
+          - path: assignments/*
+          - path: exemptions/*
+    - git:
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        revision: feat/policy-ops
+        directories:
+          - path: assignments/*/*
+          - path: assignments/*/migration
+            exclude: true
+          - path: exemptions/*/*
+          - path: exemptions/*/migration
+            exclude: true
+  template:
+    metadata:
+      name: '{{ trunc 4 (index .path.segments 0) }}-{{ .path.basename }}'
+    spec:
+      project: azure-policy-operator
+      source:
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        targetRevision: feat/policy-ops
+        path: '{{ .path.path }}'
+        directory:
+          recurse: false
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: policy-operator-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: azure-policy-operator-nested
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        revision: feat/policy-ops
+        directories:
+          - path: assignments/*/*/*
+          - path: assignments/*/migration/*
+            exclude: true
+          - path: exemptions/*/*/*
+          - path: exemptions/*/migration/*
+            exclude: true
+  template:
+    metadata:
+      name: '{{ trunc 4 (index .path.segments 0) }}-{{ index .path.segments 2 }}-{{ .path.basename }}'
+    spec:
+      project: azure-policy-operator
+      source:
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        targetRevision: feat/policy-ops
+        path: '{{ .path.path }}'
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: policy-operator-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: azure-policy-operator-recursive
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        revision: feat/policy-ops
+        directories:
+          - path: assignments/*/migration
+          - path: exemptions/*/migration
+  template:
+    metadata:
+      name: '{{ trunc 4 (index .path.segments 0) }}-{{ .path.basename }}'
+    spec:
+      project: azure-policy-operator
+      source:
+        repoURL: https://dev.azure.com/essity-projects/Infrastructure%20Services%20-%20Cloud%20Platform/_git/azure-policy-management
+        targetRevision: feat/policy-ops
+        path: '{{ .path.path }}'
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: policy-operator-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
