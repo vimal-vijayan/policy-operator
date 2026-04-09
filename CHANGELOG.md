@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/vimal-vijayan/policy-operator/compare/v0.2.2...v0.3.0) (2026-04-09)
+
+
+### Features
+
+* enhance documentation deployment and UI with version display ([#17](https://github.com/vimal-vijayan/policy-operator/issues/17)) ([430e8e3](https://github.com/vimal-vijayan/policy-operator/commit/430e8e3962219b9232a5d23a3222df8198cf733f))
+* event recorder added ([#19](https://github.com/vimal-vijayan/policy-operator/issues/19)) ([f138050](https://github.com/vimal-vijayan/policy-operator/commit/f138050c4ff646e3df3274de6446814d3727b098))
+
 ## [0.2.2](https://github.com/vimal-vijayan/policy-operator/compare/v0.2.1...v0.2.2) (2026-04-06)
 
 
