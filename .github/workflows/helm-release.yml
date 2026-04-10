@@ -38,7 +38,7 @@ jobs:
           VERSION="${VERSION#v}"
           sed -i.bak "s/^version: .*/version: ${VERSION}/" ${{ env.CHART_PATH }}/Chart.yaml
           sed -i.bak "s/^appVersion: .*/appVersion: \"${VERSION}\"/" ${{ env.CHART_PATH }}/Chart.yaml
-          sed -i.bak "s/^  tag: .*/  tag: \"${VERSION}\"/" ${{ env.CHART_PATH }}/values.yaml
+          sed -i.bak "s/^  tag: .*/  tag: \"v${VERSION}\"/" ${{ env.CHART_PATH }}/values.yaml
           rm -f ${{ env.CHART_PATH }}/Chart.yaml.bak ${{ env.CHART_PATH }}/values.yaml.bak
 
       - name: Package chart

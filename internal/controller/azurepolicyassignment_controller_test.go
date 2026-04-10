@@ -33,9 +33,17 @@ import (
 
 // fakePolicyAssignmentService is a test double for the PolicyAssignmentService interface.
 type fakePolicyAssignmentService struct {
+	getFn            func(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment) (string, error)
 	createOrUpdateFn func(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error)
 	deleteFn         func(ctx context.Context, scope, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error
 	importFn         func(ctx context.Context, importID string, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, []string, error)
+}
+
+func (f *fakePolicyAssignmentService) Get(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment) (string, error) {
+	if f.getFn != nil {
+		return f.getFn(ctx, assignment)
+	}
+	return "", nil
 }
 
 func (f *fakePolicyAssignmentService) CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error) {

@@ -41,6 +41,7 @@ const azurePolicyAssignmentFinalizer = "governance.platform.io/azurepolicyassign
 
 // PolicyAssignmentService defines the Azure operations required by the assignment controller.
 type PolicyAssignmentService interface {
+	Get(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment) (string, error)
 	CreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, string, []governancev1alpha1.AssignmentExemptionStatus, error)
 	Delete(ctx context.Context, scope string, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error
 	Import(ctx context.Context, importID string, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (string, string, []string, error)
@@ -195,6 +196,7 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 		assignment.Status.MIPrincipalID = miPrincipalID
 	}
 
+	r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "ImportSucceeded", "Successfully imported existing Azure Policy Assignment with ID %q", importID)
 	r.setImportedCondition(assignment, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Assignment was adopted successfully.")
 	r.setDriftCondition(assignment, driftFields)
 
@@ -211,10 +213,41 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 	return ctrl.Result{}, false, nil
 }
 
+// checkExistingAssignment returns (true, nil) if an assignment with the same name already exists in
+// Azure, after emitting a warning event and setting a failed condition. Returns (false, nil) when
+// the name is free, or (false, err) on lookup failure.
+func (r *AzurePolicyAssignmentReconciler) checkExistingAssignment(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment) (bool, error) {
+	logger := log.FromContext(ctx)
+	existingID, err := r.Service.Get(ctx, assignment)
+	if err != nil {
+		logger.Error(err, "failed to check for existing policy assignment")
+		return false, err
+	}
+	if existingID == "" {
+		return false, nil
+	}
+	msg := fmt.Sprintf("Policy assignment with the same ID already exists in Azure (%s). Use a different name for this assignment.", existingID)
+	if r.Recorder != nil {
+		r.Recorder.Event(assignment, corev1.EventTypeWarning, "PolicyAssignmentAlreadyExists", msg)
+	}
+	r.setCondition(assignment, metav1.ConditionFalse, "PolicyAssignmentAlreadyExists", msg)
+	if statusErr := r.Status().Update(ctx, assignment); statusErr != nil {
+		logger.Error(statusErr, FailedStatusError)
+	}
+	return true, nil
+}
+
 func (r *AzurePolicyAssignmentReconciler) reconcileCreateOrUpdate(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment, policyDefinitionID string) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	wasAssigned := assignment.Status.AssignmentID != ""
+
+	if !wasAssigned {
+		if stop, err := r.checkExistingAssignment(ctx, assignment); err != nil || stop {
+			return ctrl.Result{}, err
+		}
+	}
+
 	assignmentID, assignedLocation, miPrincipalID, exemptionStatuses, err := r.Service.CreateOrUpdate(ctx, assignment, policyDefinitionID)
 	if assignmentID != "" {
 		assignment.Status.AssignmentID = assignmentID

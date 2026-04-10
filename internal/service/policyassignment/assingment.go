@@ -403,6 +403,32 @@ func (s *Service) Import(ctx context.Context, importID string, assignment *gover
 	return assignedLocation, miPrincipalID, driftFields, nil
 }
 
+// Get fetches an existing Azure Policy Assignment by name and scope and returns its resource ID.
+// Returns an empty string and no error if the assignment does not exist.
+func (s *Service) Get(ctx context.Context, assignment *governancev1alpha1.AzurePolicyAssignment) (string, error) {
+	assignmentName := assignment.Name
+	if assignment.Annotations[annotationImportMode] == importModeReconcileOnly || assignment.Annotations[annotationImportMode] == importModeOnlyOnce {
+		assignmentName = assignment.Annotations[annotationImportName]
+	}
+
+	resp, err := s.factory.Assignments.Get(ctx, assignment.Spec.Scope, assignmentName, nil)
+	if err != nil {
+		if isNotFound(err) {
+			return "", nil
+		}
+		return "", err
+	}
+	if resp.Assignment.ID != nil {
+		return *resp.Assignment.ID, nil
+	}
+	return "", nil
+}
+
+func isNotFound(err error) bool {
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "404") || strings.Contains(msg, "not found")
+}
+
 func (s *Service) Delete(ctx context.Context, scope string, assignmentID string, exemptions []governancev1alpha1.AssignmentExemptionStatus, identity *governancev1alpha1.AssignmentIdentity) error {
 	logger := log.FromContext(ctx)
 

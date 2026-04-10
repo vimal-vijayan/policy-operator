@@ -51,6 +51,10 @@ var (
 	setupLog = ctrl.Log.WithName("setup")
 )
 
+const (
+	unableToCreateControllerFmt = "unable to create controller"
+)
+
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
@@ -167,7 +171,7 @@ func main() {
 		Scheme:  mgr.GetScheme(),
 		Service: definitionSvc,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "AzurePolicyDefinition")
+		setupLog.Error(err, unableToCreateControllerFmt, "controller", "AzurePolicyDefinition")
 		os.Exit(1)
 	}
 
@@ -180,7 +184,7 @@ func main() {
 		Scheme:  mgr.GetScheme(),
 		Service: assignmentSvc,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "AzurePolicyAssignment")
+		setupLog.Error(err, unableToCreateControllerFmt, "controller", "AzurePolicyAssignment")
 		os.Exit(1)
 	}
 
@@ -189,7 +193,7 @@ func main() {
 		Scheme:  mgr.GetScheme(),
 		Service: exemptionSvc,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "AzurePolicyExemption")
+		setupLog.Error(err, unableToCreateControllerFmt, "controller", "AzurePolicyExemption")
 		os.Exit(1)
 	}
 
@@ -200,7 +204,7 @@ func main() {
 		Scheme:  mgr.GetScheme(),
 		Service: initiativeSvc,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "AzurePolicyInitiative")
+		setupLog.Error(err, unableToCreateControllerFmt, "controller", "AzurePolicyInitiative")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

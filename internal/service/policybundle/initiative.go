@@ -176,6 +176,46 @@ func hasPolicyDefinitionDrift(live []*armpolicy.DefinitionReference, desired []s
 	return false
 }
 
+// Get fetches an existing Azure Policy Set Definition by name and returns its resource ID.
+// Returns an empty string and no error if the initiative does not exist.
+func (s *Service) Get(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) (string, error) {
+	initiativeName := initiative.Name
+	if initiative.Annotations[annotationImportMode] == importModeReconcileOnly || initiative.Annotations[annotationImportMode] == importModeOnlyOnce {
+		initiativeName = initiative.Annotations[annotationImportName]
+	}
+
+	if initiative.Spec.ManagementGroupID != "" {
+		resp, err := s.factory.Initiatives.GetAtManagementGroup(ctx, initiative.Spec.ManagementGroupID, initiativeName, nil)
+		if err != nil {
+			if isNotFound(err) {
+				return "", nil
+			}
+			return "", err
+		}
+		if resp.SetDefinition.ID != nil {
+			return *resp.SetDefinition.ID, nil
+		}
+		return "", nil
+	}
+
+	resp, err := s.factory.Initiatives.Get(ctx, initiativeName, nil)
+	if err != nil {
+		if isNotFound(err) {
+			return "", nil
+		}
+		return "", err
+	}
+	if resp.SetDefinition.ID != nil {
+		return *resp.SetDefinition.ID, nil
+	}
+	return "", nil
+}
+
+func isNotFound(err error) bool {
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "404") || strings.Contains(msg, "not found")
+}
+
 // Delete removes the Azure Policy Set Definition.
 func (s *Service) Delete(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) error {
 	logger := log.FromContext(ctx)

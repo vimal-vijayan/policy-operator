@@ -171,6 +171,45 @@ func parseDefinitionImportID(importID string) (name string, managementGroupID st
 	return "", "", fmt.Errorf("cannot parse policy definition name from import ID: %q", importID)
 }
 
+// Get fetches an existing Azure Policy Definition by name and returns its resource ID.
+// Returns an empty string and no error if the definition does not exist.
+func (s *Service) Get(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) (string, error) {
+	policyName := def.Name
+	if def.Annotations[annotationImportMode] == importModeReconcileOnly || def.Annotations[annotationImportMode] == importModeOnlyOnce {
+		policyName = def.Annotations[annotationImportName]
+	}
+
+	if def.Spec.ManagementGroupID != "" {
+		resp, err := s.factory.Definitions.GetAtManagementGroup(ctx, def.Spec.ManagementGroupID, policyName, nil)
+		if err != nil {
+			if isNotFound(err) {
+				return "", nil
+			}
+			return "", err
+		}
+		if resp.Definition.ID != nil {
+			return *resp.Definition.ID, nil
+		}
+		return "", nil
+	}
+
+	resp, err := s.factory.Definitions.Get(ctx, policyName, nil)
+	if err != nil {
+		if isNotFound(err) {
+			return "", nil
+		}
+		return "", err
+	}
+	if resp.Definition.ID != nil {
+		return *resp.Definition.ID, nil
+	}
+	return "", nil
+}
+
+func isNotFound(err error) bool {
+	return strings.Contains(err.Error(), "404") || strings.Contains(strings.ToLower(err.Error()), "not found")
+}
+
 func (s *Service) Delete(ctx context.Context, def *governancev1alpha1.AzurePolicyDefinition) error {
 	logger := log.FromContext(ctx)
 

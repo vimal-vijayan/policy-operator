@@ -42,6 +42,7 @@ const azurePolicyInitiativeFinalizer = "governance.platform.io/azurepolicyinitia
 
 // InitiativeService is the interface for managing Azure Policy Set Definitions.
 type InitiativeService interface {
+	Get(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) (string, error)
 	CreateOrUpdate(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedPolicyDefinitionIDs []string) (string, error)
 	Delete(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) error
 	Import(ctx context.Context, importID string, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedPolicyDefinitionIDs []string) ([]string, error)
@@ -126,10 +127,41 @@ func (r *AzurePolicyInitiativeReconciler) handleDeletion(ctx context.Context, in
 	return r.Update(ctx, initiative)
 }
 
+// checkExistingInitiative returns (true, nil) if an initiative with the same name already exists in
+// Azure, after emitting a warning event and setting a failed condition. Returns (false, nil) when
+// the name is free, or (false, err) on lookup failure.
+func (r *AzurePolicyInitiativeReconciler) checkExistingInitiative(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative) (bool, error) {
+	logger := log.FromContext(ctx)
+	existingID, err := r.Service.Get(ctx, initiative)
+	if err != nil {
+		logger.Error(err, "failed to check for existing policy initiative")
+		return false, err
+	}
+	if existingID == "" {
+		return false, nil
+	}
+	msg := fmt.Sprintf("Policy initiative with the same ID already exists in Azure (%s). Use a different name for this initiative.", existingID)
+	if r.Recorder != nil {
+		r.Recorder.Event(initiative, corev1.EventTypeWarning, "PolicyInitiativeAlreadyExists", msg)
+	}
+	r.setCondition(initiative, metav1.ConditionFalse, "PolicyInitiativeAlreadyExists", msg)
+	if statusErr := r.Status().Update(ctx, initiative); statusErr != nil {
+		logger.Error(statusErr, FailedStatusError)
+	}
+	return true, nil
+}
+
 func (r *AzurePolicyInitiativeReconciler) reconcileInitiative(ctx context.Context, initiative *governancev1alpha1.AzurePolicyInitiative, resolvedIDs []string) error {
 	logger := log.FromContext(ctx)
 
 	wasCreated := initiative.Status.InitiativeID == ""
+
+	if wasCreated {
+		if stop, err := r.checkExistingInitiative(ctx, initiative); err != nil || stop {
+			return err
+		}
+	}
+
 	initiativeID, err := r.Service.CreateOrUpdate(ctx, initiative, resolvedIDs)
 	if err != nil {
 		logger.Error(err, "failed to create/update policy initiative")
@@ -206,6 +238,7 @@ func (r *AzurePolicyInitiativeReconciler) handleImport(ctx context.Context, init
 	}
 
 	initiative.Status.InitiativeID = importID
+	r.Recorder.Eventf(initiative, corev1.EventTypeNormal, "ImportSucceeded", "Successfully imported existing Azure Policy Set Definition with ID %q", importID)
 	r.setImportedCondition(initiative, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Set Definition was adopted successfully.")
 	r.setDriftCondition(initiative, driftFields)
 
