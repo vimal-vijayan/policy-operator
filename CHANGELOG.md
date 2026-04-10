@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/vimal-vijayan/policy-operator/compare/v0.3.0...v0.3.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* policy id logic ([#21](https://github.com/vimal-vijayan/policy-operator/issues/21)) ([a7a1c10](https://github.com/vimal-vijayan/policy-operator/commit/a7a1c10b697d4755da12d3084fe681ea9dd3eda0))
+
 ## [0.3.0](https://github.com/vimal-vijayan/policy-operator/compare/v0.2.2...v0.3.0) (2026-04-09)
 
 
