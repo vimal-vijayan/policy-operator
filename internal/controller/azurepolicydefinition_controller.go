@@ -232,7 +232,7 @@ func (r *AzurePolicyDefinitionReconciler) handleImport(ctx context.Context, def 
 	}
 
 	def.Status.PolicyDefinitionID = importID
-	r.Recorder.Eventf(def, corev1.EventTypeNormal, "PolicyDefinitionImported", "Successfully imported policy definition with ID %q", importID)
+	r.Recorder.Eventf(def, corev1.EventTypeNormal, "ImportSucceeded", "Successfully imported policy definition with ID %q", importID)
 	r.setImportedCondition(def, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Definition was adopted successfully.")
 	r.setDriftCondition(def, driftFields)
 
