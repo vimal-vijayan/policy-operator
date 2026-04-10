@@ -238,6 +238,7 @@ func (r *AzurePolicyInitiativeReconciler) handleImport(ctx context.Context, init
 	}
 
 	initiative.Status.InitiativeID = importID
+	r.Recorder.Eventf(initiative, corev1.EventTypeNormal, "ImportSucceeded", "Successfully imported existing Azure Policy Set Definition with ID %q", importID)
 	r.setImportedCondition(initiative, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Set Definition was adopted successfully.")
 	r.setDriftCondition(initiative, driftFields)
 

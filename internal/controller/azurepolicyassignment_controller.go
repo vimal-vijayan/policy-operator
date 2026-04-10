@@ -196,6 +196,7 @@ func (r *AzurePolicyAssignmentReconciler) handleImport(ctx context.Context, assi
 		assignment.Status.MIPrincipalID = miPrincipalID
 	}
 
+	r.Recorder.Eventf(assignment, corev1.EventTypeNormal, "ImportSucceeded", "Successfully imported existing Azure Policy Assignment with ID %q", importID)
 	r.setImportedCondition(assignment, metav1.ConditionTrue, "ImportSucceeded", "Existing Azure Policy Assignment was adopted successfully.")
 	r.setDriftCondition(assignment, driftFields)
 
