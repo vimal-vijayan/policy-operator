@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/vimal-vijayan/policy-operator/compare/v0.3.2...v0.4.0) (2026-04-12)
+
+
+### Features
+
+* add readiness probe to deployment configuration ([#25](https://github.com/vimal-vijayan/policy-operator/issues/25)) ([e7d00f1](https://github.com/vimal-vijayan/policy-operator/commit/e7d00f1ec75311e57179c524bbd65911ba2b291e))
+
 ## [0.3.2](https://github.com/vimal-vijayan/policy-operator/compare/v0.3.1...v0.3.2) (2026-04-12)
 
 
