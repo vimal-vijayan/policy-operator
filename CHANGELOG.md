@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/vimal-vijayan/policy-operator/compare/v0.3.1...v0.3.2) (2026-04-12)
+
+
+### Bug Fixes
+
+* ensure event recorder is initialized before logging import success ([#23](https://github.com/vimal-vijayan/policy-operator/issues/23)) ([bdfc5f7](https://github.com/vimal-vijayan/policy-operator/commit/bdfc5f78036a04a4d0c0be2a0f3f1818ffb43d3f))
+
 ## [0.3.1](https://github.com/vimal-vijayan/policy-operator/compare/v0.3.0...v0.3.1) (2026-04-10)
 
 
