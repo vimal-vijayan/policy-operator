@@ -99,12 +99,14 @@ spec:
             port: {{ .Values.healthProbe.port }}
           initialDelaySeconds: 15
           periodSeconds: 20
-        # readinessProbe:
-        #   httpGet:
-        #     path: /readyz
-        #     port: {{ .Values.healthProbe.port }}
-        #   initialDelaySeconds: 5
-        #   periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: {{ .Values.healthProbe.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
       {{- with .Values.nodeSelector }}
