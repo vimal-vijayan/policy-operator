@@ -1,0 +1,83 @@
+# CI Pipeline — Pull Requests
+# Triggers on PRs targeting main or release/*
+# Runs: fmt check, vet, unit tests, build, manifests validation
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+      - release/*
+  paths:
+    exclude:
+      - "*.md"
+      - docs/**
+      - azurepipelines/**
+
+variables:
+  GO_VERSION: "1.24.x"
+  ENVTEST_K8S_VERSION: "1.31.0"
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: CI
+    displayName: "CI — Pull Request"
+    jobs:
+      - job: Validate
+        displayName: "Fmt / Vet / Test / Build / Manifests"
+        steps:
+          - task: GoTool@0
+            displayName: "Install Go $(GO_VERSION)"
+            inputs:
+              version: $(GO_VERSION)
+
+          - script: |
+              go mod download
+            displayName: "Download dependencies"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              if [ -n "$(gofmt -l .)" ]; then
+                echo "The following files are not gofmt-compliant:"
+                gofmt -l .
+                exit 1
+              fi
+            displayName: "go fmt check"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              go vet ./...
+            displayName: "go vet"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              make envtest
+              KUBEBUILDER_ASSETS="$(./bin/setup-envtest use $(ENVTEST_K8S_VERSION) --bin-dir ./bin -p path)" \
+                go test ./... -v -coverprofile=cover.out
+            displayName: "go test"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+            env:
+              ENVTEST_K8S_VERSION: $(ENVTEST_K8S_VERSION)
+
+          - script: |
+              CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /dev/null ./cmd/main.go
+            displayName: "go build"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              make manifests
+              if ! git diff --exit-code config/; then
+                echo "Generated manifests are out of date. Run 'make manifests' and commit the changes."
+                exit 1
+              fi
+            displayName: "Validate generated manifests are up to date"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - task: PublishCodeCoverageResults@2
+            displayName: "Publish coverage"
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: "$(System.DefaultWorkingDirectory)/cover.out"

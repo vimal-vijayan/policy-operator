@@ -1,0 +1,134 @@
+# CD Pipeline — Build and Push Docker Image to ACR
+# Triggers on merges to main or version tags (v*)
+# Produces a multi-arch image (linux/amd64 + linux/arm64) and pushes to ACR
+
+trigger:
+  branches:
+    include:
+      - main
+  tags:
+    include:
+      - v*
+  paths:
+    exclude:
+      - "*.md"
+      - docs/**
+      - azurepipelines/**
+
+pr: none
+
+variables:
+  # --- Override these in the pipeline UI or a variable group ---
+  ACR_SERVICE_CONNECTION: "acr-service-connection"  # Azure DevOps service connection name
+  ACR_LOGIN_SERVER: "$(acrLoginServer)"             # e.g. myregistry.azurecr.io  (set in variable group)
+  IMAGE_NAME: "policy-operator"
+  GO_VERSION: "1.24.x"
+
+  # Tag logic: use the git tag if available, otherwise use the short commit SHA
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    IMAGE_TAG: $[ replace(variables['Build.SourceBranch'], 'refs/tags/', '') ]
+  ${{ else }}:
+    IMAGE_TAG: $(Build.SourceVersion)
+
+pool:
+  vmImage: ubuntu-latest
+
+resources:
+  repositories:
+    - repository: cicd
+      type: git
+      name: "Essity Templates/templates.pipelines.cicd"
+      ref: refs/tags/7.0.1
+
+stages:
+  - stage: Build
+    displayName: "Build"
+    jobs:
+      - job: BuildAndTest
+        displayName: "Fmt / Vet / Test"
+        steps:
+          - task: GoTool@0
+            displayName: "Install Go $(GO_VERSION)"
+            inputs:
+              version: $(GO_VERSION)
+
+          - script: go mod download
+            displayName: "Download dependencies"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              if [ -n "$(gofmt -l .)" ]; then
+                echo "The following files are not gofmt-compliant:"
+                gofmt -l .
+                exit 1
+              fi
+            displayName: "go fmt check"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: go vet ./...
+            displayName: "go vet"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              make envtest
+              KUBEBUILDER_ASSETS="$(./bin/setup-envtest use 1.31.0 --bin-dir ./bin -p path)" \
+                go test ./... -v -coverprofile=cover.out
+            displayName: "go test"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+  #Only runs on merge or manual trigger
+  - template: stages/create-tag-stage.yml@cicd
+    parameters:
+      pipelinesVersion: cicd
+      dependsOn: Build
+
+  - stage: Publish
+    displayName: "Build & Push to ACR"
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: DockerBuildPush
+        displayName: "Docker build (multi-arch) and push"
+        steps:
+          - script: |
+              docker buildx create --use --name multiarch-builder
+              docker buildx inspect --bootstrap
+            displayName: "Set up Docker Buildx"
+
+          - task: Docker@2
+            displayName: "Login to ACR"
+            inputs:
+              command: login
+              containerRegistry: $(ACR_SERVICE_CONNECTION)
+
+          - script: |
+              # Determine the full image reference
+              IMAGE_REF="$(ACR_LOGIN_SERVER)/$(IMAGE_NAME)"
+
+              # Always tag with the commit SHA / git tag
+              TAGS="--tag ${IMAGE_REF}:$(IMAGE_TAG)"
+
+              # Additionally tag with 'latest' when building from main
+              if [ "$(Build.SourceBranch)" = "refs/heads/main" ]; then
+                TAGS="${TAGS} --tag ${IMAGE_REF}:latest"
+              fi
+
+              docker buildx build \
+                --platform linux/amd64,linux/arm64 \
+                --push \
+                ${TAGS} \
+                --label "org.opencontainers.image.source=$(Build.Repository.Uri)" \
+                --label "org.opencontainers.image.revision=$(Build.SourceVersion)" \
+                --label "org.opencontainers.image.version=$(IMAGE_TAG)" \
+                .
+            displayName: "Build and push multi-arch image"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+            env:
+              DOCKER_BUILDKIT: 1
+
+          - task: Docker@2
+            displayName: "Logout from ACR"
+            condition: always()
+            inputs:
+              command: logout
+              containerRegistry: $(ACR_SERVICE_CONNECTION)

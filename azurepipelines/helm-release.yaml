@@ -1,0 +1,197 @@
+# Helm Release Pipeline
+#
+# Triggers in two scenarios:
+#
+#   1. CD trigger — merge to main or a v* tag:
+#        - Updates values.yaml image tag to match the new Docker image
+#        - Updates Chart.yaml appVersion to match
+#        - Packages and pushes the Helm chart to ACR (OCI)
+#
+#   2. Chart-change trigger — helm/policy-operator/** files modified on main:
+#        - Bumps the chart patch version (e.g. 0.3.2 → 0.3.3)
+#        - Packages and pushes the updated chart to ACR (OCI)
+#
+# Required pipeline variables / variable group:
+#   acrLoginServer        — e.g. myregistry.azurecr.io
+#   ACR_SERVICE_CONNECTION — Azure DevOps service connection name for ACR
+#   GIT_USER_EMAIL        — email used when committing version bumps back to the repo
+#   GIT_USER_NAME         — name used when committing version bumps back to the repo
+#   AZURE_DEVOPS_PAT      — PAT with Code (read/write) scope, used for the git push back
+
+trigger:
+  branches:
+    include:
+      - main
+  tags:
+    include:
+      - v*
+  paths:
+    include:
+      - helm/policy-operator/**
+    exclude:
+      - "*.md"
+      - azurepipelines/**
+
+pr: none
+
+variables:
+  CHART_PATH: "helm/policy-operator"
+  CHART_NAME: "policy-operator"
+  ACR_SERVICE_CONNECTION: "acr-service-connection"
+  ACR_HELM_REPO: "$(acrLoginServer)/helm"
+
+  # Image tag: git tag value (e.g. v0.4.0) or short commit SHA
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    RELEASE_TAG: $[ replace(variables['Build.SourceBranch'], 'refs/tags/', '') ]
+    IS_RELEASE: "true"
+  ${{ else }}:
+    RELEASE_TAG: $(Build.SourceVersion)
+    IS_RELEASE: "false"
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  # ─────────────────────────────────────────────
+  # Stage 1 — Update versions in chart source
+  # ─────────────────────────────────────────────
+  - stage: UpdateVersions
+    displayName: "Update Chart Versions"
+    jobs:
+      - job: PatchVersions
+        displayName: "Patch Chart.yaml and values.yaml"
+        steps:
+          - checkout: self
+            persistCredentials: true  # required for the git push back
+
+          - script: |
+              set -euo pipefail
+              CHART_YAML="$(CHART_PATH)/Chart.yaml"
+              VALUES_YAML="$(CHART_PATH)/values.yaml"
+
+              if [ "$(IS_RELEASE)" = "true" ]; then
+                # ── Release (v* tag or main merge with a semver tag) ──────────
+                # Strip leading 'v' for semver fields
+                VERSION="${RELEASE_TAG#v}"
+
+                echo "Setting chart version=${VERSION}, appVersion=${VERSION}, image.tag=$(RELEASE_TAG)"
+
+                sed -i "s/^version: .*/version: ${VERSION}/"         "${CHART_YAML}"
+                sed -i "s/^appVersion: .*/appVersion: \"${VERSION}\"/" "${CHART_YAML}"
+                sed -i "s/^  tag: .*/  tag: \"$(RELEASE_TAG)\"/"     "${VALUES_YAML}"
+
+              else
+                # ── Chart-only change (helm/** modified, not a release tag) ──
+                # Bump the chart patch version only (appVersion and image tag unchanged)
+                CURRENT_VERSION=$(grep '^version:' "${CHART_YAML}" | awk '{print $2}')
+                MAJOR=$(echo "${CURRENT_VERSION}" | cut -d. -f1)
+                MINOR=$(echo "${CURRENT_VERSION}" | cut -d. -f2)
+                PATCH=$(echo "${CURRENT_VERSION}" | cut -d. -f3)
+                NEW_PATCH=$((PATCH + 1))
+                NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+
+                echo "Bumping chart version: ${CURRENT_VERSION} → ${NEW_VERSION}"
+                sed -i "s/^version: .*/version: ${NEW_VERSION}/" "${CHART_YAML}"
+              fi
+
+              echo "--- Chart.yaml (relevant lines) ---"
+              grep -E '^(version|appVersion):' "${CHART_YAML}"
+              echo "--- values.yaml image block ---"
+              grep -A2 '^image:' "${VALUES_YAML}"
+            displayName: "Patch Chart.yaml and values.yaml"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              set -euo pipefail
+
+              git config user.email "$(GIT_USER_EMAIL)"
+              git config user.name  "$(GIT_USER_NAME)"
+
+              # Only commit if there are actual changes
+              if git diff --quiet; then
+                echo "No version changes to commit."
+                exit 0
+              fi
+
+              git add "$(CHART_PATH)/Chart.yaml" "$(CHART_PATH)/values.yaml"
+
+              if [ "$(IS_RELEASE)" = "true" ]; then
+                COMMIT_MSG="chore(helm): update chart to $(RELEASE_TAG) [skip ci]"
+              else
+                NEW_VERSION=$(grep '^version:' "$(CHART_PATH)/Chart.yaml" | awk '{print $2}')
+                COMMIT_MSG="chore(helm): bump chart version to ${NEW_VERSION} [skip ci]"
+              fi
+
+              git commit -m "${COMMIT_MSG}"
+
+              # Push using the PAT via the remote URL
+              REPO_URL="https://$(AZURE_DEVOPS_PAT)@$(Build.Repository.Uri#https://)"
+              git push "${REPO_URL}" HEAD:$(Build.SourceBranchName)
+            displayName: "Commit and push version bump"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          # Pass the resolved chart version downstream via a pipeline variable
+          - script: |
+              CHART_VERSION=$(grep '^version:' "$(CHART_PATH)/Chart.yaml" | awk '{print $2}')
+              echo "##vso[task.setvariable variable=CHART_VERSION;isOutput=true]${CHART_VERSION}"
+              echo "Chart version for packaging: ${CHART_VERSION}"
+            name: setChartVersion
+            displayName: "Export CHART_VERSION"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+  # ─────────────────────────────────────────────
+  # Stage 2 — Lint, package, and push to ACR
+  # ─────────────────────────────────────────────
+  - stage: HelmPublish
+    displayName: "Lint, Package & Push Helm Chart"
+    dependsOn: UpdateVersions
+    condition: succeeded()
+    variables:
+      CHART_VERSION: $[ stageDependencies.UpdateVersions.PatchVersions.outputs['setChartVersion.CHART_VERSION'] ]
+    jobs:
+      - job: PackageAndPush
+        displayName: "Helm lint → package → ACR push"
+        steps:
+          - checkout: self
+
+          - task: HelmInstaller@1
+            displayName: "Install Helm"
+            inputs:
+              helmVersionToInstall: latest
+
+          - script: |
+              helm lint $(CHART_PATH) --strict
+            displayName: "helm lint"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - script: |
+              helm package $(CHART_PATH) \
+                --version "$(CHART_VERSION)" \
+                --destination .helm-packages
+              echo "Packaged: $(ls .helm-packages)"
+            displayName: "helm package"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - task: AzureCLI@2
+            displayName: "Login to ACR (Helm OCI)"
+            inputs:
+              azureSubscription: $(ACR_SERVICE_CONNECTION)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                TOKEN=$(az acr login --name "$(acrLoginServer)" --expose-token --output tsv --query accessToken)
+                echo "${TOKEN}" | helm registry login "$(acrLoginServer)" --username "00000000-0000-0000-0000-000000000000" --password-stdin
+
+          - script: |
+              helm push \
+                .helm-packages/$(CHART_NAME)-$(CHART_VERSION).tgz \
+                oci://$(ACR_HELM_REPO)
+            displayName: "helm push to ACR"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish chart artifact"
+            inputs:
+              targetPath: "$(System.DefaultWorkingDirectory)/.helm-packages"
+              artifact: "helm-chart-$(CHART_VERSION)"
+              publishLocation: pipeline
